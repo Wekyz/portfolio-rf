@@ -1,0 +1,99 @@
+backend:
+  name: github
+  repo: Wekyz/portfolio-rf
+  branch: main
+  auth_type: implicit
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
+
+# Pas d'upload de media via CMS (thumbs gérées via Vimeo/dossier)
+media_folder: "thumbs"
+public_folder: "thumbs"
+
+# Interface en français
+locale: fr
+
+collections:
+  - name: "videos"
+    label: "Vidéos"
+    label_singular: "Vidéo"
+    description: "Liste des vidéos du portfolio — l'ordre ici est l'ordre d'affichage sur le site."
+    files:
+      - name: "videos"
+        label: "Liste des vidéos"
+        file: "videos.json"
+        description: "Gérez les vidéos du portfolio"
+        fields:
+          - name: "videos"
+            label: "Vidéos"
+            label_singular: "Vidéo"
+            widget: list
+            summary: "{{fields.title}} — {{fields.cat}}"
+            fields:
+
+              - name: cat
+                label: "Catégorie"
+                widget: select
+                options:
+                  - { label: "Commercial",    value: "pub"    }
+                  - { label: "Feature Film",  value: "film"   }
+                  - { label: "Documentary",   value: "doc"    }
+                  - { label: "Corporate",     value: "corpo"  }
+                  - { label: "Music Video",   value: "clip"   }
+                  - { label: "Event",         value: "event"  }
+                  - { label: "Teaser",        value: "teaser" }
+                  - { label: "Live",          value: "live"   }
+
+              - name: title
+                label: "Titre"
+                widget: string
+
+              - name: credit
+                label: "Crédit / Production"
+                widget: string
+                required: false
+                hint: "ex : Production : Atelier B  /  Director : Thomas Gérard"
+
+              - name: year
+                label: "Année"
+                widget: string
+                required: false
+                hint: "ex : 2024  ou  2018-2022"
+
+              - name: id
+                label: "ID Vimeo"
+                widget: string
+                required: false
+                hint: "Laisser vide pour les vidéos Live (pas de lecteur)"
+
+              - name: hash
+                label: "Hash Vimeo (vidéo privée)"
+                widget: string
+                required: false
+                hint: "Uniquement pour les vidéos privées Vimeo"
+
+              - name: thumb
+                label: "Miniature"
+                widget: string
+                required: false
+                hint: "Chemin relatif : thumbs/VIMEO_ID.jpg  ou  live/live1.webp"
+
+              - name: fullWidth
+                label: "Pleine largeur"
+                widget: boolean
+                default: false
+                required: false
+                hint: "Affiche la vidéo sur toute la largeur de la grille (ex : Feature Film)"
+
+              - name: externalLink
+                label: "Lien externe"
+                widget: string
+                required: false
+                hint: "URL externe (ex : lien Prime Video) — remplace le lecteur Vimeo au clic"
+
+              - name: noClick
+                label: "Non cliquable"
+                widget: boolean
+                default: false
+                required: false
+                hint: "Désactive le clic (utilisé pour les vidéos Live)"
