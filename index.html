@@ -566,7 +566,8 @@
 
   fetch('videos.json')
     .then(r => r.json())
-    .then(projects => {
+    .then(data => {
+    const projects = data.videos || data;
       projects.forEach(p => {
         const el = buildItem(p);
         grid.appendChild(el);
