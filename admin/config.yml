@@ -1,17 +1,11 @@
 backend:
-  name: github
-  repo: Wekyz/portfolio-rf
+  name: git-gateway
   branch: main
-  auth_type: implicit
-  base_url: https://api.netlify.com
-  auth_endpoint: auth
 
-# Pas d'upload de media via CMS (thumbs gérées via Vimeo/dossier)
+locale: fr
+
 media_folder: "thumbs"
 public_folder: "thumbs"
-
-# Interface en français
-locale: fr
 
 collections:
   - name: "videos"
@@ -22,7 +16,6 @@ collections:
       - name: "videos"
         label: "Liste des vidéos"
         file: "videos.json"
-        description: "Gérez les vidéos du portfolio"
         fields:
           - name: "videos"
             label: "Vidéos"
@@ -64,7 +57,7 @@ collections:
                 label: "ID Vimeo"
                 widget: string
                 required: false
-                hint: "Laisser vide pour les vidéos Live (pas de lecteur)"
+                hint: "Laisser vide pour les vidéos Live"
 
               - name: hash
                 label: "Hash Vimeo (vidéo privée)"
@@ -76,24 +69,24 @@ collections:
                 label: "Miniature"
                 widget: string
                 required: false
-                hint: "Chemin relatif : thumbs/VIMEO_ID.jpg  ou  live/live1.webp"
+                hint: "Chemin relatif : thumbs/VIMEO_ID.webp  ou  live/live1.webp"
 
               - name: fullWidth
                 label: "Pleine largeur"
                 widget: boolean
                 default: false
                 required: false
-                hint: "Affiche la vidéo sur toute la largeur de la grille (ex : Feature Film)"
+                hint: "Affiche la vidéo sur toute la largeur (Feature Film)"
 
               - name: externalLink
                 label: "Lien externe"
                 widget: string
                 required: false
-                hint: "URL externe (ex : lien Prime Video) — remplace le lecteur Vimeo au clic"
+                hint: "URL externe — remplace le lecteur Vimeo au clic"
 
               - name: noClick
                 label: "Non cliquable"
                 widget: boolean
                 default: false
                 required: false
-                hint: "Désactive le clic (utilisé pour les vidéos Live)"
+                hint: "Désactive le clic (vidéos Live)"
