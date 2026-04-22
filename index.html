@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+  <link rel="shortcut icon" href="/favicon.png">
+  <title>Roxane Foare — Video Editor</title>
+  <meta name="description" content="Monteuse vidéo freelance basée à Paris et Angers. Spécialisée en montage de films, documentaires, films corporate, publicités, événements et lives. Video editor based in Paris — available for film, documentary, commercial & corporate projects, monteur, monteur vidéo">
+  <meta name="keywords" content="monteuse vidéo, montage vidéo Paris, montage film documentaire, montage corporate, video editor Paris, freelance editor France, film editing, documentary editing, commercial editing, post-production Paris, montage pub, montage événementiel, monteur, monteur vidéo">
+
+  <!-- Open Graph (partage réseaux sociaux) -->
+  <meta property="og:title" content="Roxane Foare — Video Editor">
+  <meta property="og:description" content="Freelance video editor specialised in film, documentary, corporate, commercial, live & events.">
+  <meta property="og:image" content="https://roxane-foare.com/og-image.jpg">
+  <meta property="og:url" content="https://roxane-foare.com">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter/X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Roxane Foare — Video Editor">
+  <meta name="twitter:description" content="Freelance video editor — film, documentary, corporate, commercial, live & events.">
+  <meta name="twitter:image" content="https://roxane-foare.com/og-image.jpg">
+
+  <!-- Géolocalisation -->
+  <meta name="geo.region" content="FR-IDF">
+  <meta name="geo.placename" content="Paris, France">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+
+    @font-face {
+      font-family: 'HennessySerif1765';
+      src: url('HennessySerif1765.otf') format('opentype');
+      font-weight: normal; font-style: normal; font-display: block;
+    }
+    @font-face {
+      font-family: 'DalaFloda';
+      src: url('DalaFloda-Roman.otf') format('opentype');
+      font-weight: normal; font-style: normal; font-display: block;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #fafaf8; --black: #0e0e0c;
+      --gray-light: #e8e8e4; --gray-mid: #a8a8a0; --gray-dark: #5a5a54;
+      --accent: #c8b89a;
+      --font-hennessy: 'HennessySerif1765', Georgia, serif;
+      --font-dala:     'DalaFloda', Georgia, serif;
+      --font-body:     'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--white); color: var(--black); font-family: var(--font-body); font-weight: 300; font-size: 15px; line-height: 1.6; }
+
+    /* ── NAV ── */
+    nav {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:28px 56px;
+      border-bottom:1px solid var(--gray-light);
+    }
+
+    .nav-logo { font-family:var(--font-dala); font-size:20px; font-weight:400; letter-spacing:.02em; text-decoration:none; color:var(--black); }
+    .nav-logo-sub { display:block; font-family:var(--font-hennessy); font-size:11px; letter-spacing:.12em; color:var(--gray-mid); margin-top:2px; }
+
+    .nav-links { display:flex; gap:36px; list-style:none; }
+    .nav-links a {
+      font-family: var(--font-hennessy);
+      font-size:13px; letter-spacing:.06em;
+      text-decoration:none; color:var(--gray-dark);
+      position:relative; overflow:hidden; display:inline-block;
+    }
+    .nav-links a .lbl-out,
+    .nav-links a .lbl-in {
+      display:block;
+      transition:transform .38s cubic-bezier(.76,0,.24,1);
+    }
+    .nav-links a .lbl-in {
+      position:absolute; top:0; left:0;
+      transform:translateX(-110%);
+      color:var(--black);
+    }
+    .nav-links a:hover .lbl-out { transform:translateX(110%); }
+    .nav-links a:hover .lbl-in  { transform:translateX(0); }
+    .nav-links a::after {
+      content:''; position:absolute; bottom:-2px; left:0;
+      width:100%; height:1px; background:var(--black);
+      transform:scaleX(0); transform-origin:left;
+      transition:transform .38s cubic-bezier(.76,0,.24,1);
+    }
+    .nav-links a:hover::after { transform:scaleX(1); }
+
+    /* ── SECTION TITLE (Work / About / Contact) ── */
+    .section-title {
+      font-family: var(--font-hennessy);
+      font-size: clamp(56px,9vw,96px);
+      font-weight: 400; letter-spacing:-.02em; line-height:1;
+      margin-bottom:40px; display:block;
+    }
+
+    /* ── WORK ── */
+    #work { padding:72px 56px 120px; }
+    .section-header {
+      display:flex; align-items:baseline; justify-content:space-between;
+      margin-bottom:48px; border-bottom:1px solid var(--gray-light); padding-bottom:24px;
+    }
+    .section-header .section-title { margin-bottom:0; }
+    .section-location { font-family:var(--font-hennessy); font-size:12px; letter-spacing:.08em; color:var(--gray-mid); }
+
+    /* ── FILTERS ── */
+    .filters { display:flex; gap:28px; flex-wrap:wrap; margin-bottom:56px; align-items:center; }
+    .filter-btn {
+      background:none; border:none; padding:0;
+      font-family:var(--font-body); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--gray-mid); cursor:pointer;
+      position:relative; overflow:hidden; display:inline-block; line-height:1.4;
+    }
+    .filter-btn .lbl-out,
+    .filter-btn .lbl-in {
+      display:block;
+      transition:transform .38s cubic-bezier(.76,0,.24,1);
+    }
+    .filter-btn .lbl-in {
+      position:absolute; top:0; left:0;
+      transform:translateX(-110%);
+      color:var(--black);
+    }
+    .filter-btn:hover .lbl-out,
+    .filter-btn.active .lbl-out { transform:translateX(110%); }
+    .filter-btn:hover .lbl-in,
+    .filter-btn.active .lbl-in  { transform:translateX(0); }
+    .filter-btn.active { font-weight:500; color:var(--black); }
+    .filter-btn::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:100%; height:1px; background:var(--black);
+      transform:scaleX(0); transform-origin:left;
+      transition:transform .38s cubic-bezier(.76,0,.24,1);
+    }
+    .filter-btn:hover::after,
+    .filter-btn.active::after { transform:scaleX(1); }
+
+    /* ── GRID ── */
+    .work-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:2px; }
+    .work-item { position:relative; overflow:hidden; cursor:pointer; grid-column:span 6; }
+    .work-item.hidden { display:none; }
+
+
+    .work-thumb-wrap { width:100%; aspect-ratio:16/10; overflow:hidden; background:var(--gray-light); position:relative; cursor:pointer; }
+    .work-thumb { width:100%; height:100%; object-fit:cover; display:block; }
+
+    .work-skeleton { position:absolute; inset:0; background:linear-gradient(90deg,var(--gray-light) 25%,#f0f0ec 50%,var(--gray-light) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .work-overlay { position:absolute; inset:0; background:rgba(14,14,12,0); display:flex; align-items:flex-end; padding:28px; transition:background .4s; pointer-events:none; }
+    .work-thumb-wrap:hover .work-overlay { background:rgba(14,14,12,.74); }
+    .work-info { transform:translateY(12px); opacity:0; transition:all .35s; }
+    .work-thumb-wrap:hover .work-info { transform:translateY(0); opacity:1; }
+    .work-title { font-family:var(--font-hennessy); font-size:21px; font-weight:400; color:var(--white); letter-spacing:-.01em; line-height:1.25; }
+    .work-meta { display:flex; gap:14px; align-items:center; margin-top:6px; flex-wrap:wrap; }
+    .work-prod  { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
+
+    .work-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.8); opacity:0; width:56px; height:56px; border:1.5px solid rgba(255,255,255,.7); border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all .35s; }
+    .work-play svg { margin-left:4px; }
+    .work-thumb-wrap:hover .work-play { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .work-thumb-wrap:hover .work-thumb { transform:scale(1.04); }
+
+    /* ── ABOUT ── */
+    #about { padding:120px 56px; border-top:1px solid var(--gray-light); }
+    .about-subtitle { font-family:var(--font-hennessy); font-size:clamp(18px,2.2vw,26px); font-weight:400; line-height:1.3; letter-spacing:-.01em; color:var(--gray-dark); margin-bottom:20px; }
+    .about-intro { font-family:var(--font-hennessy); font-size:16px; color:var(--gray-dark); line-height:1.9; border-top:1px solid var(--gray-light); padding-top:24px; }
+    .tools-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:40px; }
+    .tool-tag { padding:6px 14px; border:1px solid var(--gray-light); font-size:11px; letter-spacing:.05em; color:var(--gray-dark); }
+
+    /* ── PRODUCTIONS & BRANDS ── */
+    .credits-block { margin-top:72px; padding-top:0; }
+    .credits-block + .credits-block { margin-top:56px; }
+    .credits-heading {
+      font-family: var(--font-hennessy);
+      font-size: clamp(32px,4vw,48px);
+      font-weight: 400; letter-spacing:-.02em; line-height:1;
+      margin-bottom:32px;
+    }
+    /* Productions — single flowing list */
+    .prod-list {
+      display: flex; flex-wrap: wrap;
+      gap: 0; list-style: none;
+    }
+    .prod-list li {
+      font-family: var(--font-hennessy);
+      font-size: 12px; color: var(--gray-dark);
+      line-height: 1.9;
+    }
+    .prod-list li:not(:last-child)::after {
+      content: ' //';
+      color: var(--gray-light);
+      margin: 0 8px;
+    }
+
+    /* Brands — category grid */
+    .brands-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 40px 32px;
+      align-items: start;
+    }
+    .brands-col { display: flex; flex-direction: column; }
+    .brand-cat-title {
+      font-family: var(--font-body);
+      font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--gray-mid); margin-bottom: 12px;
+    }
+    .brand-cat-list { list-style: none; }
+    .brand-cat-list li {
+      font-family: var(--font-hennessy);
+      font-size: 14px; color: var(--gray-dark);
+      line-height: 1.85;
+    }
+
+    /* ── CONTACT ── */
+    #contact { padding:120px 56px; border-top:1px solid var(--gray-light); display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+    .contact-tagline { font-family:var(--font-hennessy); font-size:clamp(22px,3vw,34px); font-weight:400; line-height:1.25; letter-spacing:-.01em; color:var(--gray-dark); margin-bottom:32px; }
+    .contact-tagline em { font-style:italic; }
+    .contact-desc { font-family:var(--font-hennessy); font-size:15px; color:var(--gray-dark); line-height:1.8; margin-bottom:40px; }
+    .contact-links { display:flex; flex-direction:column; gap:18px; }
+    .contact-link { display:flex; align-items:center; gap:12px; font-family:var(--font-hennessy); font-size:15px; color:var(--black); text-decoration:none; transition:gap .2s; }
+    .contact-link:hover { gap:20px; }
+    .contact-link-arrow { width:20px; height:1px; background:var(--black); position:relative; flex-shrink:0; transition:width .2s; }
+    .contact-link:hover .contact-link-arrow { width:32px; }
+    .contact-link-arrow::after { content:''; position:absolute; right:0; top:-3px; border:solid var(--black); border-width:0 1px 1px 0; display:inline-block; padding:3px; transform:rotate(-45deg); }
+
+    .email { font-size: 0; }
+    .email span { display: inline; font-size: 16px; /* ta taille normale */ }
+
+    .contact-form { display:flex; flex-direction:column; gap:20px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:8px; }
+    .form-group label { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--gray-mid); }
+    .form-group input, .form-group textarea { background:none; border:none; border-bottom:1px solid var(--gray-light); padding:12px 0; font-family:var(--font-body); font-size:15px; font-weight:300; color:var(--black); outline:none; transition:border-color .2s; resize:none; }
+    .form-group input:focus, .form-group textarea:focus { border-bottom-color:var(--black); }
+    .form-group input::placeholder, .form-group textarea::placeholder { color:var(--gray-light); }
+    .form-submit { display:inline-flex; align-items:center; gap:14px; padding:16px 32px; background:var(--black); color:var(--white); font-family:var(--font-body); font-size:11px; letter-spacing:.1em; text-transform:uppercase; border:none; cursor:pointer; align-self:flex-start; transition:background .2s,gap .2s; margin-top:8px; }
+    .form-submit:hover { background:var(--gray-dark); gap:22px; }
+
+    .filter-sep { font-size:11px; color:var(--gray-light); letter-spacing:.05em; user-select:none; }
+
+    /* ── FOOTER ── */
+    footer { padding:40px 56px; border-top:1px solid var(--gray-light); display:flex; align-items:center; justify-content:space-between; }
+    .footer-name { font-family:var(--font-dala); font-size:18px; font-weight:400; }
+    .footer-name span { font-style:italic; color:var(--gray-dark); }
+    .footer-copy { font-size:12px; color:var(--gray-mid); letter-spacing:.04em; }
+    footer { position:relative; }
+
+    /* ── LIGHTBOX ── */
+    .lightbox { display:none; position:fixed; inset:0; background:rgba(14,14,12,.92); z-index:1000; align-items:center; justify-content:center; }
+    .lightbox.open { display:flex; }
+    .lightbox-inner { position:relative; width:90vw; max-width:1100px; aspect-ratio:16/9; }
+    .lightbox-inner iframe { width:100%; height:100%; border:none; }
+    .lightbox-close { position:absolute; top:-44px; right:0; background:none; border:none; color:#fff; font-size:28px; cursor:pointer; line-height:1; opacity:.7; transition:opacity .2s; }
+    .lightbox-close:hover { opacity:1; }
+
+
+    /* ── LIVE — non cliquable ── */
+    .work-item[data-cat="live"] .work-thumb-wrap { cursor: default; }
+    .work-item[data-cat="live"] .work-play { display: none; }
+    .work-item[data-cat="live"] .work-thumb-wrap:hover .work-thumb { transform: none; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:900px) {
+      nav, #work, #about, #contact, footer { padding-left:24px; padding-right:24px; }
+      #about, #contact { grid-template-columns:1fr; gap:48px; }
+      .work-item { grid-column:span 12; }
+      .form-row { grid-template-columns:1fr; }
+      nav { padding-top:20px; padding-bottom:20px; }
+    }
+  </style>
+  <!-- Analytics Umami (privacy-friendly, sans cookies) -->
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="f751e82f-e6c9-4cdf-a93f-89629f170b29"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    Roxane Foare</em>
+    <span class="nav-logo-sub">Video Editor</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#work"><span class="lbl-out">Work</span><span class="lbl-in">Work</span></a></li>
+    <li><a href="#about"><span class="lbl-out">About</span><span class="lbl-in">About</span></a></li>
+    <li><a href="#contact"><span class="lbl-out">Contact</span><span class="lbl-in">Contact</span></a></li>
+  </ul>
+</nav>
+
+<!-- WORK -->
+<section id="work">
+  <div class="section-header">
+    <h2 class="section-title">Work</h2>
+    <span class="section-location">Paris · Angers · World</span>
+  </div>
+  <div class="filters">
+    <button class="filter-btn" data-filter="pub">
+      <span class="lbl-out">Commercial</span><span class="lbl-in">Commercial</span>
+    </button>
+    <span class="filter-sep">//</span>
+    <button class="filter-btn" data-filter="film">
+      <span class="lbl-out">Feature Film</span><span class="lbl-in">Feature Film</span>
+    </button>
+    <span class="filter-sep">//</span>
+    <button class="filter-btn" data-filter="doc">
+      <span class="lbl-out">Documentary</span><span class="lbl-in">Documentary</span>
+    </button>
+    <span class="filter-sep">//</span>
+    <button class="filter-btn" data-filter="corpo">
+      <span class="lbl-out">Corporate</span><span class="lbl-in">Corporate</span>
+    </button>
+    <span class="filter-sep">//</span>
+    <button class="filter-btn" data-filter="event">
+      <span class="lbl-out">Event</span><span class="lbl-in">Event</span>
+    </button>
+    <span class="filter-sep">//</span>
+    <button class="filter-btn" data-filter="teaser">
+      <span class="lbl-out">Teaser</span><span class="lbl-in">Teaser</span>
+    </button>
+    <span class="filter-sep">//</span>
+    <button class="filter-btn" data-filter="live">
+      <span class="lbl-out">Live</span><span class="lbl-in">Live</span>
+    </button>
+  </div>
+  <div class="work-grid" id="workGrid">
+    <!-- Les vidéos sont chargées dynamiquement depuis videos.json -->
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-left">
+    <h2 class="section-title">About</h2>
+    <p class="about-subtitle">Roxane Foare — Video Editor for more than 10 years</p>
+    <div class="about-intro">Every cut is clean and precise; my experience, expertise and artistic vision will help you throughout your projects.</div>
+    <div class="tools-list">
+      <span class="tool-tag">Adobe Premiere Pro</span>
+      <span class="tool-tag">DaVinci Resolve</span>
+      <span class="tool-tag">Avid Media Composer</span>
+    </div>
+
+    <!-- PRODUCTIONS -->
+    <div class="credits-block">
+      <h3 class="credits-heading">Productions</h3>
+      <ul class="prod-list">
+        <li>Atelier B</li><li>B&amp;A</li><li>Bandits</li>
+        <li>Big Bang prod</li><li>Blacklemon</li><li>Bricolo Factory</li>
+        <li>Cap TV</li><li>Evrox</li><li>Fulltime prod</li>
+        <li>Hawlssen Production</li><li>Liik</li><li>Publicis Live</li>
+        <li>Studios Paris Sud</li><li>Trimaran</li><li>Way of Live</li>
+        <li>West Indies Production</li><li>Wild Buzz Agency</li>
+      </ul>
+    </div>
+
+    <!-- BRANDS -->
+    <div class="credits-block">
+      <h3 class="credits-heading">Brands</h3>
+      <div class="brands-grid">
+
+        <!-- Colonne 1 -->
+        <div class="brands-col">
+          <div>
+            <p class="brand-cat-title">Associations</p>
+            <ul class="brand-cat-list">
+              <li>Article 1</li><li>L'Arche</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Automobile</p>
+            <ul class="brand-cat-list">
+              <li>Auto Moto</li><li>Fiat</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Banks</p>
+            <ul class="brand-cat-list">
+              <li>BNP Paribas</li><li>JP Morgan</li>
+              <li>La Banque Postale</li><li>Société Générale</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Colonne 2 -->
+        <div class="brands-col">
+          <div>
+            <p class="brand-cat-title">Beauty</p>
+            <ul class="brand-cat-list">
+              <li>Atelier Cologne</li><li>Carolina Herrera</li><li>Davidoff</li>
+              <li>Escada</li><li>Estée Lauder</li><li>Fabio Salsa</li>
+              <li>Givenchy</li><li>Ioma</li><li>Jean-Paul Gaultier</li>
+              <li>L'Oréal</li><li>Maybelline</li><li>Niwel</li>
+              <li>Perron Rigot</li><li>Smashbox</li><li>Too Faced</li>
+              <li>Yves Rocher</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Colonne 3 -->
+        <div class="brands-col">
+          <div>
+            <p class="brand-cat-title">Decoration</p>
+            <ul class="brand-cat-list">
+              <li>Atlantic</li><li>Maison Déco</li><li>Sylvania</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Event</p>
+            <ul class="brand-cat-list">
+              <li>Festival de la fiction de la Rochelle</li>
+              <li>Festival de la fiction de Monte-Carlo</li>
+              <li>IFL</li><li>Paris Games Week</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Fashion</p>
+            <ul class="brand-cat-list">
+              <li>Celio</li><li>Hanro</li><li>Lacoste</li>
+              <li>Louboutin</li><li>Vestiaire Collective</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Colonne 4 -->
+        <div class="brands-col">
+          <div>
+            <p class="brand-cat-title">Food &amp; Drinks</p>
+            <ul class="brand-cat-list">
+              <li>Agence Bio</li><li>Carrefour</li><li>Hennessy</li>
+              <li>The Balvenie</li><li>Jambon de Bayonne</li><li>Ricard</li>
+              <li>Waffle Factory</li><li>We</li><li>Wingstop</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Health</p>
+            <ul class="brand-cat-list">
+              <li>MSD</li><li>Sanofi</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Colonne 5 -->
+        <div class="brands-col">
+          <div>
+            <p class="brand-cat-title">Jewelry</p>
+            <ul class="brand-cat-list">
+              <li>Chaumet</li><li>Messika</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Sports</p>
+            <ul class="brand-cat-list">
+              <li>PSG Football</li><li>PSG Handball</li>
+              <li>Volleyball World Cup</li>
+            </ul>
+          </div>
+          <div style="margin-top:32px">
+            <p class="brand-cat-title">Youtubers</p>
+            <ul class="brand-cat-list">
+              <li>Evan</li><li>Julien Chièze</li><li>Marcus</li>
+              <li>Marine LB</li><li>Shanyz</li><li>Thomas Deseur</li><li>Tsuku</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Colonne 6 -->
+        <div class="brands-col">
+          <div>
+            <p class="brand-cat-title">Others</p>
+            <ul class="brand-cat-list">
+              <li>Accor</li><li>Axima Nucléaire</li><li>BSH</li><li>CNL</li>
+              <li>Little Balance</li><li>Meetic</li><li>Sixième Avenue</li>
+              <li>Square Enix</li><li>Wavestone</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-left">
+    <h2 class="section-title">Contact</h2>
+    <p class="contact-tagline">Let's work<br><em>together</em></p>
+    <p class="contact-desc">Open to new projects — I would be delighted to discuss your ideas and bring them to life</p>
+    <div class="contact-links">
+  <a class="contact-link" id="email-link" style="cursor: pointer;">
+  <span class="contact-link-arrow"></span>
+  <span class="email"><span>roxane.foare</span><!----><span>@gmail</span><!----><span>.com</span></span>
+</a>
+
+</div>
+  </div>
+  <form class="contact-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="handleSubmit(event)">
+    <input type="hidden" name="form-name" value="contact" />
+    <p style="display:none"><label>Don't fill this out: <input name="bot-field" /></label></p>
+    <div class="form-row">
+      <div class="form-group"><label>First name</label><input type="text" name="first-name" placeholder="Marie" required /></div>
+      <div class="form-group"><label>Last name</label><input type="text" name="last-name" placeholder="Dupont" required /></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="marie@studio.com" required /></div>
+    <div class="form-group"><label>Message</label><textarea name="message" rows="5" placeholder="Tell me about your project…"></textarea></div>
+    <button type="submit" class="form-submit">
+      Send
+      <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+        <path d="M0 5H14M10 1L14 5L10 9" stroke="white" stroke-width="1.2"/>
+      </svg>
+    </button>
+  </form>
+</section>
+
+<!-- FOOTER -->
+<footer style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;">
+  <div class="footer-name">Roxane Foare</div>
+  <div class="footer-copy">© 2026 — All rights reserved</div>
+  <div></div>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <iframe id="lightboxFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- MODAL VIMEO-->
+ <div id="vimeo-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; align-items:center; justify-content:center;">
+    <div style="position:relative; width:90%; max-width:1100px; aspect-ratio:16/9;">
+      <iframe id="vimeo-iframe" src="" frameborder="0"
+        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+        style="width:100%; height:100%;">
+      </iframe>
+      <button onclick="closeVimeo()" style="position:absolute; top:-40px; right:0; background:none; border:none; color:white; font-size:28px; cursor:pointer; line-height:1;">✕</button>
+    </div>
+  </div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  window.formLoadTime = Date.now();
+
+  const CAT_LABELS = {
+    film: "Feature Film", pub: "Commercial", doc: "Documentary",
+    corpo: "Corporate", clip: "Music Video", event: "Event", teaser: "Teaser", live: "Live"
+  };
+
+  // ── BUILD GRID FROM videos.json ─────────────────────────────
+  const SPANS = [8,4, 4,8];
+  const grid = document.getElementById('workGrid');
+
+  function buildItemHTML(p, thumbSrc) {
+    const iconSvg = p.externalLink
+      ? `<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+           <path d="M7 3H3a1 1 0 00-1 1v11a1 1 0 001 1h11a1 1 0 001-1v-4M10 2h6v6M15 3l-7 7" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+         </svg>`
+      : `<svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+           <path d="M1 1L13 8L1 15V1Z" fill="white"/>
+         </svg>`;
+    const primeBadge = p.externalLink
+      ? `<span style="display:inline-block;margin-top:10px;padding:5px 14px;border:1px solid rgba(255,255,255,.5);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.85)">Watch on Prime →</span>`
+      : '';
+    const imgTag = thumbSrc
+      ? `<img class="work-thumb" src="${thumbSrc}" alt="${p.title}" loading="lazy">`
+      : '';
+    return `
+      <div class="work-thumb-wrap">
+        ${imgTag}
+        <div class="work-overlay">
+          <div class="work-play">${iconSvg}</div>
+          <div class="work-info">
+            <div class="work-title">${p.title}</div>
+            <div class="work-meta">
+              <span class="work-prod">${p.credit || CAT_LABELS[p.cat] || p.cat}</span>
+            </div>
+            ${primeBadge}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function buildItem(p) {
+    const div = document.createElement('div');
+    div.className = 'work-item';
+    div.dataset.cat       = p.cat;
+    div.dataset.id        = p.id;
+    div.dataset.hash      = p.hash || '';
+    div.dataset.fullWidth = p.fullWidth ? 'true' : '';
+
+    // Toujours utiliser la thumb locale — simple et cohérent
+    div.innerHTML = buildItemHTML(p, p.thumb || '');
+    attachClick(div, p);
+    return div;
+  }
+
+  function attachClick(div, p) {
+    if (p.noClick) return;
+    const wrap = div.querySelector('.work-thumb-wrap');
+    if (!wrap) return;
+    wrap.addEventListener('click', () => {
+      if (p.externalLink) {
+        window.open(p.externalLink, '_blank', 'noopener');
+      } else if (p.id) {
+        openLightbox(p.id, p.hash || '');
+      }
+    });
+  }
+
+  function applySpans(visibleItems) {
+    let patternIndex = 0;
+    let lastCat = null;
+    visibleItems.forEach(item => {
+      if (item.dataset.fullWidth === 'true') {
+        // Pleine largeur + force nouvelle ligne
+        item.style.gridColumn = '1 / span 12';
+        patternIndex = 0;
+        lastCat = item.dataset.cat;
+      } else if (item.dataset.cat === 'live') {
+        // Live : 2 par ligne, même taille
+        item.style.gridColumn = 'span 6';
+        lastCat = 'live';
+      } else {
+        if (item.dataset.cat !== lastCat) {
+          // Nouvelle catégorie : reset pattern ET force retour à la colonne 1
+          patternIndex = 0;
+          item.style.gridColumn = '1 / span ' + SPANS[0];
+          patternIndex++;
+        } else {
+          item.style.gridColumn = 'span ' + SPANS[patternIndex % SPANS.length];
+          patternIndex++;
+        }
+        lastCat = item.dataset.cat;
+      }
+    });
+  }
+
+  let originalOrder = [];
+
+  fetch('videos.json')
+    .then(r => r.json())
+    .then(projects => {
+      projects.forEach(p => {
+        const el = buildItem(p);
+        grid.appendChild(el);
+        originalOrder.push(el);
+      });
+      applySpans(originalOrder);
+      initFilters();
+    })
+    .catch(err => console.error('Impossible de charger videos.json :', err));
+
+  // ── FILTERS ─────────────────────────────────────────────────
+  function initFilters() {
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isActive = btn.classList.contains('active');
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+
+      if (isActive) {
+        originalOrder.forEach(item => { item.classList.remove('hidden'); grid.appendChild(item); });
+        applySpans(originalOrder);
+      } else {
+        btn.classList.add('active');
+        const f = btn.dataset.filter;
+        const match  = originalOrder.filter(item => item.dataset.cat === f);
+        const noMatch = originalOrder.filter(item => item.dataset.cat !== f);
+        match.forEach(item  => { item.classList.remove('hidden'); grid.appendChild(item); });
+        noMatch.forEach(item => { item.classList.add('hidden'); });
+        applySpans(match);
+      }
+    });
+  });
+  } // fin initFilters
+
+  // ── LIGHTBOX
+  function openLightbox(vimeoId, hash) {
+    const h = hash ? `?h=${hash}&autoplay=1` : '?autoplay=1';
+    document.getElementById('lightboxFrame').src = `https://player.vimeo.com/video/${vimeoId}${h}`;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightboxFrame').src = '';
+    document.body.style.overflow = '';
+  }
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox').addEventListener('click', e => { if (e.target === e.currentTarget) closeLightbox(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  // ── CURSOR
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => { cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px'; });
+  document.addEventListener('mouseover', e => {
+    cursor.classList.toggle('hover', !!e.target.closest('a,button,.work-item,.filter-btn'));
+  });
+
+  // ── FORM
+  function handleSubmit(e) {
+    e.preventDefault();
+    const formLoadTime = window.formLoadTime || Date.now();
+    if (Date.now() - formLoadTime < 3000) return;
+    const form = e.target;
+    const btn = form.querySelector('.form-submit');
+    const originalHTML = btn.innerHTML;
+
+    // Encode form data for Netlify
+    const data = new FormData(form);
+    const encoded = new URLSearchParams(data).toString();
+
+    btn.innerHTML = 'Sending…';
+    btn.disabled = true;
+
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: encoded
+    })
+    .then(() => {
+      btn.innerHTML = 'Sent ✓';
+      btn.style.background = '#5a7a5a';
+      form.reset();
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 4000);
+    })
+    .catch(() => {
+      btn.innerHTML = 'Error — try again';
+      btn.style.background = '#c0392b';
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 4000);
+    });
+  }
+
+  // --- Vimeo modal ---
+  function openVimeo(id, hash) {
+    const modal = document.getElementById('vimeo-modal');
+    const iframe = document.getElementById('vimeo-iframe');
+    const h = hash ? `?h=${hash}&autoplay=1` : '?autoplay=1';
+    iframe.src = `https://player.vimeo.com/video/${id}${h}&color=ffffff&title=0&byline=0`;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeVimeo() {
+    document.getElementById('vimeo-iframe').src = '';
+    document.getElementById('vimeo-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('vimeo-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeVimeo();
+  });
+
+  document.getElementById("email-link").addEventListener("click", function() {
+  window.location.href = "mailto:" + "roxane.foare" + "@gmail" + ".com";
+  });
+
+
+</script>
+</body>
+</html>

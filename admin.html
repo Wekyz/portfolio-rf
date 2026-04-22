@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Roxane Foare</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #fafaf8; --black: #0e0e0c;
+      --gray-light: #e8e8e4; --gray-mid: #a8a8a0; --gray-dark: #5a5a54;
+      --accent: #c8b89a; --danger: #c0392b; --success: #4a7a4a;
+    }
+    body { background: var(--white); color: var(--black); font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: 15px; }
+
+    /* LOGIN */
+    #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-box { width: 380px; padding: 48px 40px; border: 1px solid var(--gray-light); }
+    .login-box h1 { font-size: 22px; font-weight: 400; margin-bottom: 8px; }
+    .login-box p  { font-size: 13px; color: var(--gray-mid); margin-bottom: 32px; }
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 6px; }
+    .login-box input {
+      width: 100%; background: none; border: none;
+      border-bottom: 1px solid var(--gray-light); padding: 10px 0;
+      font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 300;
+      color: var(--black); outline: none; transition: border-color .2s;
+    }
+    .login-box input:focus { border-bottom-color: var(--black); }
+    .btn-primary {
+      margin-top: 24px; width: 100%; padding: 14px;
+      background: var(--black); color: var(--white); border: none;
+      font-family: 'DM Sans', sans-serif; font-size: 11px;
+      letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s;
+    }
+    .btn-primary:hover { background: var(--gray-dark); }
+    .login-error { margin-top: 12px; font-size: 12px; color: var(--danger); display: none; }
+    .token-hint {
+      margin-top: 20px; padding: 14px 16px;
+      background: #f5f3ef; border-left: 3px solid var(--accent);
+      font-size: 12px; color: var(--gray-dark); line-height: 1.7;
+    }
+    .token-hint a { color: var(--black); }
+
+    /* ADMIN */
+    #admin-screen { display: none; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 24px 48px; border-bottom: 1px solid var(--gray-light); }
+    header h1 { font-size: 18px; font-weight: 400; }
+    header span { font-size: 12px; color: var(--gray-mid); }
+    .admin-body { padding: 48px; max-width: 1100px; margin: 0 auto; }
+
+    .info-banner { background: #f5f3ef; border-left: 3px solid var(--accent); padding: 16px 20px; margin-bottom: 40px; font-size: 13px; color: var(--gray-dark); line-height: 1.7; }
+    .info-banner strong { font-weight: 500; color: var(--black); }
+
+    /* ADD FORM */
+    .add-section { margin-bottom: 56px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .section-label { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-mid); }
+    .add-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid); }
+    .field input, .field select {
+      background: none; border: none; border-bottom: 1px solid var(--gray-light);
+      padding: 10px 0; font-family: 'DM Sans', sans-serif; font-size: 14px;
+      font-weight: 300; color: var(--black); outline: none; transition: border-color .2s; width: 100%;
+    }
+    .field input:focus, .field select:focus { border-bottom-color: var(--black); }
+    .id-wrap { display: flex; align-items: flex-end; gap: 8px; }
+    .id-wrap input { flex: 1; }
+    .btn-fetch {
+      padding: 8px 14px; background: none; border: 1px solid var(--gray-light);
+      font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--gray-dark); cursor: pointer;
+      white-space: nowrap; transition: all .2s; flex-shrink: 0; height: 38px;
+    }
+    .btn-fetch:hover { border-color: var(--black); color: var(--black); }
+    .btn-fetch.loading { opacity: .5; pointer-events: none; }
+    .btn-fetch.ok  { border-color: var(--success); color: var(--success); }
+    .btn-fetch.err { border-color: var(--danger);  color: var(--danger); }
+    .preview-wrap { grid-column: 1 / -1; display: none; align-items: center; gap: 16px; padding: 16px; background: #f5f3ef; }
+    .preview-wrap.visible { display: flex; }
+    .preview-wrap img { width: 120px; height: 68px; object-fit: cover; }
+    .preview-info { font-size: 13px; line-height: 1.6; }
+    .preview-info strong { font-weight: 500; }
+    .preview-info span { color: var(--gray-mid); font-size: 12px; }
+    .add-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; }
+    .btn-add {
+      padding: 12px 32px; background: var(--black); color: var(--white);
+      border: none; font-family: 'DM Sans', sans-serif; font-size: 11px;
+      letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s;
+    }
+    .btn-add:hover { background: var(--gray-dark); }
+    .add-note { font-size: 12px; color: var(--gray-mid); }
+
+    /* REFETCH ALL */
+    .btn-refetch-all {
+      padding: 9px 20px; background: none; border: 1px solid var(--gray-light);
+      font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--gray-dark); cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .btn-refetch-all:hover { border-color: var(--black); color: var(--black); }
+    .btn-refetch-all:disabled { opacity: .4; pointer-events: none; }
+    .refetch-progress {
+      font-size: 12px; color: var(--gray-mid);
+    }
+    .refetch-progress span { color: var(--black); font-weight: 500; }
+
+    /* LIST */
+    .list-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid); text-align: left; padding: 0 12px 12px; border-bottom: 1px solid var(--gray-light); }
+    thead th:first-child { padding-left: 0; }
+    tbody tr { border-bottom: 1px solid var(--gray-light); transition: background .15s; }
+    tbody tr:hover { background: #f7f7f5; }
+    tbody td { padding: 14px 12px; font-size: 14px; vertical-align: middle; }
+    tbody td:first-child { padding-left: 0; }
+    .td-order { width: 72px; }
+    .td-thumb { width: 88px; }
+    .td-thumb img { width: 80px; height: 45px; object-fit: cover; display: block; }
+    .td-thumb .no-thumb { width: 80px; height: 45px; background: var(--gray-light); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--gray-mid); }
+    .td-thumb .fetching { width: 80px; height: 45px; background: #f0ede8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); }
+    .td-id { font-family: monospace; font-size: 12px; color: var(--gray-dark); }
+    .cat-badge { display: inline-block; padding: 3px 10px; border: 1px solid var(--gray-light); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--gray-dark); }
+    .td-actions { text-align: right; }
+    .btn-move { background: none; border: none; color: var(--gray-mid); cursor: pointer; font-size: 16px; padding: 4px 5px; transition: color .2s; }
+    .btn-move:hover { color: var(--black); }
+    .btn-move:disabled { opacity: .25; cursor: not-allowed; }
+    .btn-delete { background: none; border: none; color: var(--gray-mid); cursor: pointer; font-size: 11px; padding: 4px 8px; letter-spacing: .06em; text-transform: uppercase; transition: color .2s; }
+    .btn-delete:hover { color: var(--danger); }
+
+    /* SAVE BAR */
+    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--black); color: var(--white); display: flex; align-items: center; justify-content: space-between; padding: 16px 48px; transform: translateY(100%); transition: transform .3s ease; }
+    .save-bar.visible { transform: translateY(0); }
+    .save-bar p { font-size: 13px; color: rgba(255,255,255,.6); }
+    .save-bar p strong { color: var(--white); }
+    .btn-save { padding: 12px 32px; background: var(--white); color: var(--black); border: none; font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+    .btn-save:hover { background: var(--gray-light); }
+    .btn-save.saving { opacity: .6; pointer-events: none; }
+
+    /* TOAST */
+    .toast { position: fixed; top: 24px; right: 24px; background: var(--black); color: var(--white); padding: 12px 20px; font-size: 13px; transform: translateY(-80px); transition: transform .3s; z-index: 999; max-width: 360px; line-height: 1.5; }
+    .toast.show { transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Admin</h1>
+    <p>Gestion des vidéos — roxane-foare.com</p>
+    <div class="login-field">
+      <label>Mot de passe</label>
+      <input type="password" id="pwd-input" placeholder="••••••••" />
+    </div>
+    <div class="login-field">
+      <label>Vimeo Access Token</label>
+      <input type="text" id="token-input" placeholder="Collez votre token Vimeo ici" />
+    </div>
+    <div class="login-error" id="login-error">Mot de passe incorrect.</div>
+    <button class="btn-primary" onclick="checkLogin()">Accéder →</button>
+    <div class="token-hint">
+      Créer un token gratuit : <a href="https://developer.vimeo.com/apps" target="_blank">developer.vimeo.com/apps</a>
+      → New App → onglet Authentication → Generate token → scope : <strong>Public</strong> uniquement.
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <header>
+    <h1>Gestion des vidéos</h1>
+    <span>roxane-foare.com &nbsp;·&nbsp; <a href="/" style="color:var(--gray-mid)">Voir le site →</a></span>
+  </header>
+
+  <div class="admin-body">
+    <div class="info-banner">
+      <strong>Comment ça marche :</strong> Entrez l'ID Vimeo et cliquez <strong>Récupérer</strong> — titre et miniature se remplissent automatiquement.
+      Pour mettre à jour les miniatures de toutes les vidéos existantes, cliquez <strong>↺ Récupérer toutes les miniatures</strong>.
+      Cliquez <strong>Enregistrer</strong> pour télécharger le <code>videos.json</code> mis à jour, puis déposez-le sur Netlify.
+    </div>
+
+    <!-- ADD -->
+    <div class="add-section">
+      <div class="section-title-row">
+        <span class="section-label">Ajouter une vidéo</span>
+      </div>
+      <div class="add-form">
+        <div class="field">
+          <label>ID Vimeo *</label>
+          <div class="id-wrap">
+            <input id="f-id" type="text" placeholder="ex : 1173276934" oninput="resetFetch()" />
+            <button class="btn-fetch" id="btn-fetch" onclick="fetchVimeoInfo()">Récupérer</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Hash (vidéo privée)</label>
+          <input id="f-hash" type="text" placeholder="ex : 6c8d689aa1" />
+        </div>
+        <div class="field">
+          <label>Catégorie *</label>
+          <select id="f-cat">
+            <option value="pub">Commercial</option>
+            <option value="film">Feature Film</option>
+            <option value="doc">Documentary</option>
+            <option value="corpo">Corporate</option>
+            <option value="clip">Music Video</option>
+            <option value="event">Event</option>
+            <option value="live">Live</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Titre *</label>
+          <input id="f-title" type="text" placeholder="Récupéré automatiquement" />
+        </div>
+        <div class="field">
+          <label>Crédit / Production</label>
+          <input id="f-credit" type="text" placeholder="ex : Director : Thomas Gérard" />
+        </div>
+        <div></div>
+        <div class="preview-wrap" id="preview-wrap">
+          <img id="preview-img" src="" alt="preview" />
+          <div class="preview-info">
+            <strong id="preview-title"></strong><br>
+            <span id="preview-duration"></span>
+          </div>
+        </div>
+        <div class="add-actions">
+          <button class="btn-add" onclick="addVideo()">+ Ajouter à la liste</button>
+          <span class="add-note">* Champs obligatoires — cliquez Récupérer avant d'ajouter</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div class="list-section">
+      <div class="list-title-row">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <span class="section-label">Vidéos en ligne <span id="video-count" style="font-size:12px;color:var(--gray-mid);letter-spacing:0;text-transform:none;font-weight:300;margin-left:6px;"></span></span>
+          <span class="refetch-progress" id="refetch-progress"></span>
+        </div>
+        <button class="btn-refetch-all" id="btn-refetch-all" onclick="refetchAll()">↺ Récupérer toutes les miniatures</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th class="td-order">Ordre</th>
+            <th class="td-thumb">Miniature</th>
+            <th>Titre</th>
+            <th>ID Vimeo</th>
+            <th>Catégorie</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="video-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="save-bar" id="save-bar">
+    <p><strong>Modifications non sauvegardées</strong> — le site ne sera pas mis à jour tant que vous n'enregistrez pas.</p>
+    <button class="btn-save" id="btn-save" onclick="saveVideos()">Enregistrer les modifications</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const ADMIN_PASSWORD = 'RoF052402'; // ← Changer ici
+
+  const CAT_LABELS = {
+    film: "Feature Film", pub: "Commercial", doc: "Documentary",
+    corpo: "Corporate", clip: "Music Video", event: "Event", live: "Live"
+  };
+
+  let videos      = [];
+  let dirty       = false;
+  let vimeoToken  = '';
+  let fetchedThumb = '';
+
+  // ── LOGIN ──────────────────────────────────────────────────────
+  function checkLogin() {
+    const pwd   = document.getElementById('pwd-input').value;
+    const token = document.getElementById('token-input').value.trim();
+    if (pwd !== ADMIN_PASSWORD) {
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+    if (!token) { showToast('Veuillez entrer votre Vimeo Access Token.'); return; }
+    vimeoToken = token;
+    sessionStorage.setItem('vimeo_token', token);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    loadVideos();
+  }
+  document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('token-input').focus(); });
+  document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') checkLogin(); });
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = sessionStorage.getItem('vimeo_token');
+    if (saved) document.getElementById('token-input').value = saved;
+  });
+
+  // ── LOAD ──────────────────────────────────────────────────────
+  function loadVideos() {
+    fetch('videos.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => { videos = data; renderList(); })
+      .catch(() => { videos = []; renderList(); showToast('Impossible de charger videos.json — liste vide.'); });
+  }
+
+  // ── FETCH UNE VIDÉO VIMEO (retourne les données) ──────────────
+  async function fetchVimeoData(id, hash) {
+    const endpoint = hash
+      ? `https://api.vimeo.com/videos/${id}:${hash}`
+      : `https://api.vimeo.com/videos/${id}`;
+    const res = await fetch(endpoint, {
+      headers: { 'Authorization': `bearer ${vimeoToken}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Erreur ${res.status}`);
+    }
+    return res.json();
+  }
+
+  function extractThumb(data) {
+    const pics = data.pictures?.sizes || [];
+    if (!pics.length) return '';
+    const best = pics.reduce((a, b) => b.width > a.width ? b : a, pics[0]);
+    return best.link.replace(/\?.*$/, '');
+  }
+
+  // ── FETCH POUR LE FORMULAIRE D'AJOUT ──────────────────────────
+  async function fetchVimeoInfo() {
+    const id   = document.getElementById('f-id').value.trim();
+    const hash = document.getElementById('f-hash').value.trim();
+    if (!id) { showToast('Entrez un ID Vimeo.'); return; }
+
+    const btn = document.getElementById('btn-fetch');
+    btn.textContent = '…'; btn.classList.add('loading');
+    fetchedThumb = '';
+    document.getElementById('preview-wrap').classList.remove('visible');
+
+    try {
+      const data = await fetchVimeoData(id, hash);
+      document.getElementById('f-title').value = data.name || '';
+      fetchedThumb = extractThumb(data);
+      const dur = data.duration ? `${Math.floor(data.duration/60)}:${String(data.duration%60).padStart(2,'0')}` : '';
+      if (fetchedThumb) {
+        document.getElementById('preview-img').src = fetchedThumb;
+        document.getElementById('preview-title').textContent = data.name || id;
+        document.getElementById('preview-duration').textContent = dur ? `Durée : ${dur}` : '';
+        document.getElementById('preview-wrap').classList.add('visible');
+      }
+      btn.textContent = '✓ OK'; btn.classList.remove('loading'); btn.classList.add('ok');
+    } catch(e) {
+      btn.textContent = '✕ Erreur'; btn.classList.remove('loading'); btn.classList.add('err');
+      showToast('Erreur Vimeo : ' + e.message);
+    }
+  }
+
+  function resetFetch() {
+    const btn = document.getElementById('btn-fetch');
+    btn.textContent = 'Récupérer'; btn.classList.remove('loading','ok','err');
+    fetchedThumb = '';
+    document.getElementById('preview-wrap').classList.remove('visible');
+  }
+
+  // ── REFETCH TOUTES LES VIDÉOS ─────────────────────────────────
+  async function refetchAll() {
+    if (!videos.length) { showToast('Aucune vidéo dans la liste.'); return; }
+
+    const btn      = document.getElementById('btn-refetch-all');
+    const progress = document.getElementById('refetch-progress');
+    btn.disabled   = true;
+
+    let done = 0, errors = 0;
+
+    for (let i = 0; i < videos.length; i++) {
+      const v = videos[i];
+      progress.innerHTML = `Récupération <span>${i + 1}/${videos.length}</span> — ${escHtml(v.title || v.id)}`;
+
+      // Afficher état "en cours" dans le tableau
+      const thumbCell = document.querySelector(`#video-list tr:nth-child(${i+1}) .td-thumb`);
+      if (thumbCell) thumbCell.innerHTML = '<div class="fetching">…</div>';
+
+      try {
+        const data = await fetchVimeoData(v.id, v.hash);
+        videos[i].thumb = extractThumb(data);
+        // Mettre à jour le titre seulement si c'est encore un placeholder générique
+        if (!v.title || v.title.match(/^(Commercial|Corporate|Event|Feature Film|Documentary|Music Video|Live)\s*\d*$/i)) {
+          videos[i].title = data.name || v.title;
+        }
+        done++;
+      } catch(e) {
+        errors++;
+        // Garder l'ancienne thumb en cas d'erreur
+      }
+
+      // Petite pause pour ne pas spammer l'API
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    renderList();
+    markDirty();
+    btn.disabled = false;
+
+    if (errors === 0) {
+      progress.innerHTML = `<span style="color:var(--success)">✓ ${done} miniatures récupérées</span>`;
+      showToast(`Toutes les miniatures ont été récupérées. Pensez à enregistrer !`);
+    } else {
+      progress.innerHTML = `<span style="color:var(--success)">✓ ${done}</span> récupérées · <span style="color:var(--danger)">${errors} erreurs</span>`;
+      showToast(`${done} miniatures récupérées, ${errors} erreurs (vidéos privées sans accès ?).`);
+    }
+
+    setTimeout(() => { progress.innerHTML = ''; }, 8000);
+  }
+
+  // ── ADD ───────────────────────────────────────────────────────
+  function addVideo() {
+    const id    = document.getElementById('f-id').value.trim();
+    const title = document.getElementById('f-title').value.trim();
+    const cat   = document.getElementById('f-cat').value;
+    if (!id || !title) { showToast('ID Vimeo et Titre sont obligatoires. Cliquez d\'abord sur Récupérer.'); return; }
+    videos.push({
+      id,
+      hash:   document.getElementById('f-hash').value.trim(),
+      title,
+      credit: document.getElementById('f-credit').value.trim(),
+      year:   new Date().getFullYear().toString(),
+      cat,
+      thumb:  fetchedThumb
+    });
+    ['f-id','f-title','f-credit','f-hash'].forEach(fid => document.getElementById(fid).value = '');
+    resetFetch();
+    markDirty(); renderList();
+    showToast(`"${title}" ajoutée.`);
+  }
+
+  // ── DELETE ────────────────────────────────────────────────────
+  function deleteVideo(i) {
+    if (!confirm(`Supprimer "${videos[i].title}" ?`)) return;
+    const title = videos[i].title;
+    videos.splice(i, 1);
+    markDirty(); renderList();
+    showToast(`"${title}" supprimée.`);
+  }
+
+  // ── MOVE ──────────────────────────────────────────────────────
+  function move(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= videos.length) return;
+    [videos[i], videos[j]] = [videos[j], videos[i]];
+    markDirty(); renderList();
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────
+  function renderList() {
+    const tbody = document.getElementById('video-list');
+    document.getElementById('video-count').textContent = `(${videos.length})`;
+    tbody.innerHTML = '';
+    videos.forEach((v, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="td-order">
+          <button class="btn-move" onclick="move(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="btn-move" onclick="move(${i}, 1)" ${i===videos.length-1?'disabled':''}>↓</button>
+        </td>
+        <td class="td-thumb">
+          ${v.thumb
+            ? `<img src="${escHtml(v.thumb)}" alt="${escHtml(v.title)}" onerror="this.parentElement.innerHTML='<div class=no-thumb>—</div>'">`
+            : '<div class="no-thumb">—</div>'}
+        </td>
+        <td>
+          <strong>${escHtml(v.title)}</strong><br>
+          <span style="font-size:12px;color:var(--gray-mid)">${escHtml(v.credit||'')}</span>
+        </td>
+        <td class="td-id">${escHtml(v.id)}${v.hash?`<br><span style="font-size:11px;color:var(--gray-mid)">${escHtml(v.hash)}</span>`:''}
+        </td>
+        <td><span class="cat-badge">${CAT_LABELS[v.cat]||v.cat}</span></td>
+        <td class="td-actions"><button class="btn-delete" onclick="deleteVideo(${i})">Supprimer</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── SAVE ──────────────────────────────────────────────────────
+  function saveVideos() {
+    const btn = document.getElementById('btn-save');
+    btn.textContent = 'Enregistrement…'; btn.classList.add('saving');
+    const blob = new Blob([JSON.stringify(videos, null, 2)], { type: 'application/json' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'videos.json' });
+    a.click(); URL.revokeObjectURL(a.href);
+    setTimeout(() => {
+      btn.textContent = 'Enregistrer les modifications'; btn.classList.remove('saving');
+      markClean();
+      showToast('videos.json téléchargé — déposez-le sur Netlify pour mettre à jour le site.');
+    }, 600);
+  }
+
+  function markDirty()  { dirty = true;  document.getElementById('save-bar').classList.add('visible'); }
+  function markClean()  { dirty = false; document.getElementById('save-bar').classList.remove('visible'); }
+  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4500);
+  }
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
