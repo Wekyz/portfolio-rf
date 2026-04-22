@@ -42,9 +42,10 @@
   [headers.values]
     Cache-Control = "public, max-age=60, stale-while-revalidate=300"
 
-# ── ADMIN ────────────────────────────────────────────────────────
+# ── ADMIN — CSP élargie pour Decap CMS (unsafe-eval requis) ──────
 [[headers]]
   for = "/admin/*"
   [headers.values]
     X-Robots-Tag  = "noindex, nofollow"
     Cache-Control = "no-store"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://identity.netlify.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.vimeocdn.com https://*.vimeo.com https://i.vimeocdn.com; frame-src 'self'; connect-src 'self' https://*.netlify.com https://api.github.com;"
