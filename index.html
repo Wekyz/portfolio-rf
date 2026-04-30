@@ -147,7 +147,7 @@
     /* ── GRID ── */
     .work-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; }
     .work-item { position: relative; overflow: hidden; cursor: pointer; grid-column: span 6; }
-    .work-item[data-portrait="true"] { grid-column: span 4; }
+    .work-item[data-portrait="true"] { grid-column: 5 / span 4; }
     .work-item.hidden { display: none; }
 
     .work-thumb-wrap { width: 100%; aspect-ratio: 16/10; overflow: hidden; background: var(--gray-light); position: relative; cursor: pointer; }
