@@ -1,4 +1,20 @@
+# ────────────────────────────────────────────────────────────────
+#  Netlify configuration — roxane-foare.com
+# ────────────────────────────────────────────────────────────────
+
+[build]
+  functions = "netlify/functions"
+  publish   = "."
+
 # ── REDIRECTS ────────────────────────────────────────────────────
+
+# Mailto server-side (l'adresse n'apparaît jamais dans le HTML/JS)
+[[redirects]]
+  from   = "/api/email"
+  to     = "/.netlify/functions/email"
+  status = 200
+
+# SPA-style fallback : toute URL inconnue renvoie la 404 personnalisée
 [[redirects]]
   from   = "/*"
   to     = "/index.html"
@@ -8,24 +24,37 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options        = "SAMEORIGIN"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy        = "strict-origin-when-cross-origin"
-    Permissions-Policy     = "camera=(), microphone=(), geolocation=()"
+    X-Frame-Options         = "SAMEORIGIN"
+    X-Content-Type-Options  = "nosniff"
+    Referrer-Policy         = "strict-origin-when-cross-origin"
+    Permissions-Policy      = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cloud.umami.is https://identity.netlify.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.vimeocdn.com https://*.vimeo.com https://i.vimeocdn.com; frame-src https://player.vimeo.com; connect-src 'self' https://*.vimeo.com https://api.vimeo.com https://fresnel.vimeo.com https://vimeo.com https://cloud.umami.is https://api-gateway.umami.dev https://*.netlify.com https://api.github.com;"
 
-# ── CACHE — assets statiques ─────────────────────────────────────
-[[headers]]
-  for = "/*.otf"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
+# ── CACHE — polices ──────────────────────────────────────────────
 [[headers]]
   for = "/*.woff2"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# ── CACHE — thumbs et live ────────────────────────────────────────
+[[headers]]
+  for = "/*.otf"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── CACHE — bundle CSS / JS (versionner via ?v= lors d'un changement) ─
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── CACHE — favicon ──────────────────────────────────────────────
+[[headers]]
+  for = "/favicon.*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# ── CACHE — thumbs et live ───────────────────────────────────────
 [[headers]]
   for = "/thumbs/*"
   [headers.values]
