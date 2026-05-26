@@ -100,6 +100,9 @@
   }
 
   // ── Application du pattern de grille ────────────────────────
+  // Pattern de référence : 8 / 4  puis  4 / 8 (deux rangées de 12 cols).
+  // Au changement de catégorie, on FORCE l'item à démarrer en colonne 1
+  // (sinon CSS Grid auto-place et peut décaler le pattern indéfiniment).
   function applySpans(items) {
     let patternIndex = 0;
     let lastCat      = null;
@@ -111,24 +114,26 @@
         lastCat      = item.dataset.cat;
         return;
       }
+      // Portrait : ne touche ni patternIndex ni lastCat (le pattern continue
+      // comme si l'item portrait n'était pas là — comportement d'origine).
       if (item.dataset.portrait === 'true') {
         item.style.gridColumn = '5 / span 4';
-        patternIndex = 0;
-        lastCat      = item.dataset.cat;
         return;
       }
       if (item.dataset.cat === 'live') {
         item.style.gridColumn = 'span 6';
-        patternIndex = 0;
-        lastCat      = 'live';
+        lastCat = 'live';
         return;
       }
-      // Pattern 8 / 4 / 4 / 8 — reset au changement de catégorie
+      // Changement de catégorie : on repart en colonne 1 avec SPANS[0]
       if (item.dataset.cat !== lastCat) {
         patternIndex = 0;
+        item.style.gridColumn = `1 / span ${SPANS[0]}`;
+        patternIndex++;
+      } else {
+        item.style.gridColumn = `span ${SPANS[patternIndex % SPANS.length]}`;
+        patternIndex++;
       }
-      item.style.gridColumn = `span ${SPANS[patternIndex % SPANS.length]}`;
-      patternIndex++;
       lastCat = item.dataset.cat;
     });
   }
