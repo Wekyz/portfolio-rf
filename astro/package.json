@@ -1,0 +1,20 @@
+{
+  "name": "roxane-foare-astro",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portfolio Roxane Foare — migration Astro (build de test, n'affecte pas le site en production)",
+  "scripts": {
+    "thumbs": "node scripts/fetch-thumbs.mjs",
+    "predev": "node scripts/fetch-thumbs.mjs",
+    "dev": "astro dev",
+    "prebuild": "node scripts/fetch-thumbs.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^6.4.6",
+    "sharp": "^0.34.5"
+  }
+}

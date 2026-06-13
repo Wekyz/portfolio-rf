@@ -1,14 +1,10 @@
 # ────────────────────────────────────────────────────────────────
-#  Netlify configuration — roxane-foare.com (build Astro)
-#  Le site est servi depuis le dossier `astro/` (build statique -> dist/).
-#  L'ancien site HTML statique est conservé dans `archive/` (non déployé).
+#  Netlify configuration — roxane-foare.com
 # ────────────────────────────────────────────────────────────────
 
 [build]
-  base      = "astro"
-  command   = "npm run build"
-  publish   = "dist"
   functions = "netlify/functions"
+  publish   = "."
 
 # ── REDIRECTS ────────────────────────────────────────────────────
 
@@ -18,7 +14,7 @@
   to     = "/.netlify/functions/email"
   status = 200
 
-# Fallback : toute URL inconnue renvoie la home
+# SPA-style fallback : toute URL inconnue renvoie la 404 personnalisée
 [[redirects]]
   from   = "/*"
   to     = "/index.html"
@@ -33,17 +29,22 @@
     Referrer-Policy         = "strict-origin-when-cross-origin"
     Permissions-Policy      = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cloud.umami.is https://identity.netlify.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.vimeocdn.com https://*.vimeo.com https://i.vimeocdn.com; frame-src https://player.vimeo.com; connect-src 'self' https://*.vimeo.com https://api.vimeo.com https://fresnel.vimeo.com https://vimeo.com https://cloud.umami.is https://api-gateway.umami.dev https://*.netlify.com https://api.github.com;"
-
-# ── CACHE — assets hashés générés par Astro (immutables) ─────────
-[[headers]]
-  for = "/_astro/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cloud.umami.is https://identity.netlify.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.vimeocdn.com https://*.vimeo.com https://i.vimeocdn.com; frame-src https://player.vimeo.com; connect-src 'self' https://*.vimeo.com https://api.vimeo.com https://fresnel.vimeo.com https://vimeo.com https://cloud.umami.is https://api-gateway.umami.dev https://*.netlify.com https://api.github.com;"
 
 # ── CACHE — polices ──────────────────────────────────────────────
 [[headers]]
   for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.otf"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── CACHE — bundle CSS / JS (versionner via ?v= lors d'un changement) ─
+[[headers]]
+  for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
@@ -64,7 +65,7 @@
   [headers.values]
     Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
 
-# ── CACHE — videos.json (si servi statiquement) ──────────────────
+# ── CACHE — videos.json ──────────────────────────────────────────
 [[headers]]
   for = "/videos.json"
   [headers.values]

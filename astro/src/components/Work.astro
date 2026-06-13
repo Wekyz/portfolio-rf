@@ -1,0 +1,45 @@
+---
+import data from '../data/videos.json';
+import { computeSpans } from '../lib/spans.js';
+import WorkItem from './WorkItem.astro';
+
+const projects = data.videos || data;
+
+// Pré-calcul des grid-column au build (même résultat que l'ancien applySpans
+// au chargement, mais sans flash ni recalcul JS au premier rendu).
+const spans = computeSpans(
+  projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
+);
+
+const FILTERS = [
+  { value: 'pub', label: 'Commercial' },
+  { value: 'film', label: 'Feature Film' },
+  { value: 'doc', label: 'Documentary' },
+  { value: 'corpo', label: 'Corporate' },
+  { value: 'event', label: 'Event' },
+  { value: 'teaser', label: 'Teaser' },
+  { value: 'live', label: 'Live' },
+];
+---
+<section id="work">
+  <div class="section-header">
+    <h2 class="section-title">Work</h2>
+    <span class="section-location">Paris · Angers · World</span>
+  </div>
+
+  <div class="filters" role="toolbar" aria-label="Filter projects by category">
+    {FILTERS.map((f, i) => (
+      <>
+        {i > 0 && <span class="filter-sep" aria-hidden="true">//</span>}
+        <button class="filter-btn slide-label" data-filter={f.value}>
+          <span class="lbl-out">{f.label}</span>
+          <span class="lbl-in" aria-hidden="true">{f.label}</span>
+        </button>
+      </>
+    ))}
+  </div>
+
+  <div class="work-grid" id="workGrid">
+    {projects.map((p, i) => <WorkItem project={p} gridColumn={spans[i]} />)}
+  </div>
+</section>

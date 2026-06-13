@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /.netlify/
+Disallow: /api/
+
+Sitemap: https://roxane-foare.com/sitemap.xml
