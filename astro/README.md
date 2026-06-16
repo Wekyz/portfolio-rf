@@ -37,6 +37,19 @@ npm run preview  # sert dist/ sur http://localhost:4321
   (gardé uniquement pour `/admin/`).
 - `og:locale` laissé en **`en_US`** (cible confirmée).
 
+## Optimisations — audit sécu / perf / SEO / a11y
+
+- **Sécurité** : CSP durcie (`base-uri`, `form-action`, `object-src 'none'`,
+  `frame-ancestors`), Decap CMS épinglé + **SRI**, ouverture de liens externes
+  restreinte aux URL `http(s)`.
+- **Perf** : 1ʳᵉˢ vignettes en `loading="eager"` + `fetchpriority="high"` (LCP),
+  images lourdes recompressées, **images responsive** (`srcset`/`sizes`).
+- **Polices** : **DM Sans auto-hébergé** (plus de requête Google Fonts → perf +
+  RGPD). Les 3 polices sont désormais locales dans `public/`.
+- **SEO** : `<h1>` (logo), `og:image` avec dimensions + `alt`.
+- **A11y** : contraste WCAG AA, titres visibles au tactile (`@media (hover:none)`),
+  piège à focus + restitution du focus dans la lightbox.
+
 ## Structure
 
 ```
@@ -69,7 +82,10 @@ miniature est récupérée depuis Vimeo et convertie en WebP **au build**.
 - Script : `scripts/fetch-thumbs.mjs`, lancé automatiquement avant `dev` et
   `build` (hooks `predev` / `prebuild`).
 - Pour chaque vidéo ayant un `id`, si `public/thumbs/<id>.webp` n'existe pas, il
-  est généré (oEmbed Vimeo → `sharp` → WebP 1280px).
+  est généré (oEmbed Vimeo → `sharp` → WebP, largeur plafonnée à 1280px).
+- **Variantes responsive** : pour chaque image (`thumbs/` **et** `live/`), une
+  variante `…-640.webp` est générée pour le `srcset` mobile (voir `sizes` dans
+  `WorkItem.astro`). Les variantes déjà présentes ne sont pas réécrites.
 - **Les miniatures déjà présentes ne sont jamais écrasées** : une image posée à
   la main (affiche de film, etc.) reste prioritaire. Pour forcer une
   régénération, supprimer le `.webp` correspondant.

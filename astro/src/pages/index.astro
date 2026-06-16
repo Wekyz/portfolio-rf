@@ -53,6 +53,9 @@ const jsonLd = {
   <meta property="og:title" content="Roxane Foare — Video Editor" />
   <meta property="og:description" content="Freelance video editor specialised in film, documentary, corporate, commercial, live &amp; events." />
   <meta property="og:image" content="https://roxane-foare.com/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Roxane Foare — Video Editor" />
   <meta property="og:url" content="https://roxane-foare.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -68,14 +71,10 @@ const jsonLd = {
   <meta name="geo.region" content="FR-IDF" />
   <meta name="geo.placename" content="Paris, France" />
 
-  <!-- Préchargement des ressources critiques -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Préchargement des polices critiques (toutes auto-hébergées) -->
   <link rel="preload" as="font" type="font/woff2" href="/HennessySerif1765.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DalaFloda-Roman.woff2" crossorigin />
-
-  <!-- Google Fonts : DM Sans -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&amp;display=swap" />
+  <link rel="preload" as="font" type="font/woff2" href="/DMSans-latin.woff2" crossorigin />
 
   <!-- Netlify Identity — redirection post-login vers /admin -->
   <script defer is:inline src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>

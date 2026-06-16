@@ -40,6 +40,6 @@ const FILTERS = [
   </div>
 
   <div class="work-grid" id="workGrid">
-    {projects.map((p, i) => <WorkItem project={p} gridColumn={spans[i]} />)}
+    {projects.map((p, i) => <WorkItem project={p} gridColumn={spans[i]} priority={i < 3} />)}
   </div>
 </section>

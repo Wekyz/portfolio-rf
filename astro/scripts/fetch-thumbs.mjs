@@ -15,7 +15,7 @@
  *
  * Lancé automatiquement avant `dev` et `build` (voir package.json).
  */
-import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, access, readdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -25,7 +25,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const DATA = join(ROOT, 'src', 'data', 'videos.json');
 const THUMBS_DIR = join(ROOT, 'public', 'thumbs');
+const LIVE_DIR = join(ROOT, 'public', 'live');
 const THUMB_WIDTH = 1280; // largeur demandée à Vimeo
+const VARIANT_WIDTH = 640; // variante "mobile" pour le srcset responsive
+const VARIANT_SUFFIX = '-640'; // ex. 1234.webp -> 1234-640.webp
 // Domaine autorisé pour les vidéos privées Vimeo (restreintes par domaine).
 // Vimeo ne renvoie la miniature que si la requête provient de ce domaine.
 const SITE_DOMAIN = process.env.SITE_DOMAIN || 'https://roxane-foare.com';
@@ -71,7 +74,49 @@ async function fetchThumb(id, hash) {
   if (!imgRes.ok) throw new Error(`image HTTP ${imgRes.status}`);
   const buf = Buffer.from(await imgRes.arrayBuffer());
 
-  return sharp(buf).webp({ quality: 82 }).toBuffer();
+  // Plafonne la résolution : Vimeo renvoie parfois du 4K, inutilement lourd
+  // pour des vignettes. On borne la largeur et on ré-encode en WebP.
+  return sharp(buf)
+    .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+}
+
+/**
+ * Génère, pour chaque image .webp d'un dossier, une variante de largeur réduite
+ * (`<nom>-640.webp`) destinée au `srcset` responsive. Les variantes déjà
+ * présentes ne sont jamais réécrites. Couvre aussi bien les miniatures
+ * auto-générées que les images posées à la main (affiches, live).
+ */
+async function ensureVariants(dir) {
+  let files;
+  try {
+    files = await readdir(dir);
+  } catch {
+    return { made: 0, kept: 0 };
+  }
+  let made = 0;
+  let kept = 0;
+  for (const name of files) {
+    if (!name.endsWith('.webp') || name.includes(`${VARIANT_SUFFIX}.`)) continue;
+    const variant = join(dir, name.replace(/\.webp$/, `${VARIANT_SUFFIX}.webp`));
+    if (await exists(variant)) {
+      kept++;
+      continue;
+    }
+    try {
+      const src = await readFile(join(dir, name));
+      const out = await sharp(src)
+        .resize({ width: VARIANT_WIDTH, withoutEnlargement: true })
+        .webp({ quality: 78 })
+        .toBuffer();
+      await writeFile(variant, out);
+      made++;
+    } catch (err) {
+      console.warn(`  ⚠ variante 640 échouée ${name} : ${err.message}`);
+    }
+  }
+  return { made, kept };
 }
 
 async function main() {
@@ -106,6 +151,13 @@ async function main() {
 
   console.log(
     `[thumbs] ${generated} générée(s), ${skipped} déjà présente(s), ${failed} échec(s).`
+  );
+
+  // Variantes responsive 640px pour thumbs + live.
+  const vt = await ensureVariants(THUMBS_DIR);
+  const vl = await ensureVariants(LIVE_DIR);
+  console.log(
+    `[variants] ${vt.made + vl.made} générée(s), ${vt.kept + vl.kept} déjà présente(s).`
   );
 }
 

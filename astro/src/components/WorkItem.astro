@@ -15,8 +15,14 @@ const CAT_LABELS = {
   live: 'Live',
 };
 
-const { project, gridColumn } = Astro.props;
+const { project, gridColumn, priority = false } = Astro.props;
 const p = project;
+
+// Les premières vignettes (au-dessus de la ligne de flottaison) sont chargées
+// en priorité : `eager` + `fetchpriority=high` améliore le LCP. Le reste reste
+// en `lazy`.
+const loading = priority ? 'eager' : 'lazy';
+const fetchpriority = priority ? 'high' : undefined;
 
 const interactive = !p.noClick && (p.id || p.externalLink);
 const prod = p.credit || CAT_LABELS[p.cat] || p.cat;
@@ -29,6 +35,17 @@ const imgHeight = p.portrait ? 900 : 800;
 const thumbSrc = p.thumb
   ? (p.thumb.startsWith('/') ? p.thumb : `/${p.thumb}`)
   : (p.id ? `/thumbs/${p.id}.webp` : null);
+
+// Images responsive : variante 640px générée au build (voir fetch-thumbs.mjs).
+// `sizes` est dérivé de la largeur de colonne (span N sur 12) ; en dessous de
+// 900px tous les items passent pleine largeur (cf. media query du CSS).
+const isWebp = !!thumbSrc && thumbSrc.endsWith('.webp');
+const thumbSrcset = isWebp
+  ? `${thumbSrc.replace(/\.webp$/, '-640.webp')} 640w, ${thumbSrc} 1280w`
+  : undefined;
+const spanMatch = /span (\d+)/.exec(gridColumn || '');
+const spanN = spanMatch ? Number(spanMatch[1]) : 6;
+const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw` : undefined;
 ---
 
 <div
@@ -37,8 +54,8 @@ const thumbSrc = p.thumb
   data-id={p.id || ''}
   data-hash={p.hash || ''}
   data-external={p.externalLink || ''}
-  data-full-width={p.fullWidth ? 'true' : ''}
-  data-portrait={p.portrait ? 'true' : ''}
+  data-full-width={p.fullWidth ? 'true' : undefined}
+  data-portrait={p.portrait ? 'true' : undefined}
   style={`grid-column: ${gridColumn}`}
 >
   {interactive ? (
@@ -47,8 +64,11 @@ const thumbSrc = p.thumb
         <img
           class="work-thumb"
           src={thumbSrc}
+          srcset={thumbSrcset}
+          sizes={sizes}
           alt={p.title}
-          loading="lazy"
+          loading={loading}
+          fetchpriority={fetchpriority}
           decoding="async"
           width={imgWidth}
           height={imgHeight}
@@ -85,8 +105,11 @@ const thumbSrc = p.thumb
         <img
           class="work-thumb"
           src={thumbSrc}
+          srcset={thumbSrcset}
+          sizes={sizes}
           alt={p.title}
-          loading="lazy"
+          loading={loading}
+          fetchpriority={fetchpriority}
           decoding="async"
           width={imgWidth}
           height={imgHeight}
