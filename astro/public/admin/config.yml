@@ -1,6 +1,10 @@
+# Sveltia CMS — backend GitHub + OAuth (remplace Netlify Identity/git-gateway).
+# base_url doit pointer vers ton relais OAuth (ex. worker sveltia-cms-auth).
 backend:
-  name: git-gateway
+  name: github
+  repo: Wekyz/portfolio-rf
   branch: main
+  base_url: https://REMPLACER-PAR-TON-OAUTH-WORKER.workers.dev
 
 locale: fr
 

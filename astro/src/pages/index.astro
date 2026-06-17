@@ -131,8 +131,8 @@ const jsonLd = {
     />
   )}
 
-  <!-- Analytics Umami (privacy-friendly, sans cookies) -->
-  <script defer is:inline src="https://cloud.umami.is/script.js" data-website-id="f751e82f-e6c9-4cdf-a93f-89629f170b29"></script>
+  <!-- Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) -->
+  <script defer is:inline src="/_vercel/insights/script.js"></script>
 
   <!-- JSON-LD structured data -->
   <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />

@@ -104,7 +104,7 @@ import { applySpans } from '../lib/spans.js';
     });
   });
 
-  // ── Contact form (Netlify Forms + honeypot + délai anti-bot) ─
+  // ── Contact form (POST /api/contact -> Resend, honeypot + délai anti-bot) ─
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -113,16 +113,16 @@ import { applySpans } from '../lib/spans.js';
       const form = e.target;
       const btn = form.querySelector('.form-submit');
       const originalHTML = btn.innerHTML;
-      const encoded = new URLSearchParams(new FormData(form)).toString();
+      const payload = Object.fromEntries(new FormData(form).entries());
 
       btn.innerHTML = 'Sending…';
       btn.disabled = true;
       btn.classList.remove('is-success', 'is-error');
 
-      fetch('/', {
+      fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: encoded,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);

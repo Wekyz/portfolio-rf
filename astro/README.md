@@ -19,9 +19,10 @@ npm run build    # génère dist/
 npm run preview  # sert dist/ sur http://localhost:4321
 ```
 
-> Le formulaire de contact et le lien email passent par Netlify (Forms +
-> Function). Ils ne fonctionnent donc pas en local pur — comme sur l'ancien
-> site. Tout le reste (grille, filtres, lightbox Vimeo, responsive) fonctionne.
+> Le formulaire de contact et le lien email passent par des **fonctions
+> serverless Vercel** (`api/contact.js` -> Resend, `api/email.js`). Ils ne
+> fonctionnent donc pas en local pur (`npm run dev`) — utiliser `vercel dev` pour
+> les tester. Tout le reste (grille, filtres, lightbox Vimeo, responsive) marche.
 
 ## Ce qui a changé par rapport à la version statique
 
@@ -40,8 +41,8 @@ npm run preview  # sert dist/ sur http://localhost:4321
 ## Optimisations — audit sécu / perf / SEO / a11y
 
 - **Sécurité** : CSP durcie (`base-uri`, `form-action`, `object-src 'none'`,
-  `frame-ancestors`), Decap CMS épinglé + **SRI**, ouverture de liens externes
-  restreinte aux URL `http(s)`.
+  `frame-ancestors`), script CMS (`/admin`) épinglé + **SRI**, ouverture de liens
+  externes restreinte aux URL `http(s)`.
 - **Perf** : 1ʳᵉˢ vignettes en `loading="eager"` + `fetchpriority="high"` +
   **preload de l'image LCP**, images lourdes recompressées, **images responsive**
   (`srcset`/`sizes`).
@@ -71,16 +72,18 @@ astro/
 │  ├─ styles/styles.css       # CSS repris à l'identique
 │  └─ data/videos.json        # données projets (éditées via le CMS)
 ├─ public/                    # thumbs/, live/, admin/, polices, favicons, og-image
-├─ netlify.toml               # config de déploiement (pour la bascule)
+├─ api/                       # fonctions serverless Vercel (contact, email)
+├─ vercel.json                # headers / CSP / cache (déploiement Vercel)
 └─ astro.config.mjs
 ```
 
 ## Édition du contenu (monteuse)
 
-Inchangé : le CMS Decap reste sur `/admin/`. La config (`public/admin/config.yml`)
-a été adaptée aux nouveaux chemins :
+CMS **Sveltia** sur `/admin/` (auth GitHub OAuth). La config
+(`public/admin/config.yml`) pointe sur :
 - `file: astro/src/data/videos.json`
 - `media_folder: astro/public/thumbs`
+- `backend: github` (repo + branche `main`) + `base_url` du relais OAuth
 
 ## Miniatures automatiques ✅ (implémenté)
 
@@ -107,14 +110,27 @@ miniature est récupérée depuis Vimeo et convertie en WebP **au build**.
 Les vidéos privées de Roxane sont restreintes au domaine `roxane-foare.com`.
 Vimeo ne livre leur miniature que si la requête provient de ce domaine : le
 script envoie donc un en-tête `Referer` correspondant. Si le domaine change,
-définir la variable d'environnement **`SITE_DOMAIN`** (sur Netlify : *Site
-settings → Environment variables*), ex. `SITE_DOMAIN=https://roxane-foare.com`.
+définir la variable d'environnement **`SITE_DOMAIN`** (sur Vercel : *Settings →
+Environment Variables*), ex. `SITE_DOMAIN=https://roxane-foare.com`.
 Aucun token Vimeo n'est nécessaire.
 
-## Basculer le déploiement (plus tard, après validation)
+## Déploiement Vercel — checklist de migration
 
-Sur Netlify, pointer le build sur ce dossier (voir `astro/netlify.toml` :
-`base = "astro"`, `command = "npm run build"`, `publish = "dist"`). Le
-`netlify.toml` à la racine du dépôt reste en place tant que la bascule n'est pas
-décidée.
+Hébergement sur **Vercel** (Root Directory = `astro/`, framework Astro,
+`npm run build`, sortie `dist/`). Étapes manuelles (comptes/infra) :
+
+1. **Vercel** : importer le dépôt, Root Directory = `astro`. Variables d'env :
+   `RESEND_API_KEY`, `CONTACT_EMAIL`, `RESEND_FROM`
+   (ex. `Portfolio <noreply@roxane-foare.com>`), `SITE_DOMAIN`.
+2. **Resend** : créer un compte, **vérifier le domaine** `roxane-foare.com`
+   (DNS SPF/DKIM), générer la clé API.
+3. **Analytics** : activer **Web Analytics** dans le projet Vercel
+   (le script `/_vercel/insights/script.js` est servi automatiquement).
+4. **CMS Sveltia / GitHub OAuth** :
+   - créer une **GitHub OAuth App** (Authorization callback = URL du relais) ;
+   - déployer un relais OAuth (`sveltia-cms-auth`, ex. Cloudflare Worker) avec
+     `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` ;
+   - renseigner `base_url` (et le domaine du relais dans la CSP `/admin` de
+     `vercel.json`) dans `public/admin/config.yml`.
+5. **DNS** : pointer `roxane-foare.com` vers Vercel, puis retirer le site Netlify.
 ```

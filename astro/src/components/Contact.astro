@@ -1,5 +1,5 @@
 ---
-// Section Contact + formulaire Netlify
+// Section Contact + formulaire (envoyé via la fonction /api/contact -> Resend)
 ---
 <section id="contact">
   <div class="contact-left">
@@ -14,8 +14,7 @@
     </div>
   </div>
 
-  <form class="contact-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-    <input type="hidden" name="form-name" value="contact" />
+  <form class="contact-form" name="contact" method="POST" action="/api/contact">
     <p class="hp-field" aria-hidden="true">
       <label>Don't fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
     </p>
