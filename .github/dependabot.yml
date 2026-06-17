@@ -1,0 +1,24 @@
+version: 2
+updates:
+  # Dépendances npm du site Astro (dossier astro/)
+  - package-ecosystem: "npm"
+    directory: "/astro"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    groups:
+      # Regroupe les mises à jour mineures/patch dans une seule PR
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Actions GitHub (si des workflows sont ajoutés plus tard)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"

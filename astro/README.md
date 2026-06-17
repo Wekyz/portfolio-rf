@@ -42,13 +42,22 @@ npm run preview  # sert dist/ sur http://localhost:4321
 - **Sécurité** : CSP durcie (`base-uri`, `form-action`, `object-src 'none'`,
   `frame-ancestors`), Decap CMS épinglé + **SRI**, ouverture de liens externes
   restreinte aux URL `http(s)`.
-- **Perf** : 1ʳᵉˢ vignettes en `loading="eager"` + `fetchpriority="high"` (LCP),
-  images lourdes recompressées, **images responsive** (`srcset`/`sizes`).
+- **Perf** : 1ʳᵉˢ vignettes en `loading="eager"` + `fetchpriority="high"` +
+  **preload de l'image LCP**, images lourdes recompressées, **images responsive**
+  (`srcset`/`sizes`).
 - **Polices** : **DM Sans auto-hébergé** (plus de requête Google Fonts → perf +
-  RGPD). Les 3 polices sont désormais locales dans `public/`.
-- **SEO** : `<h1>` (logo), `og:image` avec dimensions + `alt`.
+  RGPD). `DalaFloda` **sous-ensemblée** aux glyphes de « Roxane Foare »
+  (66 Ko → 2 Ko) — si le nom de marque change, régénérer le subset (fonttools).
+- **SEO** : `<h1>` (logo), `og:image` avec dimensions + `alt`, **données
+  structurées `VideoObject`** pour les projets, **sitemap généré au build**
+  (`src/pages/sitemap.xml.js`, `lastmod` automatique).
 - **A11y** : contraste WCAG AA, titres visibles au tactile (`@media (hover:none)`),
-  piège à focus + restitution du focus dans la lightbox.
+  piège à focus + restitution du focus dans la lightbox, **lien d'évitement**,
+  `<main>`, cibles tactiles des filtres, spinner de chargement du player.
+- **Sécurité (suite)** : header `Cross-Origin-Opener-Policy`, widget Netlify
+  Identity **retiré de la page publique** (ne reste que sur `/admin`).
+- **Build** : version Node épinglée (`.nvmrc` = 20), `overrides` esbuild ≥ 0.28.1
+  (`npm audit` = 0 vuln), **Dependabot** (`.github/dependabot.yml`).
 
 ## Structure
 

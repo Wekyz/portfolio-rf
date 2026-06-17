@@ -76,6 +76,15 @@ body {
   outline-offset: 3px;
 }
 
+/* ── A11Y : lien d'évitement ──────────────────────────────── */
+.skip-link {
+  position: absolute; left: 8px; top: -48px; z-index: 1100;
+  background: var(--black); color: var(--white);
+  padding: 10px 16px; font-size: 13px; text-decoration: none;
+  transition: top var(--t-fast);
+}
+.skip-link:focus { top: 8px; }
+
 /* ── ANIMATION SLIDE (factorisée nav + filters) ───────────── */
 .slide-label {
   position: relative;
@@ -149,7 +158,7 @@ nav {
   display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 56px; align-items: center;
 }
 .filter-btn {
-  background: none; border: none; padding: 0;
+  background: none; border: none; padding: 8px 2px; /* cible tactile ~31px (WCAG 2.5.8) */
   font-family: var(--font-body); font-size: 11px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--gray-mid); cursor: pointer;
   line-height: 1.4;
@@ -386,6 +395,17 @@ footer {
 }
 .lightbox-close:hover { opacity: 1; }
 
+/* Spinner affiché pendant le chargement du player Vimeo. */
+.lightbox-spinner {
+  display: none; position: absolute; top: 50%; left: 50%;
+  width: 40px; height: 40px; margin: -20px 0 0 -20px;
+  border: 2px solid rgba(255, 255, 255, .25);
+  border-top-color: #fff; border-radius: 50%;
+  animation: lb-spin .8s linear infinite;
+}
+.lightbox.loading .lightbox-spinner { display: block; }
+@keyframes lb-spin { to { transform: rotate(360deg); } }
+
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 900px) {
   nav, #work, #about, #contact, footer { padding-left: 24px; padding-right: 24px; }
@@ -394,6 +414,14 @@ footer {
   .form-row { grid-template-columns: 1fr; }
   nav { padding-top: 20px; padding-bottom: 20px; }
   .brands-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Très petits écrans : la nav reste sur une ligne sans déborder. */
+@media (max-width: 480px) {
+  nav { padding-left: 16px; padding-right: 16px; }
+  .nav-logo { font-size: 17px; }
+  .nav-links { gap: 18px; }
+  .nav-links a { font-size: 12px; }
 }
 
 /* ── A11Y : motion reduit ─────────────────────────────────── */

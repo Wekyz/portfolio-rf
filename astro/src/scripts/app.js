@@ -13,7 +13,6 @@ import { applySpans } from '../lib/spans.js';
   const lightboxEl = document.getElementById('lightbox');
   const lightboxFrame = document.getElementById('lightboxFrame');
   const lightboxClose = document.getElementById('lightboxClose');
-  const emailLink = document.getElementById('email-link');
   const contactForm = document.querySelector('.contact-form');
   const formLoadTime = Date.now();
 
@@ -29,10 +28,12 @@ import { applySpans } from '../lib/spans.js';
     const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
     if (hash) params.set('h', hash);
     lightboxFrame.src = `https://player.vimeo.com/video/${vimeoId}?${params}`;
-    lightboxEl.classList.add('open');
+    lightboxEl.classList.add('open', 'loading'); // 'loading' : affiche le spinner
     document.body.style.overflow = 'hidden';
     lightboxClose.focus();
   }
+  // Le player Vimeo a fini de charger -> on masque le spinner.
+  lightboxFrame.addEventListener('load', () => lightboxEl.classList.remove('loading'));
   function closeLightbox() {
     lightboxEl.classList.remove('open');
     lightboxFrame.src = '';
@@ -143,11 +144,7 @@ import { applySpans } from '../lib/spans.js';
     });
   }
 
-  // ── Email link : redirection via Netlify Function (server-side) ─
-  if (emailLink) {
-    emailLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = '/api/email';
-    });
-  }
+  // Le lien email est une ancre <a href="/api/email"> : la redirection
+  // server-side (302 -> mailto:) est gérée nativement par le navigateur,
+  // sans JS, ce qui rend le lien plus robuste (clic milieu, menu contextuel…).
 })();

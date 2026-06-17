@@ -6,6 +6,49 @@ import About from '../components/About.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
+import data from '../data/videos.json';
+import { computeSpans } from '../lib/spans.js';
+
+const SITE = 'https://roxane-foare.com';
+const projects = data.videos || data;
+
+// ── Préchargement de l'image LCP (1ʳᵉ vignette), variante responsive incluse ──
+const spans = computeSpans(
+  projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
+);
+const first = projects[0];
+const firstThumb = first?.thumb
+  ? (first.thumb.startsWith('/') ? first.thumb : `/${first.thumb}`)
+  : (first?.id ? `/thumbs/${first.id}.webp` : null);
+const firstIsWebp = !!firstThumb && firstThumb.endsWith('.webp');
+const firstSrcset = firstIsWebp
+  ? `${firstThumb.replace(/\.webp$/, '-640.webp')} 640w, ${firstThumb} 1280w`
+  : undefined;
+const firstSpanMatch = /span (\d+)/.exec(spans[0] || '');
+const firstSpanN = firstSpanMatch ? Number(firstSpanMatch[1]) : 6;
+const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
+
+// ── Données structurées VideoObject (rich results) pour les projets Vimeo ──
+const abs = (p) =>
+  `${SITE}${p.thumb ? (p.thumb.startsWith('/') ? p.thumb : '/' + p.thumb) : '/thumbs/' + p.id + '.webp'}`;
+const videoLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: projects
+    .filter((p) => p.id && /^\d{4}$/.test(p.year || ''))
+    .map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'VideoObject',
+        name: p.title,
+        description: p.credit || p.title,
+        thumbnailUrl: abs(p),
+        uploadDate: `${p.year}-01-01`,
+        embedUrl: `https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`,
+      },
+    })),
+};
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -76,31 +119,35 @@ const jsonLd = {
   <link rel="preload" as="font" type="font/woff2" href="/DalaFloda-Roman.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DMSans-latin.woff2" crossorigin />
 
-  <!-- Netlify Identity — redirection post-login vers /admin -->
-  <script defer is:inline src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script defer is:inline>
-    window.addEventListener('load', () => {
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.on('init', (user) => {
-          if (!user) {
-            window.netlifyIdentity.on('login', () => { document.location.href = '/admin/'; });
-          }
-        });
-      }
-    });
-  </script>
+  <!-- Préchargement de l'image LCP (1ʳᵉ vignette) -->
+  {firstThumb && (
+    <link
+      rel="preload"
+      as="image"
+      href={firstThumb}
+      imagesrcset={firstSrcset}
+      imagesizes={firstSizes}
+      fetchpriority="high"
+    />
+  )}
 
   <!-- Analytics Umami (privacy-friendly, sans cookies) -->
   <script defer is:inline src="https://cloud.umami.is/script.js" data-website-id="f751e82f-e6c9-4cdf-a93f-89629f170b29"></script>
 
   <!-- JSON-LD structured data -->
   <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  {videoLd.itemListElement.length > 0 && (
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(videoLd)} />
+  )}
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
   <Nav />
-  <Work />
-  <About />
-  <Contact />
+  <main id="main">
+    <Work />
+    <About />
+    <Contact />
+  </main>
   <Footer />
   <Lightbox />
 
