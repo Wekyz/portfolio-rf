@@ -4,7 +4,7 @@ backend:
   name: github
   repo: Wekyz/portfolio-rf
   branch: main
-  base_url: https://REMPLACER-PAR-TON-OAUTH-WORKER.workers.dev
+  base_url: https://sveltia-cms-auth.wekyz.workers.dev
 
 locale: fr
 
