@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "headers": [
     {
-      "comment": "Sécurité — toutes les routes (admin inclus)",
       "source": "/(.*)",
       "headers": [
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
@@ -14,7 +13,6 @@
       ]
     },
     {
-      "comment": "CSP du site public (exclut /admin)",
       "source": "/((?!admin).*)",
       "headers": [
         {
@@ -24,7 +22,6 @@
       ]
     },
     {
-      "comment": "Admin (Sveltia CMS) — CSP élargie + noindex + no-store",
       "source": "/admin/(.*)",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
@@ -36,7 +33,6 @@
       ]
     },
     {
-      "comment": "Assets hashés Astro — immuables",
       "source": "/_astro/(.*)",
       "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ]
     },
