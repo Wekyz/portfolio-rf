@@ -1,8 +1,8 @@
 /* ============================================================
-   Roxane Foare — Portfolio (Astro)
+   Roxane Foare - Portfolio (Astro)
    Logique client : clic vignettes, filtres, lightbox, formulaire, email.
    La grille est désormais rendue au build ; ce script ne fait plus de fetch
-   ni de construction du DOM — il ajoute l'interactivité par-dessus.
+   ni de construction du DOM - il ajoute l'interactivité par-dessus.
    ============================================================ */
 import { applySpans } from '../lib/spans.js';
 
@@ -66,7 +66,7 @@ import { applySpans } from '../lib/spans.js';
     if (!btn) return;
     btn.addEventListener('click', () => {
       const { external, id, hash } = item.dataset;
-      // N'ouvre que des URL http(s) — empêche un schéma type `javascript:`
+      // N'ouvre que des URL http(s) - empêche un schéma type `javascript:`
       // de s'exécuter via window.open si une donnée du CMS était malformée.
       if (external && /^https?:\/\//i.test(external)) {
         window.open(external, '_blank', 'noopener,noreferrer');
@@ -131,7 +131,7 @@ import { applySpans } from '../lib/spans.js';
           form.reset();
         })
         .catch(() => {
-          btn.innerHTML = 'Error — try again';
+          btn.innerHTML = 'Error - try again';
           btn.classList.add('is-error');
         })
         .finally(() => {

@@ -1,5 +1,5 @@
 /* ============================================================
-   Roxane Foare — Portfolio
+   Roxane Foare - Portfolio
    Stylesheet
    ============================================================ */
 
@@ -18,7 +18,7 @@
   font-style:  normal;
   font-display: swap;
 }
-/* DM Sans — auto-hébergé (police variable, graisses 300–500). Évite la requête
+/* DM Sans - auto-hébergé (police variable, graisses 300–500). Évite la requête
    tierce render-blocking vers Google Fonts et la transmission de l'IP des
    visiteurs à Google (RGPD). */
 @font-face {
@@ -233,7 +233,7 @@ nav {
 .work-thumb-wrap:hover .work-thumb,
 .work-thumb-wrap:focus-visible .work-thumb { transform: scale(1.04); }
 
-/* ── TACTILE — pas de :hover ───────────────────────────────── */
+/* ── TACTILE - pas de :hover ───────────────────────────────── */
 /* Sur écran tactile, le survol n'existe pas : on affiche en permanence un
    dégradé + le titre, sinon les visiteurs mobiles ne voient jamais le nom des
    projets (taper ouvre directement la vidéo). */
@@ -244,7 +244,7 @@ nav {
   .work-info { transform: none; opacity: 1; }
 }
 
-/* ── LIVE — non cliquable ─────────────────────────────────── */
+/* ── LIVE - non cliquable ─────────────────────────────────── */
 .work-item[data-cat="live"] .work-thumb-wrap { cursor: default; }
 .work-item[data-cat="live"] .work-play { display: none; }
 .work-item[data-cat="live"] .work-thumb-wrap:hover .work-thumb { transform: none; }
@@ -352,7 +352,7 @@ nav {
 .form-group input::placeholder,
 .form-group textarea::placeholder { color: var(--gray-light); }
 
-/* honeypot — masqué visuellement mais pas avec display:none (mieux contre les bots) */
+/* honeypot - masqué visuellement mais pas avec display:none (mieux contre les bots) */
 .hp-field {
   position: absolute; left: -10000px; top: auto;
   width: 1px; height: 1px; overflow: hidden;

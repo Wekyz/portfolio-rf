@@ -1,5 +1,5 @@
 /* ============================================================
-   Logique de pattern de grille — partagée entre le rendu au build
+   Logique de pattern de grille - partagée entre le rendu au build
    (index.astro) et le filtrage côté client (app.js).
 
    Pattern de référence : 8 / 4 puis 4 / 8 (deux rangées de 12 cols).
@@ -25,7 +25,7 @@ export function computeSpans(items) {
       return '1 / span 12';
     }
     // Portrait : ne touche ni patternIndex ni lastCat (le pattern continue
-    // comme si l'item portrait n'était pas là — comportement d'origine).
+    // comme si l'item portrait n'était pas là - comportement d'origine).
     if (item.portrait) {
       return '5 / span 4';
     }

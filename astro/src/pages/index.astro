@@ -12,7 +12,7 @@ import { computeSpans } from '../lib/spans.js';
 const SITE = 'https://roxane-foare.com';
 const projects = data.videos || data;
 
-// ── Préchargement de l'image LCP (1ʳᵉ vignette), variante responsive incluse ──
+// - Préchargement de l'image LCP (1ʳᵉ vignette), variante responsive incluse -
 const spans = computeSpans(
   projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
 );
@@ -28,7 +28,7 @@ const firstSpanMatch = /span (\d+)/.exec(spans[0] || '');
 const firstSpanN = firstSpanMatch ? Number(firstSpanMatch[1]) : 6;
 const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
 
-// ── Données structurées VideoObject (rich results) pour les projets Vimeo ──
+// - Données structurées VideoObject (rich results) pour les projets Vimeo -
 const abs = (p) =>
   `${SITE}${p.thumb ? (p.thumb.startsWith('/') ? p.thumb : '/' + p.thumb) : '/thumbs/' + p.id + '.webp'}`;
 const videoLd = {
@@ -80,8 +80,8 @@ const jsonLd = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#fafaf8" />
 
-  <title>Roxane Foare — Video Editor · Paris &amp; Angers</title>
-  <meta name="description" content="Roxane Foare — freelance video editor based in Paris &amp; Angers. Film, documentary, commercial, corporate, live and event editing." />
+  <title>Roxane Foare - Video Editor · Paris &amp; Angers</title>
+  <meta name="description" content="Roxane Foare - freelance video editor based in Paris &amp; Angers. Film, documentary, commercial, corporate, live and event editing." />
   <meta name="keywords" content="video editor Paris, freelance editor France, film editing, documentary editing, commercial editing, post-production Paris, monteuse vidéo, monteur vidéo, montage Paris" />
   <meta name="author" content="Roxane Foare" />
 
@@ -93,12 +93,12 @@ const jsonLd = {
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Roxane Foare — Video Editor" />
+  <meta property="og:title" content="Roxane Foare - Video Editor" />
   <meta property="og:description" content="Freelance video editor specialised in film, documentary, corporate, commercial, live &amp; events." />
   <meta property="og:image" content="https://roxane-foare.com/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Roxane Foare — Video Editor" />
+  <meta property="og:image:alt" content="Roxane Foare - Video Editor" />
   <meta property="og:url" content="https://roxane-foare.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -106,8 +106,8 @@ const jsonLd = {
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Roxane Foare — Video Editor" />
-  <meta name="twitter:description" content="Freelance video editor — film, documentary, corporate, commercial, live &amp; events." />
+  <meta name="twitter:title" content="Roxane Foare - Video Editor" />
+  <meta name="twitter:description" content="Freelance video editor - film, documentary, corporate, commercial, live &amp; events." />
   <meta name="twitter:image" content="https://roxane-foare.com/og-image.jpg" />
 
   <!-- Géolocalisation -->

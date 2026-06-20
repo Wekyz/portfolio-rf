@@ -7,7 +7,7 @@
  * convertit en WebP avec sharp.
  *
  * Conséquence côté monteuse : elle saisit seulement l'ID Vimeo (+ hash si
- * vidéo privée) dans le CMS — la miniature apparaît toute seule, sans qu'elle
+ * vidéo privée) dans le CMS - la miniature apparaît toute seule, sans qu'elle
  * (ni toi) ait à produire ou uploader une image.
  *
  * Les fichiers déjà présents ne sont jamais réécrasés : une miniature posée à
@@ -65,7 +65,7 @@ async function fetchThumb(id, hash) {
     const status = data.domain_status_code;
     throw new Error(
       status && status !== 200
-        ? `vidéo privée restreinte (domain_status ${status}) — vérifier que ${SITE_DOMAIN} est autorisé sur Vimeo`
+        ? `vidéo privée restreinte (domain_status ${status}) - vérifier que ${SITE_DOMAIN} est autorisé sur Vimeo`
         : 'thumbnail_url absent de la réponse oEmbed'
     );
   }
