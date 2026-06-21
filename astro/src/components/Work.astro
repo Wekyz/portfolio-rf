@@ -2,6 +2,10 @@
 import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
 import WorkItem from './WorkItem.astro';
+import { useTranslations } from '../i18n/strings.js';
+
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
 
 const projects = data.videos || data;
 
@@ -11,35 +15,27 @@ const spans = computeSpans(
   projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
 );
 
-const FILTERS = [
-  { value: 'pub', label: 'Commercial' },
-  { value: 'film', label: 'Feature Film' },
-  { value: 'doc', label: 'Documentary' },
-  { value: 'corpo', label: 'Corporate' },
-  { value: 'event', label: 'Event' },
-  { value: 'teaser', label: 'Teaser' },
-  { value: 'live', label: 'Live' },
-];
+const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
 ---
 <section id="work">
   <div class="section-header">
-    <h2 class="section-title">Work</h2>
-    <span class="section-location">Paris · Angers · World</span>
+    <h2 class="section-title">{t('work.title')}</h2>
+    <span class="section-location">{t('work.location')}</span>
   </div>
 
-  <div class="filters" role="group" aria-label="Filter projects by category">
-    {FILTERS.map((f, i) => (
+  <div class="filters" role="group" aria-label={t('work.filterAria')}>
+    {FILTERS.map((value, i) => (
       <>
         {i > 0 && <span class="filter-sep" aria-hidden="true">//</span>}
-        <button class="filter-btn slide-label" data-filter={f.value}>
-          <span class="lbl-out">{f.label}</span>
-          <span class="lbl-in" aria-hidden="true">{f.label}</span>
+        <button class="filter-btn slide-label" data-filter={value}>
+          <span class="lbl-out">{t(`cat.${value}`)}</span>
+          <span class="lbl-in" aria-hidden="true">{t(`cat.${value}`)}</span>
         </button>
       </>
     ))}
   </div>
 
   <div class="work-grid" id="workGrid">
-    {projects.map((p, i) => <WorkItem project={p} gridColumn={spans[i]} priority={i < 3} />)}
+    {projects.map((p, i) => <WorkItem project={p} gridColumn={spans[i]} priority={i < 3} lang={lang} />)}
   </div>
 </section>

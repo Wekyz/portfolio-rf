@@ -1,10 +1,13 @@
 ---
 // Lecteur vidéo Vimeo (modale)
+import { useTranslations } from '../i18n/strings.js';
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
 ---
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Video player">
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label={t('lb.dialog')}>
   <div class="lightbox-inner">
-    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Close video">&times;</button>
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label={t('lb.close')}>&times;</button>
     <div class="lightbox-spinner" id="lightboxSpinner" aria-hidden="true"></div>
-    <iframe id="lightboxFrame" src="" title="Vimeo video player" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    <iframe id="lightboxFrame" src="" title={t('lb.frameTitle')} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
   </div>
 </div>

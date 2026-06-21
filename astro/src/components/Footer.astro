@@ -1,8 +1,11 @@
 ---
+import { useTranslations } from '../i18n/strings.js';
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
 const year = new Date().getFullYear();
 ---
 <footer>
   <div class="footer-name">Roxane Foare</div>
-  <div class="footer-copy">&copy; {year} - All rights reserved</div>
+  <div class="footer-copy">&copy; {year} - {t('footer.rights')}</div>
   <div></div>
 </footer>

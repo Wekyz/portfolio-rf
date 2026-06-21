@@ -1,11 +1,14 @@
 ---
 // Section About - Productions & Brands (contenu statique)
+import { useTranslations } from '../i18n/strings.js';
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
 ---
 <section id="about">
   <div class="about-left">
-    <h2 class="section-title">About</h2>
-    <p class="about-subtitle">Roxane Foare - Video Editor for more than 10 years</p>
-    <div class="about-intro">Every cut is clean and precise; my experience, expertise and artistic vision will help you throughout your projects.</div>
+    <h2 class="section-title">{t('about.title')}</h2>
+    <p class="about-subtitle">{t('about.subtitle')}</p>
+    <div class="about-intro">{t('about.intro')}</div>
     <div class="tools-list">
       <span class="tool-tag">Adobe Premiere Pro</span>
       <span class="tool-tag">DaVinci Resolve</span>
@@ -14,7 +17,7 @@
 
     <!-- PRODUCTIONS -->
     <div class="credits-block">
-      <h3 class="credits-heading">Productions</h3>
+      <h3 class="credits-heading">{t('about.productions')}</h3>
       <ul class="prod-list">
         <li>Atelier B</li><li>B&amp;A</li><li>Bandits</li>
         <li>Big Bang prod</li><li>Blacklemon</li><li>Bricolo Factory</li>
@@ -27,20 +30,20 @@
 
     <!-- BRANDS -->
     <div class="credits-block">
-      <h3 class="credits-heading">Brands</h3>
+      <h3 class="credits-heading">{t('about.brands')}</h3>
       <div class="brands-grid">
 
         <div class="brands-col">
           <div>
-            <p class="brand-cat-title">Associations</p>
+            <p class="brand-cat-title">{t('brand.associations')}</p>
             <ul class="brand-cat-list"><li>Article 1</li><li>L'Arche</li></ul>
           </div>
           <div>
-            <p class="brand-cat-title">Automobile</p>
+            <p class="brand-cat-title">{t('brand.automobile')}</p>
             <ul class="brand-cat-list"><li>Auto Moto</li><li>Fiat</li></ul>
           </div>
           <div>
-            <p class="brand-cat-title">Banks</p>
+            <p class="brand-cat-title">{t('brand.banks')}</p>
             <ul class="brand-cat-list">
               <li>BNP Paribas</li><li>JP Morgan</li>
               <li>La Banque Postale</li><li>Société Générale</li>
@@ -50,7 +53,7 @@
 
         <div class="brands-col">
           <div>
-            <p class="brand-cat-title">Beauty</p>
+            <p class="brand-cat-title">{t('brand.beauty')}</p>
             <ul class="brand-cat-list">
               <li>Atelier Cologne</li><li>Carolina Herrera</li><li>Davidoff</li>
               <li>Escada</li><li>Estée Lauder</li><li>Fabio Salsa</li>
@@ -64,11 +67,11 @@
 
         <div class="brands-col">
           <div>
-            <p class="brand-cat-title">Decoration</p>
+            <p class="brand-cat-title">{t('brand.decoration')}</p>
             <ul class="brand-cat-list"><li>Atlantic</li><li>Maison Déco</li><li>Sylvania</li></ul>
           </div>
           <div>
-            <p class="brand-cat-title">Event</p>
+            <p class="brand-cat-title">{t('brand.event')}</p>
             <ul class="brand-cat-list">
               <li>Festival de la fiction de la Rochelle</li>
               <li>Festival de la fiction de Monte-Carlo</li>
@@ -76,7 +79,7 @@
             </ul>
           </div>
           <div>
-            <p class="brand-cat-title">Fashion</p>
+            <p class="brand-cat-title">{t('brand.fashion')}</p>
             <ul class="brand-cat-list">
               <li>Celio</li><li>Hanro</li><li>Lacoste</li>
               <li>Louboutin</li><li>Vestiaire Collective</li>
@@ -86,7 +89,7 @@
 
         <div class="brands-col">
           <div>
-            <p class="brand-cat-title">Food &amp; Drinks</p>
+            <p class="brand-cat-title">{t('brand.foodDrinks')}</p>
             <ul class="brand-cat-list">
               <li>Agence Bio</li><li>Carrefour</li><li>Hennessy</li>
               <li>The Balvenie</li><li>Jambon de Bayonne</li><li>Ricard</li>
@@ -94,25 +97,25 @@
             </ul>
           </div>
           <div>
-            <p class="brand-cat-title">Health</p>
+            <p class="brand-cat-title">{t('brand.health')}</p>
             <ul class="brand-cat-list"><li>MSD</li><li>Sanofi</li></ul>
           </div>
         </div>
 
         <div class="brands-col">
           <div>
-            <p class="brand-cat-title">Jewelry</p>
+            <p class="brand-cat-title">{t('brand.jewelry')}</p>
             <ul class="brand-cat-list"><li>Chaumet</li><li>Messika</li></ul>
           </div>
           <div>
-            <p class="brand-cat-title">Sports</p>
+            <p class="brand-cat-title">{t('brand.sports')}</p>
             <ul class="brand-cat-list">
               <li>PSG Football</li><li>PSG Handball</li>
               <li>Volleyball World Cup</li>
             </ul>
           </div>
           <div>
-            <p class="brand-cat-title">Youtubers</p>
+            <p class="brand-cat-title">{t('brand.youtubers')}</p>
             <ul class="brand-cat-list">
               <li>Evan</li><li>Julien Chièze</li><li>Marcus</li>
               <li>Marine LB</li><li>Shanyz</li><li>Thomas Deseur</li><li>Tsuku</li>
@@ -122,7 +125,7 @@
 
         <div class="brands-col">
           <div>
-            <p class="brand-cat-title">Others</p>
+            <p class="brand-cat-title">{t('brand.others')}</p>
             <ul class="brand-cat-list">
               <li>Accor</li><li>Axima Nucléaire</li><li>BSH</li><li>CNL</li>
               <li>Little Balance</li><li>Meetic</li><li>Sixième Avenue</li>

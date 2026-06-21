@@ -16,6 +16,13 @@ import { applySpans } from '../lib/spans.js';
   const contactForm = document.querySelector('.contact-form');
   const formLoadTime = Date.now();
 
+  // Libellés du bouton d'envoi selon la langue de la page (en / fr).
+  const lang = document.documentElement.lang === 'fr' ? 'fr' : 'en';
+  const FORM_LABELS = {
+    en: { sending: 'Sending…', sent: 'Sent ✓', error: 'Error - try again' },
+    fr: { sending: 'Envoi…', sent: 'Envoyé ✓', error: 'Erreur - réessayez' },
+  }[lang];
+
   if (!grid) return;
 
   const originalOrder = Array.from(grid.querySelectorAll('.work-item'));
@@ -115,7 +122,7 @@ import { applySpans } from '../lib/spans.js';
       const originalHTML = btn.innerHTML;
       const payload = Object.fromEntries(new FormData(form).entries());
 
-      btn.innerHTML = 'Sending…';
+      btn.innerHTML = FORM_LABELS.sending;
       btn.disabled = true;
       btn.classList.remove('is-success', 'is-error');
 
@@ -126,12 +133,12 @@ import { applySpans } from '../lib/spans.js';
       })
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          btn.innerHTML = 'Sent ✓';
+          btn.innerHTML = FORM_LABELS.sent;
           btn.classList.add('is-success');
           form.reset();
         })
         .catch(() => {
-          btn.innerHTML = 'Error - try again';
+          btn.innerHTML = FORM_LABELS.error;
           btn.classList.add('is-error');
         })
         .finally(() => {

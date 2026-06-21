@@ -5,17 +5,10 @@
  * passée via la prop `gridColumn`.
  */
 
-const CAT_LABELS = {
-  film: 'Feature Film',
-  pub: 'Commercial',
-  doc: 'Documentary',
-  corpo: 'Corporate',
-  event: 'Event',
-  teaser: 'Teaser',
-  live: 'Live',
-};
+import { useTranslations } from '../i18n/strings.js';
 
-const { project, gridColumn, priority = false } = Astro.props;
+const { project, gridColumn, priority = false, lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
 const p = project;
 
 // Les premières vignettes (au-dessus de la ligne de flottaison) sont chargées
@@ -25,7 +18,7 @@ const loading = priority ? 'eager' : 'lazy';
 const fetchpriority = priority ? 'high' : undefined;
 
 const interactive = !p.noClick && (p.id || p.externalLink);
-const prod = p.credit || CAT_LABELS[p.cat] || p.cat;
+const prod = p.credit || t(`cat.${p.cat}`) || p.cat;
 const imgWidth = p.portrait ? 600 : 1280;
 const imgHeight = p.portrait ? 900 : 800;
 // Source de la miniature :
@@ -59,7 +52,7 @@ const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 10
   style={`grid-column: ${gridColumn}`}
 >
   {interactive ? (
-    <button type="button" class="work-thumb-wrap" aria-label={`Watch - ${p.title}`}>
+    <button type="button" class="work-thumb-wrap" aria-label={`${t('work.watchAria')} - ${p.title}`}>
       {thumbSrc && (
         <img
           class="work-thumb"
@@ -95,7 +88,7 @@ const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 10
         <div class="work-info">
           <div class="work-title">{p.title}</div>
           <div class="work-meta"><span class="work-prod">{prod}</span></div>
-          {p.externalLink && <span class="work-badge">Watch &rarr;</span>}
+          {p.externalLink && <span class="work-badge">{t('work.watch')} &rarr;</span>}
         </div>
       </div>
     </button>

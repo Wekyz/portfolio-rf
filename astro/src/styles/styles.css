@@ -132,6 +132,16 @@ nav {
   font-size: 13px; letter-spacing: .06em;
   text-decoration: none; color: var(--gray-dark);
 }
+/* Toggle de langue (FR / EN) : petit libellé distinct des liens de section. */
+.nav-lang {
+  border: 1px solid var(--gray-mid);
+  border-radius: 999px;
+  padding: 3px 9px;
+  line-height: 1;
+  color: var(--gray-mid) !important;
+  transition: color var(--t-mid) var(--ease), border-color var(--t-mid) var(--ease);
+}
+.nav-lang:hover { color: var(--black) !important; border-color: var(--black); }
 
 /* ── SECTION TITLE ────────────────────────────────────────── */
 .section-title {

@@ -4,6 +4,8 @@ Site portfolio de **Roxane Foare**, monteuse vidéo freelance (Paris / Angers).
 
 🌐 **En ligne :** https://roxane-foare.com
 
+Site **bilingue** : anglais sur `/` (par défaut), français sur `/fr`.
+
 ## Structure du dépôt
 
 ```
@@ -46,4 +48,4 @@ checklist de migration complète.
 Via le CMS **Sveltia** sur `/admin/` (auth **GitHub OAuth**). La monteuse ajoute /
 modifie / réordonne les vidéos. Pour une nouvelle vidéo, il suffit de l'**ID Vimeo**
 (+ hash si privée) : la **miniature est récupérée automatiquement** depuis Vimeo
-au build — aucune image à produire.
+au build - aucune image à produire.

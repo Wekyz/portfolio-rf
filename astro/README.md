@@ -1,8 +1,11 @@
-# Portfolio Roxane Foare — version Astro (build de test)
+# Portfolio Roxane Foare - version Astro
 
-Migration du site statique vers **Astro**, **à l'identique visuellement**.
-Ce dossier est **isolé** : tant qu'on n'a pas basculé le déploiement, le site en
-production continue d'être servi par les fichiers à la racine du dépôt.
+Le site **Astro** déployé en production (Vercel). L'ancienne version HTML statique
+est conservée dans `archive/` à titre de référence et n'est plus servie.
+
+Site **bilingue** : anglais sur `/` (par défaut), français sur `/fr`. Tous les
+textes d'interface sont centralisés dans `src/i18n/strings.js` ; les composants
+reçoivent une prop `lang` et utilisent `useTranslations(lang)`.
 
 ## Tester en local
 
@@ -21,7 +24,7 @@ npm run preview  # sert dist/ sur http://localhost:4321
 
 > Le formulaire de contact et le lien email passent par des **fonctions
 > serverless Vercel** (`api/contact.js` -> Resend, `api/email.js`). Ils ne
-> fonctionnent donc pas en local pur (`npm run dev`) — utiliser `vercel dev` pour
+> fonctionnent donc pas en local pur (`npm run dev`) - utiliser `vercel dev` pour
 > les tester. Tout le reste (grille, filtres, lightbox Vimeo, responsive) marche.
 
 ## Ce qui a changé par rapport à la version statique
@@ -32,13 +35,15 @@ npm run preview  # sert dist/ sur http://localhost:4321
   construite en JS au chargement → plus de `fetch`, plus de flash/CLS, meilleur
   SEO (le contenu est dans le HTML).
 - **Logique de pattern de grille partagée** (`src/lib/spans.js`) entre le build
-  et le filtrage client — une seule source de vérité.
+  et le filtrage client - une seule source de vérité.
 - Correctifs appliqués : catégorie **`clip` retirée**, fallback de police
   **`.otf` mort supprimé**, **`unpkg.com` retiré** de la CSP du site public
   (gardé uniquement pour `/admin/`).
-- `og:locale` laissé en **`en_US`** (cible confirmée).
+- **Bilingue EN / FR** : layout partagé `src/layouts/Base.astro` paramétré par
+  langue, pages `index.astro` (EN, `/`) et `fr/index.astro` (FR, `/fr`), balises
+  `hreflang` + toggle de langue dans la nav.
 
-## Optimisations — audit sécu / perf / SEO / a11y
+## Optimisations - audit sécu / perf / SEO / a11y
 
 - **Sécurité** : CSP durcie (`base-uri`, `form-action`, `object-src 'none'`,
   `frame-ancestors`), script CMS (`/admin`) épinglé + **SRI**, ouverture de liens
@@ -48,7 +53,7 @@ npm run preview  # sert dist/ sur http://localhost:4321
   (`srcset`/`sizes`).
 - **Polices** : **DM Sans auto-hébergé** (plus de requête Google Fonts → perf +
   RGPD). `DalaFloda` **sous-ensemblée** aux glyphes de « Roxane Foare »
-  (66 Ko → 2 Ko) — si le nom de marque change, régénérer le subset (fonttools).
+  (66 Ko → 2 Ko) - si le nom de marque change, régénérer le subset (fonttools).
 - **SEO** : `<h1>` (logo), `og:image` avec dimensions + `alt`, **données
   structurées `VideoObject`** pour les projets, **sitemap généré au build**
   (`src/pages/sitemap.xml.js`, `lastmod` automatique).
@@ -65,7 +70,10 @@ npm run preview  # sert dist/ sur http://localhost:4321
 ```
 astro/
 ├─ src/
-│  ├─ pages/index.astro        # page + <head> (SEO, OG, JSON-LD)
+│  ├─ pages/index.astro        # version EN (/)
+│  ├─ pages/fr/index.astro     # version FR (/fr)
+│  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue
+│  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
 │  ├─ components/              # Nav, Work, WorkItem, About, Contact, Footer, Lightbox
 │  ├─ lib/spans.js            # pattern de grille (build + client)
 │  ├─ scripts/app.js          # interactivité client (filtres, lightbox, form)
@@ -114,7 +122,7 @@ définir la variable d'environnement **`SITE_DOMAIN`** (sur Vercel : *Settings �
 Environment Variables*), ex. `SITE_DOMAIN=https://roxane-foare.com`.
 Aucun token Vimeo n'est nécessaire.
 
-## Déploiement Vercel — checklist de migration
+## Déploiement Vercel - checklist de migration
 
 Hébergement sur **Vercel** (Root Directory = `astro/`, framework Astro,
 `npm run build`, sortie `dist/`). Étapes manuelles (comptes/infra) :
