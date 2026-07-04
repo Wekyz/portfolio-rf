@@ -1,4 +1,5 @@
 ---
+import { createHash } from 'node:crypto';
 import '../styles/styles.css';
 import Nav from '../components/Nav.astro';
 import Work from '../components/Work.astro';
@@ -30,8 +31,7 @@ const firstIsWebp = !!firstThumb && firstThumb.endsWith('.webp');
 const firstSrcset = firstIsWebp
   ? `${firstThumb.replace(/\.webp$/, '-640.webp')} 640w, ${firstThumb} 1280w`
   : undefined;
-const firstSpanMatch = /span (\d+)/.exec(spans[0] || '');
-const firstSpanN = firstSpanMatch ? Number(firstSpanMatch[1]) : 6;
+const firstSpanN = spans[0]?.span ?? 6;
 const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
 
 // - Données structurées VideoObject (rich results) pour les projets Vimeo -
@@ -63,7 +63,7 @@ const jsonLd = {
   jobTitle: t('head.jobTitle'),
   url: canonical,
   image: `${SITE}/og-image.jpg`,
-  sameAs: [],
+  sameAs: ['https://www.imdb.com/fr/name/nm8663077/'],
   address: [
     { '@type': 'PostalAddress', addressLocality: 'Paris', addressCountry: 'FR' },
     { '@type': 'PostalAddress', addressLocality: 'Angers', addressCountry: 'FR' },
@@ -78,6 +78,22 @@ const jsonLd = {
   ],
   knowsLanguage: ['fr', 'en'],
 };
+
+// - CSP : hash des scripts JSON-LD ci-dessous ------------------------------
+// Leur contenu vient de `videos.json` (édité via le CMS) et des traductions,
+// donc Astro ne peut pas le connaître à la compilation (contrairement au
+// script client, qu'il hash automatiquement) : on calcule et on déclare
+// nous-mêmes le hash SHA-256 exact du contenu rendu, recalculé à chaque
+// build - donc à chaque modification de contenu via le CMS.
+function sha256(content) {
+  return `sha256-${createHash('sha256').update(content, 'utf8').digest('base64')}`;
+}
+const personJsonLd = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+const videoJsonLd = JSON.stringify(videoLd).replace(/</g, '\\u003c');
+Astro.csp?.insertScriptHash(sha256(personJsonLd));
+if (videoLd.itemListElement.length > 0) {
+  Astro.csp?.insertScriptHash(sha256(videoJsonLd));
+}
 ---
 <!DOCTYPE html>
 <html lang={lang}>
@@ -146,10 +162,10 @@ const jsonLd = {
   <!-- Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) -->
   <script defer is:inline src="/_vercel/insights/script.js"></script>
 
-  <!-- JSON-LD structured data -->
-  <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  <!-- JSON-LD structured data (contenu + hash CSP calculés ci-dessus) -->
+  <script type="application/ld+json" set:html={personJsonLd} />
   {videoLd.itemListElement.length > 0 && (
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(videoLd)} />
+    <script type="application/ld+json" set:html={videoJsonLd} />
   )}
 </head>
 <body>

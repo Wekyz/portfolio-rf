@@ -3,15 +3,49 @@
  * Resend (remplace Netlify Forms).
  *
  * Variables d'environnement (Vercel → Settings → Environment Variables) :
- *   RESEND_API_KEY  clé API Resend
- *   CONTACT_EMAIL   adresse de destination (boîte de Roxane)
- *   RESEND_FROM     expéditeur vérifié, ex. "Portfolio <noreply@roxane-foare.com>"
+ *   RESEND_API_KEY            clé API Resend
+ *   CONTACT_EMAIL             adresse de destination (boîte de Roxane)
+ *   RESEND_FROM               expéditeur vérifié, ex. "Portfolio <noreply@roxane-foare.com>"
+ *   UPSTASH_REDIS_REST_URL    rate-limiting (voir ci-dessous) - optionnel
+ *   UPSTASH_REDIS_REST_TOKEN  idem
  *
  * Le `from` doit appartenir à un domaine vérifié dans Resend (SPF/DKIM).
+ *
+ * Rate limiting (anti-spam) : 5 envois / 10 min par IP, via Upstash Redis
+ * (@upstash/ratelimit). Nécessite une base Redis Upstash :
+ *   - soit via l'intégration Vercel Marketplace "Upstash" (Storage → Browse
+ *     Marketplace → Upstash) qui injecte automatiquement les 2 variables
+ *     ci-dessus sur le projet ;
+ *   - soit un compte upstash.com (offre gratuite) + copier les 2 valeurs
+ *     "REST URL" / "REST TOKEN" de la base dans les env vars Vercel.
+ * Tant que ces variables ne sont pas définies, le rate limiting est
+ * simplement désactivé (le formulaire continue de fonctionner normalement,
+ * protégé par le honeypot + délai anti-bot déjà en place côté client).
  */
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+let ratelimit = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  ratelimit = new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, '10 m'),
+    analytics: true,
+    prefix: 'contact-form',
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (ratelimit) {
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+    const { success } = await ratelimit.limit(ip);
+    if (!success) {
+      return res.status(429).json({ error: 'Trop de tentatives, réessayez plus tard.' });
+    }
   }
 
   let body = req.body;

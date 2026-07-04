@@ -1,13 +1,13 @@
 ---
 /**
  * Une vignette de la grille Work. Rendu au build (équivalent de buildItem()
- * dans l'ancien app.js). La valeur grid-column est calculée en amont et
- * passée via la prop `gridColumn`.
+ * dans l'ancien app.js). Le placement (classe CSS + largeur en colonnes) est
+ * calculé en amont et passé via la prop `placement` (voir lib/spans.js).
  */
 
 import { useTranslations } from '../i18n/strings.js';
 
-const { project, gridColumn, priority = false, lang = 'en' } = Astro.props;
+const { project, placement, priority = false, lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const p = project;
 
@@ -36,20 +36,18 @@ const isWebp = !!thumbSrc && thumbSrc.endsWith('.webp');
 const thumbSrcset = isWebp
   ? `${thumbSrc.replace(/\.webp$/, '-640.webp')} 640w, ${thumbSrc} 1280w`
   : undefined;
-const spanMatch = /span (\d+)/.exec(gridColumn || '');
-const spanN = spanMatch ? Number(spanMatch[1]) : 6;
+const spanN = placement?.span ?? 6;
 const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw` : undefined;
 ---
 
 <div
-  class="work-item"
+  class:list={['work-item', placement?.cls]}
   data-cat={p.cat}
   data-id={p.id || ''}
   data-hash={p.hash || ''}
   data-external={p.externalLink || ''}
   data-full-width={p.fullWidth ? 'true' : undefined}
   data-portrait={p.portrait ? 'true' : undefined}
-  style={`grid-column: ${gridColumn}`}
 >
   {interactive ? (
     <button type="button" class="work-thumb-wrap" aria-label={`${t('work.watchAria')} - ${p.title}`}>

@@ -182,6 +182,12 @@ nav {
 .work-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; }
 .work-item { position: relative; overflow: hidden; grid-column: span 6; }
 .work-item[data-portrait="true"] { grid-column: 5 / span 4; }
+/* Placement du pattern 8/4 (posé via classe - cf. src/lib/spans.js - et non
+   en style inline, pour rester compatible avec la CSP sans 'unsafe-inline'). */
+.work-item.g-1-12 { grid-column: 1 / span 12; }
+.work-item.g-start8 { grid-column: 1 / span 8; }
+.work-item.g-8 { grid-column: span 8; }
+.work-item.g-4 { grid-column: span 4; }
 .work-item.hidden { display: none; }
 
 .work-thumb-wrap {

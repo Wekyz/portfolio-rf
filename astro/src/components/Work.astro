@@ -36,6 +36,6 @@ const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
   </div>
 
   <div class="work-grid" id="workGrid">
-    {projects.map((p, i) => <WorkItem project={p} gridColumn={spans[i]} priority={i < 3} lang={lang} />)}
+    {projects.map((p, i) => <WorkItem project={p} placement={spans[i]} priority={i < 3} lang={lang} />)}
   </div>
 </section>

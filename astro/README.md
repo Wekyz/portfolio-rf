@@ -141,4 +141,10 @@ Hébergement sur **Vercel** (Root Directory = `astro/`, framework Astro,
    - renseigner `base_url` (et le domaine du relais dans la CSP `/admin` de
      `vercel.json`) dans `public/admin/config.yml`.
 5. **DNS** : pointer `roxane-foare.com` vers Vercel, puis retirer le site Netlify.
+6. **Upstash (rate limiting du formulaire de contact, optionnel)** : dans le
+   projet Vercel, Storage → Browse Marketplace → **Upstash** (offre gratuite),
+   créer une base Redis - les variables `UPSTASH_REDIS_REST_URL` et
+   `UPSTASH_REDIS_REST_TOKEN` sont alors injectées automatiquement. Sans ça,
+   `/api/contact` fonctionne normalement, juste sans limite de fréquence par IP
+   (le honeypot + délai anti-bot restent actifs dans tous les cas).
 ```
