@@ -29,12 +29,15 @@ const thumbSrc = p.thumb
   ? (p.thumb.startsWith('/') ? p.thumb : `/${p.thumb}`)
   : (p.id ? `/thumbs/${p.id}.webp` : null);
 
-// Images responsive : variante 640px générée au build (voir fetch-thumbs.mjs).
-// `sizes` est dérivé de la largeur de colonne (span N sur 12) ; en dessous de
-// 900px tous les items passent pleine largeur (cf. media query du CSS).
+// Images responsive : 3 paliers générés au build (voir fetch-thumbs.mjs).
+// La pleine résolution <nom>.webp sert le palier 1920w (desktop / retina),
+// puis 1280 (desktop standard) et 640 (mobile). `sizes` est dérivé de la
+// largeur de colonne (span N sur 12) ; en dessous de 900px tous les items
+// passent pleine largeur (cf. media query du CSS).
 const isWebp = !!thumbSrc && thumbSrc.endsWith('.webp');
+const thumbBase = isWebp ? thumbSrc.replace(/\.webp$/, '') : '';
 const thumbSrcset = isWebp
-  ? `${thumbSrc.replace(/\.webp$/, '-640.webp')} 640w, ${thumbSrc} 1280w`
+  ? `${thumbBase}-640.webp 640w, ${thumbBase}-1280.webp 1280w, ${thumbSrc} 1920w`
   : undefined;
 const spanN = placement?.span ?? 6;
 const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw` : undefined;

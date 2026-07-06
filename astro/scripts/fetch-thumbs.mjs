@@ -26,9 +26,15 @@ const ROOT = join(__dirname, '..');
 const DATA = join(ROOT, 'src', 'data', 'videos.json');
 const THUMBS_DIR = join(ROOT, 'public', 'thumbs');
 const LIVE_DIR = join(ROOT, 'public', 'live');
-const THUMB_WIDTH = 1280; // largeur demandée à Vimeo
-const VARIANT_WIDTH = 640; // variante "mobile" pour le srcset responsive
-const VARIANT_SUFFIX = '-640'; // ex. 1234.webp -> 1234-640.webp
+const THUMB_WIDTH = 1920; // largeur demandée à Vimeo (image desktop pleine résolution)
+// Variantes responsive générées pour le srcset (voir WorkItem.astro).
+// La pleine résolution <nom>.webp sert le palier 1920w ; on décline ensuite
+// un palier 1280 (desktop standard) et 640 (mobile).
+const VARIANTS = [
+  { suffix: '-1280', width: 1280, quality: 82 },
+  { suffix: '-640', width: 640, quality: 78 },
+];
+const VARIANT_RE = /-(?:1280|640)\.webp$/; // reconnaît un fichier déjà "variante"
 // Domaine autorisé pour les vidéos privées Vimeo (restreintes par domaine).
 // Vimeo ne renvoie la miniature que si la requête provient de ce domaine.
 const SITE_DOMAIN = process.env.SITE_DOMAIN || 'https://roxane-foare.com';
@@ -78,15 +84,15 @@ async function fetchThumb(id, hash) {
   // pour des vignettes. On borne la largeur et on ré-encode en WebP.
   return sharp(buf)
     .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-    .webp({ quality: 80 })
+    .webp({ quality: 85 })
     .toBuffer();
 }
 
 /**
- * Génère, pour chaque image .webp d'un dossier, une variante de largeur réduite
- * (`<nom>-640.webp`) destinée au `srcset` responsive. Les variantes déjà
- * présentes ne sont jamais réécrites. Couvre aussi bien les miniatures
- * auto-générées que les images posées à la main (affiches, live).
+ * Génère, pour chaque image .webp d'un dossier, les variantes de largeur réduite
+ * (`<nom>-1280.webp` et `<nom>-640.webp`) destinées au `srcset` responsive. Les
+ * variantes déjà présentes ne sont jamais réécrites. Couvre aussi bien les
+ * miniatures auto-générées que les images posées à la main (affiches, live).
  */
 async function ensureVariants(dir) {
   let files;
@@ -98,22 +104,25 @@ async function ensureVariants(dir) {
   let made = 0;
   let kept = 0;
   for (const name of files) {
-    if (!name.endsWith('.webp') || name.includes(`${VARIANT_SUFFIX}.`)) continue;
-    const variant = join(dir, name.replace(/\.webp$/, `${VARIANT_SUFFIX}.webp`));
-    if (await exists(variant)) {
-      kept++;
-      continue;
-    }
-    try {
-      const src = await readFile(join(dir, name));
-      const out = await sharp(src)
-        .resize({ width: VARIANT_WIDTH, withoutEnlargement: true })
-        .webp({ quality: 78 })
-        .toBuffer();
-      await writeFile(variant, out);
-      made++;
-    } catch (err) {
-      console.warn(`  ⚠ variante 640 échouée ${name} : ${err.message}`);
+    if (!name.endsWith('.webp') || VARIANT_RE.test(name)) continue;
+    let src = null;
+    for (const { suffix, width, quality } of VARIANTS) {
+      const variant = join(dir, name.replace(/\.webp$/, `${suffix}.webp`));
+      if (await exists(variant)) {
+        kept++;
+        continue;
+      }
+      try {
+        if (!src) src = await readFile(join(dir, name));
+        const out = await sharp(src)
+          .resize({ width, withoutEnlargement: true })
+          .webp({ quality })
+          .toBuffer();
+        await writeFile(variant, out);
+        made++;
+      } catch (err) {
+        console.warn(`  ⚠ variante ${suffix} échouée ${name} : ${err.message}`);
+      }
     }
   }
   return { made, kept };

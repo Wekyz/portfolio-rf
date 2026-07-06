@@ -28,8 +28,9 @@ const firstThumb = first?.thumb
   ? (first.thumb.startsWith('/') ? first.thumb : `/${first.thumb}`)
   : (first?.id ? `/thumbs/${first.id}.webp` : null);
 const firstIsWebp = !!firstThumb && firstThumb.endsWith('.webp');
+const firstBase = firstIsWebp ? firstThumb.replace(/\.webp$/, '') : '';
 const firstSrcset = firstIsWebp
-  ? `${firstThumb.replace(/\.webp$/, '-640.webp')} 640w, ${firstThumb} 1280w`
+  ? `${firstBase}-640.webp 640w, ${firstBase}-1280.webp 1280w, ${firstThumb} 1920w`
   : undefined;
 const firstSpanN = spans[0]?.span ?? 6;
 const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
