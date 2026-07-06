@@ -1,5 +1,5 @@
 /**
- * Fonction serverless Vercel — lien « Send me an email ».
+ * Fonction serverless Vercel - lien « Send me an email ».
  * Renvoie une redirection 302 vers mailto:<CONTACT_EMAIL> pour que l'adresse
  * n'apparaisse jamais dans le HTML/JS (anti-scraping). Équivalent de l'ancienne
  * fonction Netlify.

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Portfolio Roxane Foare — migration Astro (build de test, n'affecte pas le site en production)",
+  "description": "Portfolio Roxane Foare - site Astro bilingue EN/FR, en production sur Vercel.",
   "scripts": {
     "thumbs": "node scripts/fetch-thumbs.mjs",
     "predev": "node scripts/fetch-thumbs.mjs",

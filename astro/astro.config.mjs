@@ -24,6 +24,7 @@ export default defineConfig({
   security: {
     csp: {
       directives: [
+        "default-src 'self'",
         "base-uri 'self'",
         "form-action 'self'",
         "object-src 'none'",

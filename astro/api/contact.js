@@ -1,5 +1,5 @@
 /**
- * Fonction serverless Vercel — réception du formulaire de contact + envoi via
+ * Fonction serverless Vercel - réception du formulaire de contact + envoi via
  * Resend (remplace Netlify Forms).
  *
  * Variables d'environnement (Vercel → Settings → Environment Variables) :
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
         from,
         to: [to],
         reply_to: email,
-        subject: `Nouveau message — ${firstName} ${lastName}`,
+        subject: `Nouveau message - ${firstName} ${lastName}`,
         text: `De : ${firstName} ${lastName} <${email}>\n\n${message || '(aucun message)'}`,
       }),
     });
