@@ -6,6 +6,7 @@
  */
 
 import { useTranslations } from '../i18n/strings.js';
+import { resolveThumb } from '../lib/thumb.js';
 
 const { project, placement, priority = false, lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
@@ -21,26 +22,12 @@ const interactive = !p.noClick && (p.id || p.externalLink);
 const prod = p.credit || t(`cat.${p.cat}`) || p.cat;
 const imgWidth = p.portrait ? 600 : 1280;
 const imgHeight = p.portrait ? 900 : 800;
-// Source de la miniature :
-//  1. champ `thumb` s'il est renseigné (tolère avec ou sans "/" initial) ;
-//  2. sinon, fallback auto sur /thumbs/<id>.webp (générée au build depuis Vimeo).
-// La monteuse peut donc ne saisir que l'ID Vimeo : la miniature suit.
-const thumbSrc = p.thumb
-  ? (p.thumb.startsWith('/') ? p.thumb : `/${p.thumb}`)
-  : (p.id ? `/thumbs/${p.id}.webp` : null);
 
-// Images responsive : 3 paliers générés au build (voir fetch-thumbs.mjs).
-// La pleine résolution <nom>.webp sert le palier 1920w (desktop / retina),
-// puis 1280 (desktop standard) et 640 (mobile). `sizes` est dérivé de la
-// largeur de colonne (span N sur 12) ; en dessous de 900px tous les items
-// passent pleine largeur (cf. media query du CSS).
-const isWebp = !!thumbSrc && thumbSrc.endsWith('.webp');
-const thumbBase = isWebp ? thumbSrc.replace(/\.webp$/, '') : '';
-const thumbSrcset = isWebp
-  ? `${thumbBase}-640.webp 640w, ${thumbBase}-1280.webp 1280w, ${thumbSrc} 1920w`
-  : undefined;
+const { src: thumbSrc, srcset: thumbSrcset, responsive } = resolveThumb(p);
 const spanN = placement?.span ?? 6;
-const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw` : undefined;
+const sizes = responsive
+  ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw`
+  : undefined;
 ---
 
 <div
@@ -120,6 +107,23 @@ const sizes = isWebp ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 10
           <div class="work-meta"><span class="work-prod">{prod}</span></div>
         </div>
       </div>
+    </div>
+  )}
+  {p.id && (
+    // Lecteur réel présent dans le HTML (masqué, chargement différé) : la
+    // lightbox (voir Lightbox.astro/app.js) réutilise le même src au clic
+    // pour l'expérience utilisateur, mais Google a besoin qu'un <iframe>
+    // vers le player soit effectivement présent sur la page pour indexer la
+    // vidéo (cf. Search Console : "la vidéo n'est pas sur une page de lecture").
+    <div class="work-embed" aria-hidden="true">
+      <iframe
+        class="work-embed-frame"
+        loading="lazy"
+        tabindex="-1"
+        src={`https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`}
+        title={p.title}
+        allow="autoplay; fullscreen; picture-in-picture"
+      ></iframe>
     </div>
   )}
 </div>

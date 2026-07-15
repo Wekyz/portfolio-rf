@@ -29,7 +29,7 @@ npm run dev      # http://localhost:4321
 ```
 
 Voir [`astro/README.md`](astro/README.md) pour le détail (composants, miniatures
-automatiques, CMS, bascule de déploiement).
+Vimeo, CMS, bascule de déploiement).
 
 ## Déploiement
 

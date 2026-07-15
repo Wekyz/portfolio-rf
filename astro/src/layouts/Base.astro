@@ -9,6 +9,7 @@ import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
 import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
+import { resolveThumb, getUploadDate } from '../lib/thumb.js';
 import { useTranslations } from '../i18n/strings.js';
 
 const { lang = 'en' } = Astro.props;
@@ -24,20 +25,20 @@ const spans = computeSpans(
   projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
 );
 const first = projects[0];
-const firstThumb = first?.thumb
-  ? (first.thumb.startsWith('/') ? first.thumb : `/${first.thumb}`)
-  : (first?.id ? `/thumbs/${first.id}.webp` : null);
-const firstIsWebp = !!firstThumb && firstThumb.endsWith('.webp');
-const firstBase = firstIsWebp ? firstThumb.replace(/\.webp$/, '') : '';
-const firstSrcset = firstIsWebp
-  ? `${firstBase}-640.webp 640w, ${firstBase}-1280.webp 1280w, ${firstThumb} 1920w`
-  : undefined;
+const firstThumbResolved = first ? resolveThumb(first) : null;
+const firstThumb = firstThumbResolved?.src ?? null;
+const firstSrcset = firstThumbResolved?.srcset;
 const firstSpanN = spans[0]?.span ?? 6;
 const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
 
 // - Données structurées VideoObject (rich results) pour les projets Vimeo -
-const abs = (p) =>
-  `${SITE}${p.thumb ? (p.thumb.startsWith('/') ? p.thumb : '/' + p.thumb) : '/thumbs/' + p.id + '.webp'}`;
+// La source Vimeo (i.vimeocdn.com) est déjà une URL absolue ; seule une
+// miniature locale (override `thumb`) a besoin du préfixe SITE.
+const abs = (p) => {
+  const { src } = resolveThumb(p);
+  if (!src) return undefined;
+  return src.startsWith('/') ? `${SITE}${src}` : src;
+};
 const videoLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
@@ -51,7 +52,11 @@ const videoLd = {
         name: p.title,
         description: p.credit || p.title,
         thumbnailUrl: abs(p),
-        uploadDate: `${p.year}-01-01`,
+        // Date d'upload réelle (résolue au build depuis Vimeo, voir
+        // fetch-thumbs.mjs) ; repli sur le 1er janvier de `year` en UTC
+        // complet si indisponible (override manuel, échec réseau) - Google
+        // signalait l'ancien format `${year}-01-01` sans heure ni fuseau.
+        uploadDate: getUploadDate(p) ?? `${p.year}-01-01T00:00:00Z`,
         embedUrl: `https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`,
       },
     })),

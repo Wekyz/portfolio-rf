@@ -197,6 +197,25 @@ nav {
   border: none; padding: 0; display: block;
   font: inherit; color: inherit; text-align: left;
 }
+
+/* Lecteur réel (voir WorkItem.astro) : présent dans le HTML pour l'indexation
+   vidéo (Google veut un <iframe> vers le player effectivement sur la page),
+   mais masqué visuellement - la lecture visible passe par la lightbox
+   partagée. Masqué façon "visually-hidden" (pas `display:none`) : un élément
+   sans dimensions ne peut pas être évalué par le navigateur pour le
+   lazy-loading (`loading="lazy"` chargerait tout immédiatement faute de
+   distance calculable à l'écran) - ici il garde une taille réelle (1px) et
+   une position dans le flux, donc le chargement ne se déclenche qu'à
+   l'approche du scroll, comme les vignettes. */
+.work-embed {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .work-item[data-portrait="true"] .work-thumb-wrap { aspect-ratio: 2/3; }
 .work-thumb {
   width: 100%; height: 100%; object-fit: cover; display: block;

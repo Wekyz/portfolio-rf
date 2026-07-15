@@ -76,10 +76,12 @@ astro/
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
 │  ├─ components/              # Nav, Work, WorkItem, About, Contact, Footer, Lightbox
 │  ├─ lib/spans.js            # pattern de grille (build + client)
+│  ├─ lib/thumb.js            # résolution src/srcset miniature (Vimeo CDN ou override local)
 │  ├─ scripts/app.js          # interactivité client (filtres, lightbox, form)
 │  ├─ styles/styles.css       # CSS repris à l'identique
-│  └─ data/videos.json        # données projets (éditées via le CMS)
-├─ public/                    # thumbs/, live/, admin/, polices, favicons, og-image
+│  ├─ data/videos.json        # données projets (éditées via le CMS)
+│  └─ data/vimeo-thumbs.json  # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
+├─ public/                    # live/, admin/, polices, favicons, og-image
 ├─ api/                       # fonctions serverless Vercel (contact, email)
 ├─ vercel.json                # headers / CSP / cache (déploiement Vercel)
 └─ astro.config.mjs
@@ -97,20 +99,26 @@ CMS **Sveltia** sur `/admin/` (auth GitHub OAuth). La config
 
 La monteuse n'a plus à produire d'image. Elle saisit seulement l'**ID Vimeo**
 (+ **hash** si la vidéo est privée) et **laisse le champ Miniature vide** : la
-miniature est récupérée depuis Vimeo et convertie en WebP **au build**.
+miniature est servie **directement depuis le CDN Vimeo** (`i.vimeocdn.com`),
+sans fichier local ni recompression.
 
 - Script : `scripts/fetch-thumbs.mjs`, lancé automatiquement avant `dev` et
   `build` (hooks `predev` / `prebuild`).
-- Pour chaque vidéo ayant un `id`, si `public/thumbs/<id>.webp` n'existe pas, il
-  est généré (oEmbed Vimeo → `sharp` → WebP, largeur plafonnée à 1280px).
-- **Variantes responsive** : pour chaque image (`thumbs/` **et** `live/`), une
-  variante `…-640.webp` est générée pour le `srcset` mobile (voir `sizes` dans
-  `WorkItem.astro`). Les variantes déjà présentes ne sont pas réécrites.
-- **Les miniatures déjà présentes ne sont jamais écrasées** : une image posée à
-  la main (affiche de film, etc.) reste prioritaire. Pour forcer une
-  régénération, supprimer le `.webp` correspondant.
-- Le rendu retombe automatiquement sur `/thumbs/<id>.webp` quand le champ
-  `thumb` est vide (voir `WorkItem.astro`).
+- Pour chaque vidéo ayant un `id` (et sans override `thumb`), le script résout
+  via l'API oEmbed Vimeo l'URL de base de sa miniature sur le CDN, et la
+  stocke dans `src/data/vimeo-thumbs.json`. **Aucune image n'est téléchargée
+  ni recompressée** : le CDN Vimeo sert l'image à la volée dans la largeur
+  demandée (suffixe `_<largeur>` dans l'URL), avec une bien meilleure qualité
+  qu'un double passage par `sharp`.
+- Résolu à chaque `dev`/`build` (simples appels JSON, quasi instantané) pour
+  rester synchronisé si la vignette change côté Vimeo. En cas d'échec réseau
+  ponctuel, l'URL précédemment connue est conservée.
+- **Variantes responsive** : `srcset` 640 / 1280 / 1920 construit directement
+  depuis l'URL de base Vimeo (voir `src/lib/thumb.js`, utilisé par
+  `WorkItem.astro` et `Base.astro`).
+- Le champ `thumb` reste un **override manuel** prioritaire (affiche de film,
+  image live) - fichier local sous `public/`, avec ses propres variantes
+  `-640`/`-1280` générées par `sharp` (voir plus bas, `public/live/`).
 - Régénérer manuellement : `npm run thumbs`.
 
 ### Vidéos privées restreintes par domaine

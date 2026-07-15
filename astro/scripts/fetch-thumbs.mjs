@@ -1,19 +1,32 @@
 /**
- * Génère automatiquement les miniatures Vimeo au build.
+ * Résout, pour chaque vidéo Vimeo de videos.json, l'URL de base de sa
+ * miniature sur le CDN Vimeo (i.vimeocdn.com) et sa date d'upload réelle, via
+ * l'API oEmbed.
  *
- * Pour chaque vidéo de videos.json qui a un `id` Vimeo, on s'assure qu'un
- * fichier public/thumbs/<id>.webp existe. S'il manque, on le récupère via
- * l'API oEmbed de Vimeo (compatible vidéos privées via le `hash`), puis on le
- * convertit en WebP avec sharp.
+ * On ne télécharge plus l'image et on ne la recompresse plus (ancien pipeline
+ * sharp -> WebP) : le CDN Vimeo sert déjà l'image à la volée dans la largeur
+ * demandée (suffixe `_<largeur>` dans l'URL), avec une bien meilleure qualité
+ * qu'une double compression locale. WorkItem.astro construit directement le
+ * `srcset` à partir de cette URL de base (voir src/data/vimeo-thumbs.json).
+ *
+ * La date d'upload (`upload_date` de la réponse oEmbed, en UTC) sert de
+ * `uploadDate` aux données structurées VideoObject (Base.astro) - remplace
+ * l'ancien `${year}-01-01` sans heure ni fuseau, que Google Search Console
+ * signalait (uploadDate incomplet/incorrect).
  *
  * Conséquence côté monteuse : elle saisit seulement l'ID Vimeo (+ hash si
- * vidéo privée) dans le CMS - la miniature apparaît toute seule, sans qu'elle
- * (ni toi) ait à produire ou uploader une image.
+ * vidéo privée) dans le CMS - la miniature suit automatiquement, sans fichier
+ * à produire ni à committer.
  *
- * Les fichiers déjà présents ne sont jamais réécrasés : une miniature posée à
- * la main (ex. une affiche de film) reste prioritaire.
+ * Les vidéos avec un champ `thumb` rempli (override manuel, ex. affiche de
+ * film ou image live) ne sont pas concernées : ce champ reste prioritaire.
  *
- * Lancé automatiquement avant `dev` et `build` (voir package.json).
+ * Lancé automatiquement avant `dev` et `build` (voir package.json). Résolu à
+ * chaque run (simples appels JSON, pas de traitement d'image) pour rester
+ * synchronisé si la vignette change côté Vimeo.
+ *
+ * Les images posées à la main dans public/live/ gardent leur propre pipeline
+ * de variantes responsive (sharp), inchangé.
  */
 import { readFile, writeFile, mkdir, access, readdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
@@ -24,20 +37,24 @@ import sharp from 'sharp';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const DATA = join(ROOT, 'src', 'data', 'videos.json');
-const THUMBS_DIR = join(ROOT, 'public', 'thumbs');
+const CACHE_FILE = join(ROOT, 'src', 'data', 'vimeo-thumbs.json');
 const LIVE_DIR = join(ROOT, 'public', 'live');
-const THUMB_WIDTH = 1920; // largeur demandée à Vimeo (image desktop pleine résolution)
-// Variantes responsive générées pour le srcset (voir WorkItem.astro).
-// La pleine résolution <nom>.webp sert le palier 1920w ; on décline ensuite
-// un palier 1280 (desktop standard) et 640 (mobile).
+
+// Variantes responsive générées pour les images posées à la main (public/live/).
 const VARIANTS = [
   { suffix: '-1280', width: 1280, quality: 82 },
   { suffix: '-640', width: 640, quality: 78 },
 ];
-const VARIANT_RE = /-(?:1280|640)\.webp$/; // reconnaît un fichier déjà "variante"
+const VARIANT_RE = /-(?:1280|640)\.webp$/;
+
 // Domaine autorisé pour les vidéos privées Vimeo (restreintes par domaine).
-// Vimeo ne renvoie la miniature que si la requête provient de ce domaine.
+// Vimeo ne renvoie la miniature que si la requête oEmbed provient de ce domaine.
 const SITE_DOMAIN = process.env.SITE_DOMAIN || 'https://roxane-foare.com';
+
+// Reconnaît le suffixe de largeur Vimeo (`..._1280` ou `..._1280?region=us`)
+// pour en extraire l'URL de base, à laquelle on rajoute ensuite la largeur
+// voulue (voir WorkItem.astro).
+const WIDTH_SUFFIX_RE = /_\d+(\?.*)?$/;
 
 async function exists(p) {
   try {
@@ -48,13 +65,20 @@ async function exists(p) {
   }
 }
 
-/** Construit l'URL oEmbed (gère les vidéos privées avec hash). */
 function oembedUrl(id, hash) {
   const videoUrl = hash ? `https://vimeo.com/${id}/${hash}` : `https://vimeo.com/${id}`;
-  return `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}&width=${THUMB_WIDTH}`;
+  return `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoUrl)}&width=1920`;
 }
 
-async function fetchThumb(id, hash) {
+// Vimeo renvoie `upload_date` en UTC, format "YYYY-MM-DD HH:MM:SS" (pas de
+// suffixe de fuseau) - on le convertit en ISO 8601 complet ("Z" = UTC).
+function toIsoUtc(uploadDate) {
+  if (!uploadDate) return null;
+  const iso = uploadDate.replace(' ', 'T') + 'Z';
+  return Number.isNaN(Date.parse(iso)) ? null : iso;
+}
+
+async function resolveThumbInfo(id, hash) {
   const res = await fetch(oembedUrl(id, hash), {
     // Referer/Origin du domaine autorisé : indispensable pour que Vimeo
     // renvoie la miniature des vidéos privées restreintes par domaine.
@@ -75,25 +99,16 @@ async function fetchThumb(id, hash) {
         : 'thumbnail_url absent de la réponse oEmbed'
     );
   }
-
-  const imgRes = await fetch(url);
-  if (!imgRes.ok) throw new Error(`image HTTP ${imgRes.status}`);
-  const buf = Buffer.from(await imgRes.arrayBuffer());
-
-  // Plafonne la résolution : Vimeo renvoie parfois du 4K, inutilement lourd
-  // pour des vignettes. On borne la largeur et on ré-encode en WebP.
-  return sharp(buf)
-    .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-    .webp({ quality: 85 })
-    .toBuffer();
+  if (!WIDTH_SUFFIX_RE.test(url)) {
+    throw new Error(`format d'URL Vimeo inattendu : ${url}`);
+  }
+  // Retire le suffixe de largeur (`_1280?region=us` -> ``) pour ne garder
+  // que la base, à laquelle WorkItem.astro rajoute la largeur voulue.
+  const thumbBase = url.replace(WIDTH_SUFFIX_RE, '');
+  const uploadDate = toIsoUtc(data.upload_date);
+  return { thumbBase, uploadDate };
 }
 
-/**
- * Génère, pour chaque image .webp d'un dossier, les variantes de largeur réduite
- * (`<nom>-1280.webp` et `<nom>-640.webp`) destinées au `srcset` responsive. Les
- * variantes déjà présentes ne sont jamais réécrites. Couvre aussi bien les
- * miniatures auto-générées que les images posées à la main (affiches, live).
- */
 async function ensureVariants(dir) {
   let files;
   try {
@@ -131,43 +146,44 @@ async function ensureVariants(dir) {
 async function main() {
   const raw = JSON.parse(await readFile(DATA, 'utf8'));
   const videos = raw.videos || raw;
-  await mkdir(THUMBS_DIR, { recursive: true });
+  await mkdir(dirname(CACHE_FILE), { recursive: true });
 
-  let generated = 0;
-  let skipped = 0;
-  let failed = 0;
-
-  for (const v of videos) {
-    if (!v.id) continue; // pas d'ID Vimeo (vidéos Live) -> rien à faire
-    const target = join(THUMBS_DIR, `${v.id}.webp`);
-
-    if (await exists(target)) {
-      skipped++;
-      continue;
-    }
-
+  let previous = {};
+  if (await exists(CACHE_FILE)) {
     try {
-      const webp = await fetchThumb(v.id, v.hash);
-      await writeFile(target, webp);
-      generated++;
-      console.log(`  ✓ miniature générée : thumbs/${v.id}.webp  (${v.title})`);
-    } catch (err) {
-      failed++;
-      // On ne casse pas le build : la vignette s'affichera sans image (fond gris)
-      console.warn(`  ⚠ échec miniature ${v.id} (${v.title}) : ${err.message}`);
+      previous = JSON.parse(await readFile(CACHE_FILE, 'utf8'));
+    } catch {
+      previous = {};
     }
   }
 
-  console.log(
-    `[thumbs] ${generated} générée(s), ${skipped} déjà présente(s), ${failed} échec(s).`
-  );
+  const cache = {};
+  let resolved = 0;
+  let failed = 0;
 
-  // Variantes responsive 640px pour thumbs + live.
-  const vt = await ensureVariants(THUMBS_DIR);
+  for (const v of videos) {
+    if (!v.id || v.thumb) continue; // pas d'ID Vimeo, ou override manuel -> rien à faire
+    try {
+      cache[v.id] = await resolveThumbInfo(v.id, v.hash);
+      resolved++;
+    } catch (err) {
+      failed++;
+      // On retombe sur la dernière info connue plutôt que de perdre la
+      // miniature/date pour un souci réseau ponctuel.
+      if (previous[v.id]) {
+        cache[v.id] = previous[v.id];
+        console.warn(`  ⚠ miniature ${v.id} (${v.title}) : ${err.message} - garde les infos précédentes`);
+      } else {
+        console.warn(`  ⚠ échec miniature ${v.id} (${v.title}) : ${err.message}`);
+      }
+    }
+  }
+
+  await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2) + '\n');
+  console.log(`[thumbs] ${resolved} vidéo(s) résolue(s), ${failed} échec(s).`);
+
   const vl = await ensureVariants(LIVE_DIR);
-  console.log(
-    `[variants] ${vt.made + vl.made} générée(s), ${vt.kept + vl.kept} déjà présente(s).`
-  );
+  console.log(`[variants] ${vl.made} générée(s), ${vl.kept} déjà présente(s).`);
 }
 
 main().catch((err) => {

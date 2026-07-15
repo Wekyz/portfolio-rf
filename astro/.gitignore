@@ -2,6 +2,9 @@
 dist/
 .astro/
 
+# cache généré au build (résolution des URL de miniatures Vimeo CDN)
+src/data/vimeo-thumbs.json
+
 # deps
 node_modules/
 
