@@ -16,6 +16,11 @@ export default defineConfig({
   compressHTML: true,
   // Pas de télémétrie réseau pendant le build
   devToolbar: { enabled: false },
+  // Aucun contenu Markdown/bloc de code sur ce site : on désactive Shiki (le
+  // surligneur par défaut d'Astro) plutôt que de le laisser tourner pour
+  // rien - il génère des styles inline incompatibles avec la CSP stricte
+  // ci-dessous (warning de build sinon).
+  markdown: { syntaxHighlight: false },
   // CSP : Astro calcule au build les hashes SHA-256 des scripts/styles inline
   // (JSON-LD, script client) et les injecte dans une balise <meta> - plus
   // besoin de 'unsafe-inline' (script-src/style-src gérés automatiquement).
