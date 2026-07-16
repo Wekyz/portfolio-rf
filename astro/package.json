@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Portfolio Roxane Foare - site Astro bilingue EN/FR, en production sur Vercel.",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "thumbs": "node scripts/fetch-thumbs.mjs",
     "predev": "node scripts/fetch-thumbs.mjs",
@@ -11,12 +14,13 @@
     "prebuild": "node scripts/fetch-thumbs.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
-    "astro": "^7.0.6",
+    "astro": "^7.1.0",
     "sharp": "^0.35.3"
   },
   "overrides": {

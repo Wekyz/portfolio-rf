@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test (smoke tests, /api/contact)
+        run: npm test
+
       - name: Build (astro build, includes thumbs fetch)
         run: npm run build
 
