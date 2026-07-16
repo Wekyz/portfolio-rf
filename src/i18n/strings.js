@@ -7,7 +7,6 @@
    ============================================================ */
 
 export const defaultLang = 'en';
-export const languages = ['en', 'fr'];
 
 export const ui = {
   en: {

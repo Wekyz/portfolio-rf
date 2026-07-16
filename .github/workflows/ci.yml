@@ -8,11 +8,8 @@ on:
 
 jobs:
   build:
-    name: Build & audit (astro/)
+    name: Build & audit
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: astro
 
     steps:
       - name: Checkout
@@ -21,9 +18,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: astro/.nvmrc
+          node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: astro/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci

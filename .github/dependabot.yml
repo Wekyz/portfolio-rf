@@ -1,8 +1,8 @@
 version: 2
 updates:
-  # Dépendances npm du site Astro (dossier astro/)
+  # Dépendances npm du site (racine du dépôt)
   - package-ecosystem: "npm"
-    directory: "/astro"
+    directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5

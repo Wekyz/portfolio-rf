@@ -1,27 +1,37 @@
+# Sveltia CMS - backend GitHub + OAuth (remplace Netlify Identity/git-gateway).
+# base_url doit pointer vers ton relais OAuth (ex. worker sveltia-cms-auth).
 backend:
-  name: git-gateway
+  name: github
+  repo: Wekyz/portfolio-rf
   branch: main
+  base_url: https://sveltia-cms-auth.wekyz.workers.dev
 
 locale: fr
 
-media_folder: "thumbs"
-public_folder: "thumbs"
+# media_folder : où Decap COMMIT les fichiers (chemin repo)
+# public_folder : URL publique servie par le site
+# Aucun champ ci-dessous n'utilise de widget image/file (les miniatures
+# viennent du CDN Vimeo, voir le champ `thumb`) : ces deux réglages ne
+# servent qu'aux overrides manuels (ex. live/live1.webp), d'où le chemin
+# vers public/live plutôt que l'ancien public/thumbs (supprimé).
+media_folder: "public/live"
+public_folder: "/live"
 
 collections:
   - name: "videos"
     label: "Vidéos"
     label_singular: "Vidéo"
-    description: "Liste des vidéos du portfolio — l'ordre ici est l'ordre d'affichage sur le site."
+    description: "Liste des vidéos du portfolio - l'ordre ici est l'ordre d'affichage sur le site."
     files:
       - name: "videos"
         label: "Liste des vidéos"
-        file: "videos.json"
+        file: "src/data/videos.json"
         fields:
           - name: "videos"
             label: "Vidéos"
             label_singular: "Vidéo"
             widget: list
-            summary: "{{fields.title}} — {{fields.cat}}"
+            summary: "{{fields.title}} - {{fields.cat}}"
             fields:
 
               - name: cat
@@ -32,7 +42,6 @@ collections:
                   - { label: "Feature Film",  value: "film"   }
                   - { label: "Documentary",   value: "doc"    }
                   - { label: "Corporate",     value: "corpo"  }
-                  - { label: "Music Video",   value: "clip"   }
                   - { label: "Event",         value: "event"  }
                   - { label: "Teaser",        value: "teaser" }
                   - { label: "Live",          value: "live"   }
@@ -66,10 +75,10 @@ collections:
                 hint: "Uniquement pour les vidéos privées Vimeo"
 
               - name: thumb
-                label: "Miniature"
+                label: "Miniature (optionnel)"
                 widget: string
                 required: false
-                hint: "Chemin relatif : thumbs/VIMEO_ID.webp  ou  live/live1.webp"
+                hint: "Laisser VIDE : la miniature est récupérée automatiquement depuis Vimeo au build. Ne remplir que pour forcer une image précise (ex. live/live1.webp ou une affiche)."
 
               - name: fullWidth
                 label: "Pleine largeur"
@@ -82,7 +91,7 @@ collections:
                 label: "Lien externe"
                 widget: string
                 required: false
-                hint: "URL externe — remplace le lecteur Vimeo au clic"
+                hint: "URL externe - remplace le lecteur Vimeo au clic"
 
               - name: noClick
                 label: "Non cliquable"

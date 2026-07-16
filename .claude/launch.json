@@ -4,7 +4,7 @@
     {
       "name": "astro-preview",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "astro", "run", "preview"],
+      "runtimeArgs": ["run", "preview"],
       "port": 4321
     }
   ]
