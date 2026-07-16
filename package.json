@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Portfolio Roxane Foare - site Astro bilingue EN/FR, en production sur Vercel.",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "scripts": {
     "thumbs": "node scripts/fetch-thumbs.mjs",
