@@ -132,6 +132,7 @@ if (videoLd.itemListElement.length > 0) {
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content={t('head.ogImageAlt')} />
+  <meta property="og:logo" content={`${SITE}/favicon.png`} />
   <meta property="og:url" content={canonical} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content={t('head.ogLocale')} />
@@ -152,6 +153,11 @@ if (videoLd.itemListElement.length > 0) {
   <link rel="preload" as="font" type="font/woff2" href="/HennessySerif1765.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DalaFloda-Roman.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DMSans-latin.woff2" crossorigin />
+
+  <!-- Connexion anticipée vers Vimeo : la 1re miniature (preload ci-dessous)
+       et les lecteurs (lightbox + embeds masqués) en dépendent tous deux. -->
+  <link rel="preconnect" href="https://i.vimeocdn.com" />
+  <link rel="preconnect" href="https://player.vimeo.com" />
 
   <!-- Préchargement de l'image LCP (1ʳᵉ vignette) -->
   {firstThumb && (

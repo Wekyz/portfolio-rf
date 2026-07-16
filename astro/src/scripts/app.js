@@ -14,6 +14,7 @@ import { applySpans } from '../lib/spans.js';
   const lightboxFrame = document.getElementById('lightboxFrame');
   const lightboxClose = document.getElementById('lightboxClose');
   const contactForm = document.querySelector('.contact-form');
+  const formStatus = document.getElementById('formStatus');
   const formLoadTime = Date.now();
 
   // Libellés du bouton d'envoi selon la langue de la page (en / fr).
@@ -125,6 +126,9 @@ import { applySpans } from '../lib/spans.js';
       btn.innerHTML = FORM_LABELS.sending;
       btn.disabled = true;
       btn.classList.remove('is-success', 'is-error');
+      // Le libellé du bouton est visuel uniquement (innerHTML) : cette région
+      // aria-live annonce le même statut aux lecteurs d'écran.
+      if (formStatus) formStatus.textContent = FORM_LABELS.sending;
 
       fetch('/api/contact', {
         method: 'POST',
@@ -135,17 +139,20 @@ import { applySpans } from '../lib/spans.js';
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           btn.innerHTML = FORM_LABELS.sent;
           btn.classList.add('is-success');
+          if (formStatus) formStatus.textContent = FORM_LABELS.sent;
           form.reset();
         })
         .catch(() => {
           btn.innerHTML = FORM_LABELS.error;
           btn.classList.add('is-error');
+          if (formStatus) formStatus.textContent = FORM_LABELS.error;
         })
         .finally(() => {
           setTimeout(() => {
             btn.innerHTML = originalHTML;
             btn.classList.remove('is-success', 'is-error');
             btn.disabled = false;
+            if (formStatus) formStatus.textContent = '';
           }, 4000);
         });
     });
