@@ -423,6 +423,9 @@ footer {
 }
 .footer-name { font-family: var(--font-dala); font-size: 18px; font-weight: 400; }
 .footer-copy { font-size: 12px; color: var(--gray-mid); letter-spacing: .04em; }
+.footer-credit { justify-self: end; }
+.footer-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.footer-credit a:hover { color: var(--black); }
 
 /* ── LIGHTBOX ─────────────────────────────────────────────── */
 .lightbox {

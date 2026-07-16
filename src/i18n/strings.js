@@ -87,6 +87,7 @@ export const ui = {
 
     // Footer
     'footer.rights': 'All rights reserved',
+    'footer.creditPrefix': 'Site made by',
 
     // Lightbox
     'lb.dialog': 'Video player',
@@ -172,6 +173,7 @@ export const ui = {
 
     // Footer
     'footer.rights': 'Tous droits réservés',
+    'footer.creditPrefix': 'Site réalisé par',
 
     // Lightbox
     'lb.dialog': 'Lecteur vidéo',
