@@ -9,7 +9,7 @@ import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
 import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
-import { resolveThumb, getUploadDate } from '../lib/thumb.js';
+import { resolveThumb, getUploadDate, getDuration } from '../lib/thumb.js';
 import { useTranslations } from '../i18n/strings.js';
 
 const { lang = 'en' } = Astro.props;
@@ -57,6 +57,7 @@ const videoLd = {
         // complet si indisponible (override manuel, échec réseau) - Google
         // signalait l'ancien format `${year}-01-01` sans heure ni fuseau.
         uploadDate: getUploadDate(p) ?? `${p.year}-01-01T00:00:00Z`,
+        duration: getDuration(p) ?? undefined,
         embedUrl: `https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`,
       },
     })),

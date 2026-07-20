@@ -107,7 +107,10 @@ async function resolveThumbInfo(id, hash) {
   // que la base, à laquelle WorkItem.astro rajoute la largeur voulue.
   const thumbBase = url.replace(WIDTH_SUFFIX_RE, '');
   const uploadDate = toIsoUtc(data.upload_date);
-  return { thumbBase, uploadDate };
+  // `duration` (secondes) est déjà présent dans la même réponse oEmbed -
+  // convertie en ISO 8601 (Base.astro) pour le JSON-LD VideoObject.
+  const durationSeconds = Number.isFinite(data.duration) ? data.duration : null;
+  return { thumbBase, uploadDate, durationSeconds };
 }
 
 async function ensureVariants(dir) {

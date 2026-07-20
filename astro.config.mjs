@@ -37,7 +37,12 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'self'",
         "object-src 'none'",
-        "frame-ancestors 'self'",
+        // Pas de frame-ancestors ici : la spec l'ignore explicitement quand
+        // la CSP est livrée via <meta> (seul mode possible en sortie 100 %
+        // statique) - la garder ne fait que générer un avertissement console
+        // sur chaque page sans aucune protection réelle. La même protection
+        // est déjà assurée par le vrai header HTTP X-Frame-Options:
+        // SAMEORIGIN (vercel.json), non soumis à cette limitation.
         "font-src 'self' data:",
         "img-src 'self' data: blob: https://*.vimeocdn.com https://*.vimeo.com https://i.vimeocdn.com",
         "frame-src https://player.vimeo.com",
