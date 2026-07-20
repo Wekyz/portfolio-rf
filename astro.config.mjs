@@ -9,6 +9,10 @@ export default defineConfig({
   build: {
     // Conserve l'arborescence simple (index.html à la racine de dist/)
     format: 'file',
+    // La feuille de style globale (~4 Ko) est petite et unique : l'inliner
+    // dans le <head> évite une requête bloquant le rendu initial (LCP/FCP),
+    // repérée par PageSpeed Insights (~90-160 ms sur /_astro/Base.*.css).
+    inlineStylesheets: 'always',
   },
   // Astro 7 : compressHTML par défaut passe à 'jsx' (règles React/JSX pour les
   // espaces). On fige l'ancien comportement (true) pour ne pas introduire de

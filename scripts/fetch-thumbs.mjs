@@ -43,9 +43,10 @@ const LIVE_DIR = join(ROOT, 'public', 'live');
 // Variantes responsive générées pour les images posées à la main (public/live/).
 const VARIANTS = [
   { suffix: '-1280', width: 1280, quality: 82 },
+  { suffix: '-960', width: 960, quality: 80 },
   { suffix: '-640', width: 640, quality: 78 },
 ];
-const VARIANT_RE = /-(?:1280|640)\.webp$/;
+const VARIANT_RE = /-(?:1280|960|640)\.webp$/;
 
 // Domaine autorisé pour les vidéos privées Vimeo (restreintes par domaine).
 // Vimeo ne renvoie la miniature que si la requête oEmbed provient de ce domaine.

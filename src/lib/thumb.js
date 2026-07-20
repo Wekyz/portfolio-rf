@@ -28,7 +28,7 @@ export function resolveThumb(p) {
     const base = localThumb.replace(/\.webp$/, '');
     return {
       src: localThumb,
-      srcset: `${base}-640.webp 640w, ${base}-1280.webp 1280w, ${localThumb} 1920w`,
+      srcset: `${base}-640.webp 640w, ${base}-960.webp 960w, ${base}-1280.webp 1280w, ${localThumb} 1920w`,
       responsive: true,
     };
   }
@@ -36,7 +36,11 @@ export function resolveThumb(p) {
   if (vimeoBase) {
     return {
       src: `${vimeoBase}_1280?region=us`,
-      srcset: `${vimeoBase}_640?region=us 640w, ${vimeoBase}_1280?region=us 1280w, ${vimeoBase}_1920?region=us 1920w`,
+      // Le CDN Vimeo redimensionne à la volée : le palier -960 (ajouté ici,
+      // rien à générer) comble l'écart entre 640 et 1280 qui forçait le
+      // navigateur à choisir 1280 pour des vignettes affichées ~700-950px
+      // (surpoids repéré par PageSpeed Insights).
+      srcset: `${vimeoBase}_640?region=us 640w, ${vimeoBase}_960?region=us 960w, ${vimeoBase}_1280?region=us 1280w, ${vimeoBase}_1920?region=us 1920w`,
       responsive: true,
     };
   }
