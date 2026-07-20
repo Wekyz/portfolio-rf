@@ -71,6 +71,27 @@ Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
 (optionnel) : `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (intégration
 Vercel Marketplace Upstash).
 
+## Workflow git
+
+Depuis le 2026-07-20 : plus de push direct sur `main`. Chaque changement passe
+par une branche + une Pull Request.
+
+```bash
+git checkout -b feat/nom-court     # ou fix/, chore/, perf/...
+# ... commits ...
+git push -u origin feat/nom-court
+# ouvrir la PR sur GitHub (lien affiché par le push), merge une fois la CI verte
+```
+
+La CI (`.github/workflows/ci.yml` - build, tests, `npm audit`) tourne
+automatiquement sur chaque push et chaque PR ; c'est le check requis avant
+merge.
+
+> **Protection de branche** (à activer une fois, côté GitHub - pas versionné
+> dans le dépôt) : *Settings → Branches → Add rule* sur `main`, cocher
+> *"Require a pull request before merging"* et *"Require status checks to
+> pass before merging"* (check `Build & audit`).
+
 ## Édition du contenu (monteuse)
 
 Via le CMS **Sveltia** sur `/admin/` (auth **GitHub OAuth**). La config
