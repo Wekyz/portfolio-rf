@@ -8,6 +8,7 @@
  *   RESEND_FROM               expéditeur vérifié, ex. "Portfolio <noreply@roxane-foare.com>"
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir ci-dessous) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
+ *   SENTRY_DSN                suivi d'erreurs (voir api/_lib/sentry.js) - optionnel
  *
  * Le `from` doit appartenir à un domaine vérifié dans Resend (SPF/DKIM).
  *
@@ -24,6 +25,7 @@
  */
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import Sentry from './_lib/sentry.js';
 
 let ratelimit = null;
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -71,6 +73,8 @@ export default async function handler(req, res) {
   const to = process.env.CONTACT_EMAIL;
   const from = process.env.RESEND_FROM || 'Portfolio <noreply@roxane-foare.com>';
   if (!apiKey || !to) {
+    Sentry.captureMessage('Service email non configuré (RESEND_API_KEY/CONTACT_EMAIL manquant)', 'error');
+    await Sentry.flush(2000);
     return res.status(500).json({ error: 'Service email non configuré.' });
   }
 
@@ -90,10 +94,15 @@ export default async function handler(req, res) {
       }),
     });
     if (!r.ok) {
+      const detail = await r.text().catch(() => '');
+      Sentry.captureException(new Error(`Resend a répondu ${r.status}`), { extra: { detail } });
+      await Sentry.flush(2000);
       return res.status(502).json({ error: 'Envoi impossible.' });
     }
     return res.status(200).json({ ok: true });
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
+    await Sentry.flush(2000);
     return res.status(502).json({ error: 'Envoi impossible.' });
   }
 }

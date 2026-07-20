@@ -69,7 +69,15 @@ push/PR vers `main`.
 Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
 `CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`. Rate limiting du formulaire
 (optionnel) : `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (intégration
-Vercel Marketplace Upstash).
+Vercel Marketplace Upstash). Suivi d'erreurs (optionnel) : `SENTRY_DSN` -
+voir [`api/_lib/sentry.js`](api/_lib/sentry.js), capture les échecs d'envoi
+réels (Resend en erreur, config manquante) sur `api/contact.js` et
+`api/email.js`. Projet Sentry : org **wekyz**, projet `portfolio-rf`.
+
+**Uptime** : UptimeRobot surveille `https://roxane-foare.com` (200 attendu)
+et `https://roxane-foare.com/api/contact` en GET (405 attendu - la fonction
+rejette déjà les méthodes non-POST avant tout appel Resend/Upstash, donc un
+405 propre prouve juste qu'elle est déployée et répond).
 
 ## Édition du contenu (monteuse)
 

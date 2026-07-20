@@ -123,6 +123,37 @@ test('soumission valide : tente l\'envoi via Resend', async () => {
   assert.equal(res.body.ok, true);
 });
 
+test('Resend répond en erreur : répond 502 (et le flush Sentry ne bloque pas)', async () => {
+  process.env.RESEND_API_KEY = 'test-key';
+  process.env.CONTACT_EMAIL = 'contact@example.com';
+
+  const res = mockRes();
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({ ok: false, status: 429, text: async () => 'rate limited' });
+  try {
+    await handler(
+      {
+        method: 'POST',
+        headers: {},
+        body: JSON.stringify({
+          'first-name': 'Jane',
+          'last-name': 'Doe',
+          email: 'jane@example.com',
+          message: 'Bonjour',
+        }),
+      },
+      res
+    );
+  } finally {
+    global.fetch = originalFetch;
+    delete process.env.RESEND_API_KEY;
+    delete process.env.CONTACT_EMAIL;
+  }
+
+  assert.equal(res.statusCode, 502);
+  assert.equal(res.body.error, 'Envoi impossible.');
+});
+
 test('service email non configuré : répond 500', async () => {
   const res = mockRes();
   await handler(
