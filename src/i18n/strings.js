@@ -66,7 +66,7 @@ export const ui = {
     'about.title': 'About',
     'about.introParagraphs': [
       'For over ten years, Roxane has been working with directors, agencies, brands, and production companies to create films in a variety of formats and genres. From feature films to documentaries, from commercials to corporate videos, from event coverage to social media content, she approaches every project with the same high standard: to captivate the audience by revealing the story’s intent through precise, sensitive, and masterful editing.',
-      'Her career has also taken her into live editing, primarily at sporting events, where she has worked as a video mixer, LSM operator, and director.',
+      'Her career has also taken her into live editing, primarily at sporting events, where she has worked as a synth operator, LSM operator, and director.',
       'Her work on the feature film <em>En mille morceaux</em> was recognized with two Best Editing Awards, presented by the Cyprus International Film Festival and the Athens International Film Festival.',
       'Editing is much more than just a post-production step. Every cut is carefully considered, and every shot choice contributes to the construction of the narrative.',
       'Attentive to the needs of all types of productions, Roxane strives to foster a collaborative, fluid, and creative working relationship.',

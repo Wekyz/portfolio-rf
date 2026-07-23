@@ -120,7 +120,7 @@ body {
 
 /* ── NAV ──────────────────────────────────────────────────── */
 nav {
-  position: relative;
+  position: relative; z-index: 500;
   display: flex; align-items: center; justify-content: space-between;
   padding: 28px 56px;
   border-bottom: 1px solid var(--gray-light);
@@ -179,19 +179,19 @@ nav.nav-flush { border-bottom-color: transparent; }
 .hero { padding: 0 56px; }
 .showreel {
   position: relative; width: 100%; overflow: hidden;
-  aspect-ratio: 1920 / 803; background: var(--black);
+  aspect-ratio: 1920 / 803; background: var(--white);
 }
-/* "Cover" reconstruit nous-mêmes : le mode background=1 de Vimeo ne recadre
-   pas la vidéo de façon fiable sur un conteneur plus étroit que son ratio
-   natif (bandes noires constatées sur mobile, showreel 4/3 vs vidéo
-   1920/803). Hauteur fixée à 100% + ratio natif de la vidéo (largeur en
-   auto) : l'iframe déborde horizontalement sur les conteneurs plus étroits,
-   recadré par l'overflow:hidden de .showreel et centré via translate. Sur
-   un conteneur au même ratio que la vidéo (desktop), le calcul retombe
-   exactement sur 100% de largeur, sans aucune distorsion. */
+/* "Contain" reconstruit nous-mêmes : on veut la vidéo entière, jamais
+   recadrée, quelle que soit la forme de l'écran - avec des bandes (blanches,
+   couleur du fond du site) plutôt qu'un crop sur les côtés. Largeur 100% +
+   ratio natif de la vidéo (hauteur en auto), plafonné par max-height:100% :
+   sur un conteneur plus étroit que la vidéo (mobile), la hauteur calculée
+   est plus petite que celle du conteneur -> bandes en haut/bas, vidéo
+   entière visible. Sur un conteneur au même ratio (desktop), ça retombe
+   exactement sur 100%/100%, sans bande ni distorsion. */
 .showreel-frame {
   position: absolute; top: 50%; left: 50%;
-  height: 100%; width: auto; min-width: 100%;
+  width: 100%; height: auto; max-height: 100%;
   aspect-ratio: 1920 / 803;
   border: 0;
   transform: translate(-50%, -50%);
@@ -203,7 +203,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   font-family: var(--font-hennessy);
   font-size: clamp(11px, 1.1vw, 14px); white-space: nowrap;
   font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
-  color: var(--gray-dark); margin-bottom: 32px;
+  color: var(--gray-dark); margin-bottom: 56px;
 }
 .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 .hero-cta-btn {
