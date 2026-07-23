@@ -12,19 +12,25 @@ commercials, feature films, documentaries, corporate films, live sports
 broadcast (PSG, Volleyball World Cup) and events.
 
 Site language: English is the default (`/`), French is available at `/fr`
-(same content, translated interface).
+(same content, translated interface). The site has 3 pages per language.
 
 ## Pages
 
-- [Portfolio (EN)](https://roxane-foare.com/): work grid, about, contact -
+- [Home (EN)](https://roxane-foare.com/) / [Home (FR)](https://roxane-foare.com/fr):
+  looping showreel and links to the Portfolio and About pages.
+- [Portfolio (EN)](https://roxane-foare.com/portfolio) /
+  [Portfolio (FR)](https://roxane-foare.com/fr/portfolio): work grid + contact -
   commercial, feature film, documentary, corporate, event, teaser and live
   broadcast projects, filterable by category.
-- [Portfolio (FR)](https://roxane-foare.com/fr): identical content in French.
+- [About (EN)](https://roxane-foare.com/about) /
+  [About (FR)](https://roxane-foare.com/fr/about): bio, software, productions,
+  client brands + contact.
 
 ## Contact
 
-Contact form and email link on the site (`/#contact`). See also the IMDb
-profile linked from the site's structured data.
+Contact form and email link at the bottom of the Portfolio and About pages
+(`/portfolio#contact`, `/about#contact`). See also the IMDb profile linked
+from the site's structured data.
 
 ## Notes for automated agents
 

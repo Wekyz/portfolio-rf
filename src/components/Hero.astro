@@ -1,0 +1,40 @@
+---
+// Section Accueil : showreel Vimeo en boucle (format cinéma 1920×803) + CTA
+// vers les pages Portfolio et About.
+import { useTranslations } from '../i18n/strings.js';
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
+const base = lang === 'fr' ? '/fr' : '';
+
+// Showreel Vimeo (vidéo privée : hash requis). `background=1` demande à
+// Vimeo de faire jouer la vidéo en boucle, muette, sans UI, et de la faire
+// "cover" tout l'iframe (comportement équivalent à object-fit:cover) quel
+// que soit le ratio natif de la vidéo - voir .showreel-frame en CSS.
+const VIMEO_ID = '1211961310';
+const VIMEO_HASH = '33632a8dbb';
+const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&background=1&autoplay=1&loop=1&muted=1&quality=1080p`;
+---
+<section id="hero" class="hero">
+  <div class="showreel" role="img" aria-label={t('hero.showreelLabel')}>
+    <iframe
+      class="showreel-frame"
+      src={embedSrc}
+      title={t('hero.showreelLabel')}
+      allow="autoplay; fullscreen"
+      loading="eager"
+    ></iframe>
+  </div>
+
+  <div class="hero-content">
+    <p class="hero-tagline">{t('hero.tagline')}</p>
+    <div class="hero-cta">
+      <a href={`${base}/portfolio`} class="hero-cta-btn hero-cta-primary">
+        {t('hero.ctaPortfolio')}
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
+          <path d="M0 5H14M10 1L14 5L10 9" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </a>
+      <a href={`${base}/about`} class="hero-cta-btn hero-cta-secondary">{t('hero.ctaAbout')}</a>
+    </div>
+  </div>
+</section>

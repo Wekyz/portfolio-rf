@@ -2,7 +2,15 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/fr", "destination": "/fr.html" },
-    { "source": "/fr/", "destination": "/fr.html" }
+    { "source": "/fr/", "destination": "/fr.html" },
+    { "source": "/portfolio", "destination": "/portfolio.html" },
+    { "source": "/portfolio/", "destination": "/portfolio.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/about/", "destination": "/about.html" },
+    { "source": "/fr/portfolio", "destination": "/fr/portfolio.html" },
+    { "source": "/fr/portfolio/", "destination": "/fr/portfolio.html" },
+    { "source": "/fr/about", "destination": "/fr/about.html" },
+    { "source": "/fr/about/", "destination": "/fr/about.html" }
   ],
   "headers": [
     {

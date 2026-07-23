@@ -1,5 +1,8 @@
 ---
-// Version anglaise (par défaut) servie sur "/".
+// Accueil (EN, par défaut) : showreel + CTA vers Portfolio et About.
 import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
 ---
-<Base lang="en" />
+<Base lang="en" page="home">
+  <Hero lang="en" />
+</Base>

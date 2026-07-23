@@ -8,6 +8,14 @@ Site **bilingue** : anglais sur `/` (par défaut), français sur `/fr`. Tous les
 textes d'interface sont centralisés dans `src/i18n/strings.js` ; les composants
 reçoivent une prop `lang` et utilisent `useTranslations(lang)`.
 
+**3 pages** par langue : Accueil (`/`, `/fr` - showreel + CTA), Portfolio
+(`/portfolio`, `/fr/portfolio` - grille de projets + contact) et About
+(`/about`, `/fr/about` - présentation + contact). Chaque route Vercel non
+racine (`/portfolio`, `/about`, `/fr/portfolio`, `/fr/about`, `/fr`) a besoin
+d'un rewrite explicite dans `vercel.json` vers son `.html` (conséquence de
+`build.format: 'file'` dans `astro.config.mjs`) - toute nouvelle page doit
+ajouter son rewrite.
+
 Application **Astro** (build statique), déployée sur Vercel.
 
 ## Développement
@@ -38,11 +46,15 @@ npm test         # tests fumée (node:test), ex. /api/contact
 ```
 .
 ├─ src/
-│  ├─ pages/index.astro        # version EN (/)
-│  ├─ pages/fr/index.astro     # version FR (/fr)
-│  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue
+│  ├─ pages/index.astro        # Accueil EN (/)
+│  ├─ pages/portfolio.astro    # Portfolio EN (/portfolio)
+│  ├─ pages/about.astro        # About EN (/about)
+│  ├─ pages/fr/index.astro     # Accueil FR (/fr)
+│  ├─ pages/fr/portfolio.astro # Portfolio FR (/fr/portfolio)
+│  ├─ pages/fr/about.astro     # About FR (/fr/about)
+│  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue + page
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
-│  ├─ components/              # Nav, Work, WorkItem, About, Contact, Footer, Lightbox
+│  ├─ components/              # Nav, Hero, Work, WorkItem, About, Contact, Footer, Lightbox
 │  ├─ lib/spans.js             # pattern de grille (build + client)
 │  ├─ lib/thumb.js             # résolution src/srcset miniature (Vimeo CDN ou override local)
 │  ├─ scripts/app.js           # interactivité client (filtres, lightbox, form)

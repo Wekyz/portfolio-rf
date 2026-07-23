@@ -16,6 +16,17 @@ const spans = computeSpans(
 );
 
 const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
+
+// Un séparateur de section (titre centré) en tête de chaque catégorie -
+// l'ordre de videos.json est déjà groupé par catégorie (même ordre que
+// FILTERS ci-dessus), donc un simple suivi de la catégorie précédente suffit
+// à détecter les 7 changements de section.
+let lastCat = null;
+const gridEntries = projects.map((p, i) => {
+  const isNewCat = p.cat !== lastCat;
+  lastCat = p.cat;
+  return { project: p, placement: spans[i], isNewCat };
+});
 ---
 <section id="work">
   <div class="section-header">
@@ -24,7 +35,7 @@ const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
   </div>
 
   <div class="filters" role="group" aria-label={t('work.filterAria')}>
-    {FILTERS.map((value, i) => (
+    {['all', ...FILTERS].map((value, i) => (
       <>
         {i > 0 && <span class="filter-sep" aria-hidden="true">//</span>}
         <button class="filter-btn slide-label" data-filter={value}>
@@ -36,6 +47,17 @@ const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
   </div>
 
   <div class="work-grid" id="workGrid">
-    {projects.map((p, i) => <WorkItem project={p} placement={spans[i]} priority={i < 3} lang={lang} />)}
+    {gridEntries.map(({ project: p, placement, isNewCat }, i) => (
+      <>
+        {isNewCat && (
+          <div class="cat-divider" data-cat={p.cat}>
+            <span class="cat-divider-line" aria-hidden="true"></span>
+            <h3 class="cat-divider-title">{t(`cat.${p.cat}`)}</h3>
+            <span class="cat-divider-line" aria-hidden="true"></span>
+          </div>
+        )}
+        <WorkItem project={p} placement={placement} priority={i < 3} lang={lang} />
+      </>
+    ))}
   </div>
 </section>

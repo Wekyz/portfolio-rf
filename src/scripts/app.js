@@ -10,9 +10,6 @@ import { applySpans } from '../lib/spans.js';
   'use strict';
 
   const grid = document.getElementById('workGrid');
-  const lightboxEl = document.getElementById('lightbox');
-  const lightboxFrame = document.getElementById('lightboxFrame');
-  const lightboxClose = document.getElementById('lightboxClose');
   const contactForm = document.querySelector('.contact-form');
   const formStatus = document.getElementById('formStatus');
   const formLoadTime = Date.now();
@@ -24,95 +21,109 @@ import { applySpans } from '../lib/spans.js';
     fr: { sending: 'Envoi…', sent: 'Envoyé ✓', error: 'Erreur - réessayez' },
   }[lang];
 
-  if (!grid) return;
+  // ── Grille + lightbox + filtres (page Portfolio uniquement) ──
+  // La page Accueil et la page About n'ont ni grille ni lightbox dans leur
+  // HTML : ce bloc entier ne doit s'exécuter que quand #workGrid existe,
+  // sinon les querySelector du lightbox renverraient null (le composant
+  // Lightbox n'est présent que sur la page Portfolio).
+  if (grid) {
+    const lightboxEl = document.getElementById('lightbox');
+    const lightboxFrame = document.getElementById('lightboxFrame');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const originalOrder = Array.from(grid.querySelectorAll('.work-item'));
 
-  const originalOrder = Array.from(grid.querySelectorAll('.work-item'));
+    // ── Lightbox ────────────────────────────────────────────────
+    let lastFocused = null; // élément déclencheur, pour y revenir à la fermeture
 
-  // ── Lightbox ────────────────────────────────────────────────
-  let lastFocused = null; // élément déclencheur, pour y revenir à la fermeture
-
-  function openLightbox(vimeoId, hash) {
-    lastFocused = document.activeElement;
-    const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
-    if (hash) params.set('h', hash);
-    lightboxFrame.src = `https://player.vimeo.com/video/${vimeoId}?${params}`;
-    lightboxEl.classList.add('open', 'loading'); // 'loading' : affiche le spinner
-    document.body.style.overflow = 'hidden';
-    lightboxClose.focus();
-  }
-  // Le player Vimeo a fini de charger -> on masque le spinner.
-  lightboxFrame.addEventListener('load', () => lightboxEl.classList.remove('loading'));
-  function closeLightbox() {
-    lightboxEl.classList.remove('open');
-    lightboxFrame.src = '';
-    document.body.style.overflow = '';
-    // Rend le focus à la vignette qui a ouvert la modale (a11y).
-    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
-    lastFocused = null;
-  }
-  lightboxClose.addEventListener('click', closeLightbox);
-  lightboxEl.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeLightbox(); });
-  document.addEventListener('keydown', (e) => {
-    if (!lightboxEl.classList.contains('open')) return;
-    if (e.key === 'Escape') { closeLightbox(); return; }
-    // Piège à focus : maintient la tabulation à l'intérieur de la modale.
-    if (e.key === 'Tab') {
-      const focusables = [lightboxClose, lightboxFrame];
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault(); last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault(); first.focus();
-      }
+    function openLightbox(vimeoId, hash) {
+      lastFocused = document.activeElement;
+      const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
+      if (hash) params.set('h', hash);
+      lightboxFrame.src = `https://player.vimeo.com/video/${vimeoId}?${params}`;
+      lightboxEl.classList.add('open', 'loading'); // 'loading' : affiche le spinner
+      document.body.style.overflow = 'hidden';
+      lightboxClose.focus();
     }
-  });
-
-  // ── Clic sur une vignette ───────────────────────────────────
-  originalOrder.forEach((item) => {
-    const btn = item.querySelector('button.work-thumb-wrap');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      const { external, id, hash } = item.dataset;
-      // N'ouvre que des URL http(s) - empêche un schéma type `javascript:`
-      // de s'exécuter via window.open si une donnée du CMS était malformée.
-      if (external && /^https?:\/\//i.test(external)) {
-        window.open(external, '_blank', 'noopener,noreferrer');
-      } else if (id) {
-        openLightbox(id, hash || '');
+    // Le player Vimeo a fini de charger -> on masque le spinner.
+    lightboxFrame.addEventListener('load', () => lightboxEl.classList.remove('loading'));
+    function closeLightbox() {
+      lightboxEl.classList.remove('open');
+      lightboxFrame.src = '';
+      document.body.style.overflow = '';
+      // Rend le focus à la vignette qui a ouvert la modale (a11y).
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      lastFocused = null;
+    }
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxEl.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeLightbox(); });
+    document.addEventListener('keydown', (e) => {
+      if (!lightboxEl.classList.contains('open')) return;
+      if (e.key === 'Escape') { closeLightbox(); return; }
+      // Piège à focus : maintient la tabulation à l'intérieur de la modale.
+      if (e.key === 'Tab') {
+        const focusables = [lightboxClose, lightboxFrame];
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
       }
     });
-  });
 
-  // ── Filtres ─────────────────────────────────────────────────
-  const buttons = document.querySelectorAll('.filter-btn');
-  buttons.forEach((btn) => {
-    btn.setAttribute('aria-pressed', 'false');
-    btn.addEventListener('click', () => {
-      const wasActive = btn.classList.contains('active');
-      buttons.forEach((b) => {
-        b.classList.remove('active');
-        b.setAttribute('aria-pressed', 'false');
+    // ── Clic sur une vignette ───────────────────────────────────
+    originalOrder.forEach((item) => {
+      const btn = item.querySelector('button.work-thumb-wrap');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const { external, id, hash } = item.dataset;
+        // N'ouvre que des URL http(s) - empêche un schéma type `javascript:`
+        // de s'exécuter via window.open si une donnée du CMS était malformée.
+        if (external && /^https?:\/\//i.test(external)) {
+          window.open(external, '_blank', 'noopener,noreferrer');
+        } else if (id) {
+          openLightbox(id, hash || '');
+        }
       });
-
-      if (wasActive) {
-        originalOrder.forEach((item) => item.classList.remove('hidden'));
-        applySpans(originalOrder);
-      } else {
-        btn.classList.add('active');
-        btn.setAttribute('aria-pressed', 'true');
-        const f = btn.dataset.filter;
-        const visible = [];
-        originalOrder.forEach((item) => {
-          if (item.dataset.cat === f) { item.classList.remove('hidden'); visible.push(item); }
-          else { item.classList.add('hidden'); }
-        });
-        applySpans(visible);
-      }
     });
-  });
+
+    // ── Filtres ─────────────────────────────────────────────────
+    // "All" est le filtre par défaut (actif au chargement) ; les séparateurs
+    // de catégorie (voir Work.astro) n'ont de sens qu'en vue "All" - ils sont
+    // masqués dès qu'un filtre spécifique est actif.
+    const buttons = document.querySelectorAll('.filter-btn');
+    const dividers = document.querySelectorAll('.cat-divider');
+    buttons.forEach((btn) => btn.setAttribute('aria-pressed', String(btn.dataset.filter === 'all')));
+    buttons.forEach((btn) => btn.classList.toggle('active', btn.dataset.filter === 'all'));
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.filter;
+        buttons.forEach((b) => {
+          const isActive = b === btn;
+          b.classList.toggle('active', isActive);
+          b.setAttribute('aria-pressed', String(isActive));
+        });
+        dividers.forEach((d) => d.classList.toggle('hidden', f !== 'all'));
+
+        if (f === 'all') {
+          originalOrder.forEach((item) => item.classList.remove('hidden'));
+          applySpans(originalOrder);
+        } else {
+          const visible = [];
+          originalOrder.forEach((item) => {
+            if (item.dataset.cat === f) { item.classList.remove('hidden'); visible.push(item); }
+            else { item.classList.add('hidden'); }
+          });
+          applySpans(visible);
+        }
+      });
+    });
+  }
 
   // ── Contact form (POST /api/contact -> Resend, honeypot + délai anti-bot) ─
+  // Présent sur les pages Portfolio et About - indépendant de la grille.
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();

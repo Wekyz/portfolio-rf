@@ -154,6 +154,33 @@ nav {
 }
 .nav-lang:hover { color: var(--black) !important; border-color: var(--black); }
 
+/* ── HERO (Accueil) ───────────────────────────────────────── */
+.showreel {
+  position: relative; width: 100%; overflow: hidden;
+  aspect-ratio: 1920 / 803; background: var(--black);
+}
+.showreel-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.hero-content {
+  max-width: 640px; margin: 56px auto 0; padding: 0 56px; text-align: center;
+}
+.hero-tagline {
+  font-family: var(--font-hennessy);
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
+  color: var(--gray-dark); margin-bottom: 32px;
+}
+.hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.hero-cta-btn {
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 16px 32px;
+  font-family: var(--font-body); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  text-decoration: none; transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), gap var(--t-fast);
+}
+.hero-cta-primary { background: var(--black); color: var(--white); }
+.hero-cta-primary:hover { background: var(--gray-dark); gap: 22px; }
+.hero-cta-secondary { border: 1px solid var(--gray-mid); color: var(--black); }
+.hero-cta-secondary:hover { border-color: var(--black); }
+
 /* ── SECTION TITLE ────────────────────────────────────────── */
 .section-title {
   font-family: var(--font-hennessy);
@@ -187,6 +214,29 @@ nav {
 .filter-btn.active { font-weight: 500; color: var(--black); }
 .filter-sep {
   font-size: 11px; color: var(--gray-light); letter-spacing: .05em; user-select: none;
+}
+/* .lbl-in est positionné en absolu (top:0/left:0 de .slide-label) : cette
+   position ignore le padding du bouton .filter-btn (8px 2px), donc le texte
+   au survol apparaissait plus haut que le texte au repos (.lbl-out, en flux
+   normal, respecte lui le padding). On réaligne .lbl-in sur ce padding. */
+.filter-btn.slide-label .lbl-in { top: 8px; left: 2px; }
+
+/* ── SÉPARATEUR DE CATÉGORIE ─────────────────────────────────
+   Un par section (Commercial, Feature Film… Live) - titre centré entre deux
+   filets, en tête de grille. Masqué quand un filtre spécifique est actif
+   (voir app.js) : redondant face à une vue déjà réduite à une catégorie. */
+.cat-divider {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 24px;
+  padding: 48px 0;
+}
+.cat-divider.hidden { display: none; }
+.cat-divider-line { flex: 1; height: 1px; background: var(--gray-light); }
+.cat-divider-title {
+  font-family: var(--font-hennessy);
+  font-size: clamp(20px, 2.4vw, 32px);
+  font-weight: 400; letter-spacing: .02em; text-transform: uppercase;
+  color: var(--gray-dark); white-space: nowrap;
 }
 
 /* ── GRID ─────────────────────────────────────────────────── */
@@ -463,6 +513,9 @@ footer {
   .form-row { grid-template-columns: 1fr; }
   nav { padding-top: 20px; padding-bottom: 20px; }
   .brands-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */
+  .showreel { aspect-ratio: 4 / 3; }
+  .hero-content { padding: 0 24px; margin-top: 40px; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */

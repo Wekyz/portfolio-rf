@@ -10,36 +10,48 @@ export const defaultLang = 'en';
 
 export const ui = {
   en: {
-    // Document / SEO
-    'head.title': 'Roxane Foare - Video Editor · Paris & Angers',
-    'head.description': 'Roxane Foare - freelance video editor based in Paris & Angers. Film, documentary, commercial, corporate, live and event editing.',
-    'head.keywords': 'video editor Paris, freelance editor France, film editing, documentary editing, commercial editing, post-production Paris, monteuse video, montage Paris',
-    'head.ogTitle': 'Roxane Foare - Video Editor',
-    'head.ogDescription': 'Freelance video editor specialised in film, documentary, corporate, commercial, live & events.',
+    // Document / SEO - communs
     'head.ogImageAlt': 'Roxane Foare - Video Editor',
-    'head.twitterDescription': 'Freelance video editor - film, documentary, corporate, commercial, live & events.',
     'head.ogLocale': 'en_US',
     'head.jobTitle': 'Video Editor',
+
+    // Document / SEO - par page (title/description utilisés aussi pour OG + Twitter)
+    'head.home.title': 'Roxane Foare - Video Editor · Paris & Angers',
+    'head.home.description': 'Roxane Foare - freelance video editor based in Paris & Angers. Film, documentary, commercial, corporate, live and event editing.',
+    'head.home.keywords': 'video editor Paris, freelance editor France, film editing, documentary editing, commercial editing, post-production Paris, monteuse video, montage Paris',
+    'head.portfolio.title': 'Portfolio - Roxane Foare, Video Editor',
+    'head.portfolio.description': 'Selected work by Roxane Foare: feature films, documentaries, commercials, corporate videos, live broadcast and events.',
+    'head.portfolio.keywords': 'video editing portfolio, film editing reel, documentary editing, commercial editing, corporate video editing, montage Paris',
+    'head.about.title': 'About - Roxane Foare, Video Editor',
+    'head.about.description': "Meet Roxane Foare, freelance video editor based in Paris & Angers with over 10 years' experience across film, documentary, commercial and corporate projects.",
+    'head.about.keywords': 'freelance video editor Paris, monteuse video experience, video editor bio, editing software Premiere DaVinci Avid',
 
     // A11y
     'a11y.skip': 'Skip to content',
 
     // Nav
     'nav.sub': 'Video Editor',
-    'nav.work': 'Work',
+    'nav.work': 'Portfolio',
     'nav.about': 'About',
     'nav.contact': 'Contact',
     'nav.langLabel': 'FR',
     'nav.langAria': 'Voir le site en francais',
 
+    // Hero (Accueil)
+    'hero.tagline': 'Freelance video editor based in Paris & Angers - film, documentary, commercial, corporate, live and event editing.',
+    'hero.ctaPortfolio': 'View portfolio',
+    'hero.ctaAbout': 'About me',
+    'hero.showreelLabel': 'Showreel',
+
     // Work
-    'work.title': 'Work',
+    'work.title': 'Portfolio',
     'work.location': 'Paris · Angers · World',
     'work.filterAria': 'Filter projects by category',
     'work.watch': 'Watch',
     'work.watchAria': 'Watch',
 
     // Categories (filtres + libelles de vignettes)
+    'cat.all': 'All',
     'cat.pub': 'Commercial',
     'cat.film': 'Feature Film',
     'cat.doc': 'Documentary',
@@ -87,7 +99,7 @@ export const ui = {
 
     // Footer
     'footer.rights': 'All rights reserved',
-    'footer.creditPrefix': 'Site made by',
+    'footer.creditPrefix': 'Website produced by',
 
     // Lightbox
     'lb.dialog': 'Video player',
@@ -96,16 +108,21 @@ export const ui = {
   },
 
   fr: {
-    // Document / SEO
-    'head.title': 'Roxane Foare - Monteuse vidéo · Paris & Angers',
-    'head.description': 'Roxane Foare - monteuse vidéo freelance à Paris & Angers. Montage film, documentaire, publicité, corporate, live et événementiel.',
-    'head.keywords': 'monteuse vidéo Paris, montage freelance France, montage film, montage documentaire, montage publicité, post-production Paris, monteuse vidéo Angers, montage Paris',
-    'head.ogTitle': 'Roxane Foare - Monteuse vidéo',
-    'head.ogDescription': 'Monteuse vidéo freelance spécialisée en film, documentaire, corporate, publicité, live & événementiel.',
+    // Document / SEO - communs
     'head.ogImageAlt': 'Roxane Foare - Monteuse vidéo',
-    'head.twitterDescription': 'Monteuse vidéo freelance - film, documentaire, corporate, publicité, live & événementiel.',
     'head.ogLocale': 'fr_FR',
     'head.jobTitle': 'Monteuse vidéo',
+
+    // Document / SEO - par page (title/description utilisés aussi pour OG + Twitter)
+    'head.home.title': 'Roxane Foare - Monteuse vidéo · Paris & Angers',
+    'head.home.description': 'Roxane Foare - monteuse vidéo freelance à Paris & Angers. Montage film, documentaire, publicité, corporate, live et événementiel.',
+    'head.home.keywords': 'monteuse vidéo Paris, montage freelance France, montage film, montage documentaire, montage publicité, post-production Paris, monteuse vidéo Angers, montage Paris',
+    'head.portfolio.title': 'Portfolio - Roxane Foare, Monteuse vidéo',
+    'head.portfolio.description': 'Sélection de projets montés par Roxane Foare : longs métrages, documentaires, publicités, corporate, live et événementiel.',
+    'head.portfolio.keywords': 'portfolio montage vidéo, showreel monteuse, montage documentaire, montage publicité, montage corporate, montage Paris',
+    'head.about.title': 'À propos - Roxane Foare, Monteuse vidéo',
+    'head.about.description': "Roxane Foare, monteuse vidéo freelance à Paris & Angers, plus de 10 ans d'expérience en film, documentaire, publicité et corporate.",
+    'head.about.keywords': 'monteuse vidéo Paris expérience, logiciels montage Premiere DaVinci Avid, parcours monteuse',
 
     // A11y
     'a11y.skip': 'Aller au contenu',
@@ -118,6 +135,12 @@ export const ui = {
     'nav.langLabel': 'EN',
     'nav.langAria': 'View the site in English',
 
+    // Hero (Accueil)
+    'hero.tagline': 'Monteuse vidéo freelance à Paris & Angers - montage film, documentaire, publicité, corporate, live et événementiel.',
+    'hero.ctaPortfolio': 'Voir le portfolio',
+    'hero.ctaAbout': 'À propos',
+    'hero.showreelLabel': 'Showreel',
+
     // Work
     'work.title': 'Projets',
     'work.location': 'Paris · Angers · Monde',
@@ -126,6 +149,7 @@ export const ui = {
     'work.watchAria': 'Regarder',
 
     // Categories
+    'cat.all': 'Tous',
     'cat.pub': 'Publicité',
     'cat.film': 'Long métrage',
     'cat.doc': 'Documentaire',
@@ -173,7 +197,7 @@ export const ui = {
 
     // Footer
     'footer.rights': 'Tous droits réservés',
-    'footer.creditPrefix': 'Site réalisé par',
+    'footer.creditPrefix': 'Site conçu par',
 
     // Lightbox
     'lb.dialog': 'Lecteur vidéo',
