@@ -88,8 +88,8 @@
       "id": "910025380",
       "hash": "c551bca3a3",
       "thumb": "",
-      "externalLink": "https://www.primevideo.com/detail/0H4GC8Y15YDVFT6M1ST0JZC9UB/ref=atv_sr_fle_c_sr64ce3f_pvsearchresults_1_1",
-      "fullWidth": true
+      "fullWidth": true,
+      "externalLink": "https://www.primevideo.com/detail/0H4GC8Y15YDVFT6M1ST0JZC9UB/ref=atv_sr_fle_c_sr64ce3f_pvsearchresults_1_1"
     },
     {
       "cat": "doc",
@@ -323,13 +323,14 @@
     },
     {
       "cat": "live",
-      "title": "CEV",
+      "title": "CEV Eurovolley 2019",
       "credit": "Director",
       "year": "2019",
-      "id": "",
-      "hash": "",
+      "id": "1212339231",
+      "hash": "cfe042ff2c",
       "thumb": "live/live5.webp",
-      "noClick": true
+      "externalLink": "",
+      "noClick": false
     },
     {
       "cat": "live",
