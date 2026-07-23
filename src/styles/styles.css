@@ -203,7 +203,7 @@ nav {
 
 /* ── FILTERS ──────────────────────────────────────────────── */
 .filters {
-  display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 56px; align-items: center;
+  display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 24px; align-items: center;
 }
 .filter-btn {
   background: none; border: none; padding: 8px 2px; /* cible tactile ~31px (WCAG 2.5.8) */
@@ -228,13 +228,13 @@ nav {
 .cat-divider {
   grid-column: 1 / -1;
   display: flex; align-items: center; gap: 24px;
-  padding: 48px 0;
+  padding: 24px 0;
 }
 .cat-divider.hidden { display: none; }
 .cat-divider-line { flex: 1; height: 1px; background: var(--gray-light); }
 .cat-divider-title {
   font-family: var(--font-hennessy);
-  font-size: clamp(20px, 2.4vw, 32px);
+  font-size: clamp(15px, 1.6vw, 20px);
   font-weight: 400; letter-spacing: .02em; text-transform: uppercase;
   color: var(--gray-dark); white-space: nowrap;
 }
@@ -358,6 +358,8 @@ nav {
   font-size: 16px; color: var(--gray-dark); line-height: 1.9;
   border-top: 1px solid var(--gray-light); padding-top: 24px;
 }
+.about-intro p + p { margin-top: 1.2em; }
+.about-intro em { font-style: italic; }
 .tools-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 40px; }
 .tool-tag {
   padding: 6px 14px; border: 1px solid var(--gray-light);
@@ -379,20 +381,33 @@ nav {
   content: ' //'; color: var(--gray-light); margin: 0 8px;
 }
 
-.brands-grid {
-  display: grid; grid-template-columns: repeat(6, 1fr);
-  gap: 40px 32px; align-items: start;
+/* Bandeau défilant des logos clients - piste dupliquée deux fois (voir
+   About.astro), translateX(-50%) en boucle pour un défilement continu sans
+   saut. prefers-reduced-motion est déjà géré globalement en bas de fichier
+   (animation-duration forcée à .01ms). */
+.brand-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
-.brands-col { display: flex; flex-direction: column; gap: 32px; }
-.brand-cat-title {
-  font-family: var(--font-body);
-  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--gray-mid); margin-bottom: 12px;
+.brand-marquee-track {
+  display: flex; width: max-content;
+  animation: brand-scroll 70s linear infinite;
 }
-.brand-cat-list { list-style: none; }
-.brand-cat-list li {
-  font-family: var(--font-hennessy);
-  font-size: 14px; color: var(--gray-dark); line-height: 1.85;
+.brand-marquee:hover .brand-marquee-track { animation-play-state: paused; }
+/* Un groupe = une itération complète des logos. Le gap interne ET le
+   padding-right (même valeur) assurent un espacement uniforme partout,
+   y compris à la jointure entre les deux groupes - condition nécessaire
+   pour que translateX(-50%) tombe pile à la frontière des deux groupes
+   (voir commentaire dans About.astro). */
+.brand-marquee-group {
+  display: flex; align-items: center; gap: 56px; padding-right: 56px; flex-shrink: 0;
+}
+.brand-logo { display: flex; align-items: center; flex-shrink: 0; }
+.brand-logo img { height: 32px; width: auto; display: block; filter: grayscale(1); opacity: .6; transition: opacity var(--t-fast), filter var(--t-fast); }
+.brand-logo:hover img { opacity: 1; filter: grayscale(0); }
+@keyframes brand-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 /* ── CONTACT ──────────────────────────────────────────────── */
@@ -512,7 +527,6 @@ footer {
   .work-item { grid-column: span 12 !important; }
   .form-row { grid-template-columns: 1fr; }
   nav { padding-top: 20px; padding-bottom: 20px; }
-  .brands-grid { grid-template-columns: repeat(2, 1fr); }
   /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */
   .showreel { aspect-ratio: 4 / 3; }
   .hero-content { padding: 0 24px; margin-top: 40px; }

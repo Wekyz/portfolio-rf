@@ -1,18 +1,64 @@
 ---
-// Section About - Productions & Brands (contenu statique)
+// Section About - Bio, outils, productions & marques (contenu statique)
 import { useTranslations } from '../i18n/strings.js';
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
+const introParagraphs = t('about.introParagraphs');
+
+// Logos clients (bandeau défilant) - fichiers pré-détourés/redimensionnés
+// (voir public/brands/, générés depuis le dossier "Logos RF" fourni par la
+// monteuse). width/height = dimensions réelles du fichier (hauteur commune
+// 160px) : évite un saut de mise en page pendant le chargement, la taille
+// d'affichage réelle est pilotée en CSS (.brand-logo img).
+const BRANDS = [
+  { slug: 'accor', name: 'Accor', width: 196, height: 160 },
+  { slug: 'bnp', name: 'BNP Paribas', width: 722, height: 160 },
+  { slug: 'bosch', name: 'Bosch', width: 143, height: 160 },
+  { slug: 'carolina-herrera', name: 'Carolina Herrera', width: 2540, height: 160 },
+  { slug: 'carrefour', name: 'Carrefour', width: 214, height: 160 },
+  { slug: 'celio', name: 'Celio', width: 739, height: 160 },
+  { slug: 'chaumet', name: 'Chaumet', width: 330, height: 160 },
+  { slug: 'davidoff', name: 'Davidoff', width: 1296, height: 160 },
+  { slug: 'estee-lauder', name: 'Estée Lauder', width: 1266, height: 160 },
+  { slug: 'fabio-salsa', name: 'Fabio Salsa', width: 925, height: 160 },
+  { slug: 'fiat', name: 'Fiat', width: 211, height: 160 },
+  { slug: 'givenchy', name: 'Givenchy', width: 1530, height: 160 },
+  { slug: 'hennessy', name: 'Hennessy', width: 292, height: 160 },
+  { slug: 'ioma', name: 'Ioma', width: 382, height: 160 },
+  { slug: 'jp-morgan', name: 'JP Morgan', width: 1147, height: 160 },
+  { slug: 'lacoste', name: 'Lacoste', width: 387, height: 160 },
+  { slug: 'loreal', name: "L'Oréal", width: 881, height: 160 },
+  { slug: 'louboutin', name: 'Louboutin', width: 325, height: 160 },
+  { slug: 'maif', name: 'MAIF', width: 203, height: 160 },
+  { slug: 'meetic', name: 'Meetic', width: 526, height: 160 },
+  { slug: 'messika', name: 'Messika', width: 578, height: 160 },
+  { slug: 'ol', name: 'OL', width: 138, height: 160 },
+  { slug: 'pgw', name: 'Paris Games Week', width: 160, height: 160 },
+  { slug: 'psg', name: 'PSG', width: 160, height: 160 },
+  { slug: 'ricard', name: 'Ricard', width: 193, height: 160 },
+  { slug: 'sanofi', name: 'Sanofi', width: 624, height: 160 },
+  { slug: 'siemens', name: 'Siemens', width: 995, height: 160 },
+  { slug: 'soge', name: 'Société Générale', width: 798, height: 160 },
+  { slug: 'square', name: 'Square Enix', width: 1526, height: 160 },
+  { slug: 'waffle', name: 'Waffle Factory', width: 452, height: 160 },
+  { slug: 'yves-rocher', name: 'Yves Rocher', width: 389, height: 160 },
+];
 ---
 <section id="about">
   <div class="about-left">
     <h2 class="section-title">{t('about.title')}</h2>
     <p class="about-subtitle">{t('about.subtitle')}</p>
-    <div class="about-intro">{t('about.intro')}</div>
+    <div class="about-intro">
+      {introParagraphs.map((p) => <p set:html={p} />)}
+    </div>
     <div class="tools-list">
       <span class="tool-tag">Adobe Premiere Pro</span>
       <span class="tool-tag">DaVinci Resolve</span>
       <span class="tool-tag">Avid Media Composer</span>
+      <span class="tool-tag">TriCaster</span>
+      <span class="tool-tag">XPression by Ross</span>
+      <span class="tool-tag">LSM by EVS</span>
+      <span class="tool-tag">Blackmagic ATEM</span>
     </div>
 
     <!-- PRODUCTIONS -->
@@ -21,119 +67,41 @@ const t = useTranslations(lang);
       <ul class="prod-list">
         <li>Atelier B</li><li>B&amp;A</li><li>Bandits</li>
         <li>Big Bang prod</li><li>Blacklemon</li><li>Bricolo Factory</li>
-        <li>Cap TV</li><li>Evrox</li><li>Fulltime prod</li>
+        <li>Cap TV</li><li>Evrox</li><li>France TV</li>
         <li>Hawlssen Production</li><li>Liik</li><li>Publicis Live</li>
         <li>Studios Paris Sud</li><li>Trimaran</li><li>Way of Live</li>
         <li>West Indies Production</li><li>Wild Buzz Agency</li>
       </ul>
     </div>
 
-    <!-- BRANDS -->
+    <!-- BRANDS (bandeau défilant de logos) -->
     <div class="credits-block">
       <h3 class="credits-heading">{t('about.brands')}</h3>
-      <div class="brands-grid">
-
-        <div class="brands-col">
-          <div>
-            <p class="brand-cat-title">{t('brand.associations')}</p>
-            <ul class="brand-cat-list"><li>Article 1</li><li>L'Arche</li></ul>
+      <div class="brand-marquee">
+        <div class="brand-marquee-track">
+          <!-- Deux groupes identiques, translateX(-50%) en boucle : avec un
+               `gap` posé sur .brand-marquee-track, la moitié du track ne
+               correspond pas exactement à la largeur d'un groupe (le gap qui
+               relie les deux groupes casse la symétrie), d'où un saut visible
+               à la relance. En isolant chaque groupe dans son propre flex
+               (gap interne + padding-right en bout, sans gap au niveau du
+               track), les deux groupes ont une largeur strictement identique
+               et -50% tombe pile entre les deux. -->
+          <div class="brand-marquee-group">
+            {BRANDS.map((b) => (
+              <span class="brand-logo">
+                <img src={`/brands/${b.slug}.webp`} alt={b.name} width={b.width} height={b.height} loading="lazy" decoding="async" />
+              </span>
+            ))}
           </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.automobile')}</p>
-            <ul class="brand-cat-list"><li>Auto Moto</li><li>Fiat</li></ul>
-          </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.banks')}</p>
-            <ul class="brand-cat-list">
-              <li>BNP Paribas</li><li>JP Morgan</li>
-              <li>La Banque Postale</li><li>Société Générale</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="brands-col">
-          <div>
-            <p class="brand-cat-title">{t('brand.beauty')}</p>
-            <ul class="brand-cat-list">
-              <li>Atelier Cologne</li><li>Carolina Herrera</li><li>Davidoff</li>
-              <li>Escada</li><li>Estée Lauder</li><li>Fabio Salsa</li>
-              <li>Givenchy</li><li>Ioma</li><li>Jean-Paul Gaultier</li>
-              <li>L'Oréal</li><li>Maybelline</li><li>Niwel</li>
-              <li>Perron Rigot</li><li>Smashbox</li><li>Too Faced</li>
-              <li>Yves Rocher</li>
-            </ul>
+          <div class="brand-marquee-group" aria-hidden="true">
+            {BRANDS.map((b) => (
+              <span class="brand-logo">
+                <img src={`/brands/${b.slug}.webp`} alt="" width={b.width} height={b.height} loading="lazy" decoding="async" />
+              </span>
+            ))}
           </div>
         </div>
-
-        <div class="brands-col">
-          <div>
-            <p class="brand-cat-title">{t('brand.decoration')}</p>
-            <ul class="brand-cat-list"><li>Atlantic</li><li>Maison Déco</li><li>Sylvania</li></ul>
-          </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.event')}</p>
-            <ul class="brand-cat-list">
-              <li>Festival de la fiction de la Rochelle</li>
-              <li>Festival de la fiction de Monte-Carlo</li>
-              <li>IFL</li><li>Paris Games Week</li>
-            </ul>
-          </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.fashion')}</p>
-            <ul class="brand-cat-list">
-              <li>Celio</li><li>Hanro</li><li>Lacoste</li>
-              <li>Louboutin</li><li>Vestiaire Collective</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="brands-col">
-          <div>
-            <p class="brand-cat-title">{t('brand.foodDrinks')}</p>
-            <ul class="brand-cat-list">
-              <li>Agence Bio</li><li>Carrefour</li><li>Hennessy</li>
-              <li>The Balvenie</li><li>Jambon de Bayonne</li><li>Ricard</li>
-              <li>Waffle Factory</li><li>We</li><li>Wingstop</li>
-            </ul>
-          </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.health')}</p>
-            <ul class="brand-cat-list"><li>MSD</li><li>Sanofi</li></ul>
-          </div>
-        </div>
-
-        <div class="brands-col">
-          <div>
-            <p class="brand-cat-title">{t('brand.jewelry')}</p>
-            <ul class="brand-cat-list"><li>Chaumet</li><li>Messika</li></ul>
-          </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.sports')}</p>
-            <ul class="brand-cat-list">
-              <li>PSG Football</li><li>PSG Handball</li>
-              <li>Volleyball World Cup</li>
-            </ul>
-          </div>
-          <div>
-            <p class="brand-cat-title">{t('brand.youtubers')}</p>
-            <ul class="brand-cat-list">
-              <li>Evan</li><li>Julien Chièze</li><li>Marcus</li>
-              <li>Marine LB</li><li>Shanyz</li><li>Thomas Deseur</li><li>Tsuku</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="brands-col">
-          <div>
-            <p class="brand-cat-title">{t('brand.others')}</p>
-            <ul class="brand-cat-list">
-              <li>Accor</li><li>Axima Nucléaire</li><li>BSH</li><li>CNL</li>
-              <li>Little Balance</li><li>Meetic</li><li>Sixième Avenue</li>
-              <li>Square Enix</li><li>Wavestone</li>
-            </ul>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
