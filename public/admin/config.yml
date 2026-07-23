@@ -66,7 +66,7 @@ collections:
                 label: "ID Vimeo"
                 widget: string
                 required: false
-                hint: "Laisser vide pour les vidéos Live"
+                hint: "Pour une vidéo Live : remplir CECI (et laisser Miniature vide) pour un Live en vidéo cliquable. Laisser vide si le Live est une simple photo (voir champ Miniature)."
 
               - name: hash
                 label: "Hash Vimeo (vidéo privée)"
@@ -78,7 +78,7 @@ collections:
                 label: "Miniature (optionnel)"
                 widget: string
                 required: false
-                hint: "Laisser VIDE : la miniature est récupérée automatiquement depuis Vimeo au build. Ne remplir que pour forcer une image précise (ex. live/live1.webp ou une affiche)."
+                hint: "Laisser VIDE si un ID Vimeo est renseigné : la miniature est récupérée automatiquement depuis Vimeo au build. Pour un Live en photo (sans vidéo), renseigner ici l'image (ex. live/live1.webp) et laisser ID Vimeo vide."
 
               - name: fullWidth
                 label: "Pleine largeur"
@@ -98,4 +98,4 @@ collections:
                 widget: boolean
                 default: false
                 required: false
-                hint: "Désactive le clic (vidéos Live)"
+                hint: "Force le clic désactivé même si un ID Vimeo est renseigné. Inutile pour un Live en photo simple (déjà non cliquable sans ID)."

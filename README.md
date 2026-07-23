@@ -61,8 +61,8 @@ npm test         # tests fumée (node:test), ex. /api/contact
 │  ├─ styles/styles.css        # feuille de style du site
 │  ├─ data/videos.json         # données projets (éditées via le CMS)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
-├─ public/                     # live/, admin/, polices, favicons, og-image
-├─ api/                        # fonctions serverless Vercel (contact -> Resend, email)
+├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image
+├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)
 ├─ tests/                      # tests fumée (node:test)
 ├─ scripts/fetch-thumbs.mjs    # résolution des miniatures Vimeo au build
 ├─ vercel.json                 # headers / CSP / cache (déploiement Vercel)
@@ -79,9 +79,10 @@ La CI (`.github/workflows/ci.yml`) fait build + tests + `npm audit` sur chaque
 push/PR vers `main`.
 
 Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
-`CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`. Rate limiting du formulaire
-(optionnel) : `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (intégration
-Vercel Marketplace Upstash).
+`CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`, `DEPLOY_HOOK_URL`. Rate
+limiting du formulaire et du bouton de redéploiement (optionnel) :
+`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (intégration Vercel
+Marketplace Upstash).
 
 ## Édition du contenu (monteuse)
 
@@ -95,6 +96,22 @@ Via le CMS **Sveltia** sur `/admin/` (auth **GitHub OAuth**). La config
 Pour une nouvelle vidéo, il suffit de l'**ID Vimeo** (+ hash si privée) : la
 **miniature est récupérée automatiquement** depuis Vimeo au build - aucune
 image à produire.
+
+Tout enregistrement dans le CMS crée un commit GitHub, ce qui déclenche
+automatiquement un nouveau build Vercel (donc une résolution fraîche des
+miniatures Vimeo) - **aucune action supplémentaire à faire** dans ce cas.
+
+### Redéployer sans passer par le CMS
+
+Si un changement est fait **directement sur Vimeo** (ex. nouvelle miniature
+choisie sur une vidéo existante) sans toucher au CMS, aucun commit n'est créé
+donc aucun build ne se relance tout seul - le site reste sur l'ancienne
+miniature tant qu'un nouveau build n'a pas lieu. Page dédiée pour forcer un
+redéploiement dans ce cas : **`/admin/redeploy.html`** (lien "Retour au CMS"
+pour y revenir). Fonctionne via un [Vercel Deploy
+Hook](https://vercel.com/docs/deployments/deploy-hooks) : *Project Settings →
+Git → Deploy Hooks*, créer un hook sur la branche `main`, coller son URL dans
+la variable d'environnement `DEPLOY_HOOK_URL` (voir `api/redeploy.js`).
 
 ## Miniatures automatiques
 

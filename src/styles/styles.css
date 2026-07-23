@@ -155,13 +155,16 @@ nav {
 .nav-lang:hover { color: var(--black) !important; border-color: var(--black); }
 
 /* ── HERO (Accueil) ───────────────────────────────────────── */
+/* Même marge latérale que le reste du site (nav, #work, #about, #contact,
+   footer) : le showreel ne doit pas être la seule chose au bord à bord. */
+.hero { padding: 0 56px; }
 .showreel {
   position: relative; width: 100%; overflow: hidden;
   aspect-ratio: 1920 / 803; background: var(--black);
 }
 .showreel-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .hero-content {
-  max-width: 640px; margin: 56px auto 0; padding: 0 56px; text-align: center;
+  max-width: 640px; margin: 56px auto 72px; text-align: center;
 }
 .hero-tagline {
   font-family: var(--font-hennessy);
@@ -233,10 +236,10 @@ nav {
 .cat-divider.hidden { display: none; }
 .cat-divider-line { flex: 1; height: 1px; background: var(--gray-light); }
 .cat-divider-title {
-  font-family: var(--font-hennessy);
-  font-size: clamp(15px, 1.6vw, 20px);
-  font-weight: 400; letter-spacing: .02em; text-transform: uppercase;
-  color: var(--gray-dark); white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: clamp(13px, 1.4vw, 16px);
+  font-weight: 400; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--gray-mid); white-space: nowrap;
 }
 
 /* ── GRID ─────────────────────────────────────────────────── */
@@ -340,27 +343,26 @@ nav {
   .work-info { transform: none; opacity: 1; }
 }
 
-/* ── LIVE - non cliquable ─────────────────────────────────── */
-.work-item[data-cat="live"] .work-thumb-wrap { cursor: default; }
-.work-item[data-cat="live"] .work-play { display: none; }
-.work-item[data-cat="live"] .work-thumb-wrap:hover .work-thumb { transform: none; }
+/* ── NON CLIQUABLE (ex. Live en photo) ───────────────────────
+   Un item Live peut être une simple photo (non cliquable) ou une vidéo
+   Vimeo (cliquable) - voir public/admin/config.yml. WorkItem.astro rend un
+   <button> pour les items cliquables et un <div> pour les autres : cibler
+   `:not(button)` désactive le curseur/l'icône play uniquement sur les
+   items réellement non interactifs, quelle que soit leur catégorie. */
+.work-thumb-wrap:not(button) { cursor: default; }
+.work-thumb-wrap:not(button) .work-play { display: none; }
+.work-thumb-wrap:not(button):hover .work-thumb { transform: none; }
 
 /* ── ABOUT ────────────────────────────────────────────────── */
 #about { padding: 120px 56px; border-top: 1px solid var(--gray-light); }
-.about-subtitle {
-  font-family: var(--font-hennessy);
-  font-size: clamp(18px, 2.2vw, 26px);
-  font-weight: 400; line-height: 1.3; letter-spacing: -.01em;
-  color: var(--gray-dark); margin-bottom: 20px;
-}
 .about-intro {
   font-family: var(--font-hennessy);
-  font-size: 16px; color: var(--gray-dark); line-height: 1.9;
+  font-size: 16px; color: var(--black); line-height: 1.9; text-align: center;
   border-top: 1px solid var(--gray-light); padding-top: 24px;
 }
-.about-intro p + p { margin-top: 1.2em; }
+.about-intro p + p { margin-top: 1.9em; }
 .about-intro em { font-style: italic; }
-.tools-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 40px; }
+.tools-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 40px; }
 .tool-tag {
   padding: 6px 14px; border: 1px solid var(--gray-light);
   font-size: 11px; letter-spacing: .05em; color: var(--gray-dark);
@@ -387,6 +389,10 @@ nav {
    (animation-duration forcée à .01ms). */
 .brand-marquee {
   overflow: hidden;
+  /* Même marge que .credits-heading -> .prod-list (Productions) : les logos,
+     plus pâles/légers visuellement qu'une liste de texte noir, donnaient une
+     impression d'écart plus faible à marge égale. */
+  margin-top: 32px;
   mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
 .brand-marquee-track {
@@ -522,14 +528,14 @@ footer {
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 900px) {
-  nav, #work, #about, #contact, footer { padding-left: 24px; padding-right: 24px; }
+  nav, #work, #about, #contact, footer, .hero { padding-left: 24px; padding-right: 24px; }
   #about, #contact { grid-template-columns: 1fr; gap: 48px; }
   .work-item { grid-column: span 12 !important; }
   .form-row { grid-template-columns: 1fr; }
   nav { padding-top: 20px; padding-bottom: 20px; }
   /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */
   .showreel { aspect-ratio: 4 / 3; }
-  .hero-content { padding: 0 24px; margin-top: 40px; }
+  .hero-content { margin-top: 40px; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */

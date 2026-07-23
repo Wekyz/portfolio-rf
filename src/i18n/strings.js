@@ -40,7 +40,7 @@ export const ui = {
     // Hero (Accueil)
     'hero.tagline': 'Freelance video editor based in Paris & Angers - film, documentary, commercial, corporate, live and event editing.',
     'hero.ctaPortfolio': 'View portfolio',
-    'hero.ctaAbout': 'About me',
+    'hero.ctaAbout': 'About',
     'hero.showreelLabel': 'Showreel',
 
     // Work
@@ -62,7 +62,6 @@ export const ui = {
 
     // About
     'about.title': 'About',
-    'about.subtitle': 'Roxane Foare - Video Editor for more than 10 years',
     'about.introParagraphs': [
       'For over ten years, Roxane has been working with directors, agencies, brands, and production companies to create films in a variety of formats and genres. From feature films to documentaries, from commercials to corporate videos, from event coverage to social media content, she approaches every project with the same high standard: to captivate the audience by revealing the story’s intent through precise, sensitive, and masterful editing.',
       'Her career has also taken her into live editing, primarily at sporting events, where she has worked as a video mixer, LSM operator, and director.',
@@ -153,7 +152,6 @@ export const ui = {
 
     // About
     'about.title': 'À propos',
-    'about.subtitle': 'Roxane Foare - Monteuse vidéo depuis plus de 10 ans',
     'about.introParagraphs': [
       "Depuis plus de dix ans, Roxane accompagne des réalisateurs, agences, marques et sociétés de production dans la création de films aux formats et univers variés. Du long métrage au documentaire, de la publicité aux films corporate, de l'événementiel aux contenus destinés aux réseaux sociaux, elle aborde chaque projet avec la même exigence : captiver l’attention en révélant l'intention du récit à travers un montage précis, sensible et maîtrisé.",
       "Son parcours l'a également menée vers le montage en live, principalement lors d'événements sportifs, où elle a exercé en tant qu'opératrice synthé, opératrice LSM et réalisatrice.",
