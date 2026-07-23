@@ -1,5 +1,6 @@
 ---
 // Barre de navigation - commune aux 3 pages (Accueil / Portfolio / About).
+// Menu burger sur mobile (voir app.js pour le toggle).
 import { useTranslations } from '../i18n/strings.js';
 const { lang = 'en', page = 'home' } = Astro.props;
 const t = useTranslations(lang);
@@ -8,21 +9,21 @@ const base = lang === 'fr' ? '/fr' : '';
 const homeHref = base || '/';
 const portfolioHref = `${base}/portfolio`;
 const aboutHref = `${base}/about`;
-// Contact n'existe qu'en bas des pages Portfolio et About : depuis l'Accueil
-// (qui n'a pas de section Contact) le lien pointe vers le Portfolio + ancre.
 const contactHref = page === 'home' ? `${portfolioHref}#contact` : '#contact';
 
-// Lien du toggle : conserve la page courante, change seulement la langue.
 const otherHref = lang === 'fr' ? (page === 'home' ? '/' : `/${page}`) : (page === 'home' ? '/fr' : `/fr/${page}`);
 ---
-<nav>
+<nav class:list={[page === 'home' && 'nav-flush']}>
   <h1 class="nav-logo-h1">
     <a href={homeHref} class="nav-logo">
       Roxane Foare
       <span class="nav-logo-sub">{t('nav.sub')}</span>
     </a>
   </h1>
-  <ul class="nav-links">
+  <button type="button" class="nav-burger" id="navBurger" aria-expanded="false" aria-controls="navLinks" aria-label={t('nav.menuAria')}>
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="navLinks">
     <li><a class="slide-label" href={portfolioHref} aria-current={page === 'portfolio' ? 'page' : undefined}><span class="lbl-out">{t('nav.work')}</span><span class="lbl-in" aria-hidden="true">{t('nav.work')}</span></a></li>
     <li><a class="slide-label" href={aboutHref} aria-current={page === 'about' ? 'page' : undefined}><span class="lbl-out">{t('nav.about')}</span><span class="lbl-in" aria-hidden="true">{t('nav.about')}</span></a></li>
     <li><a class="slide-label" href={contactHref}><span class="lbl-out">{t('nav.contact')}</span><span class="lbl-in" aria-hidden="true">{t('nav.contact')}</span></a></li>

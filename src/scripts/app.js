@@ -1,8 +1,8 @@
 /* ============================================================
    Roxane Foare - Portfolio (Astro)
-   Logique client : clic vignettes, filtres, lightbox, formulaire, email.
-   La grille est désormais rendue au build ; ce script ne fait plus de fetch
-   ni de construction du DOM - il ajoute l'interactivité par-dessus.
+   Logique client : nav mobile, clic vignettes, filtres, lightbox, formulaire,
+   retour en haut. La grille est rendue au build ; ce script ajoute
+   l'interactivité par-dessus, il ne fait ni fetch ni construction du DOM.
    ============================================================ */
 import { applySpans } from '../lib/spans.js';
 
@@ -13,6 +13,9 @@ import { applySpans } from '../lib/spans.js';
   const contactForm = document.querySelector('.contact-form');
   const formStatus = document.getElementById('formStatus');
   const formLoadTime = Date.now();
+  const navBurger = document.getElementById('navBurger');
+  const navLinks = document.getElementById('navLinks');
+  const backToTop = document.getElementById('backToTop');
 
   // Libellés du bouton d'envoi selon la langue de la page (en / fr).
   const lang = document.documentElement.lang === 'fr' ? 'fr' : 'en';
@@ -20,6 +23,40 @@ import { applySpans } from '../lib/spans.js';
     en: { sending: 'Sending…', sent: 'Sent ✓', error: 'Error - try again' },
     fr: { sending: 'Envoi…', sent: 'Envoyé ✓', error: 'Erreur - réessayez' },
   }[lang];
+
+  // ── Menu burger (mobile) - présent sur les 3 pages ────────────
+  if (navBurger && navLinks) {
+    const closeMenu = () => {
+      navBurger.setAttribute('aria-expanded', 'false');
+      navLinks.classList.remove('open');
+    };
+    navBurger.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      navBurger.setAttribute('aria-expanded', String(isOpen));
+    });
+    // Referme au clic sur un lien (utile pour le toggle de langue, qui reste
+    // sur une page équivalente plutôt que de démonter la nav immédiatement).
+    navLinks.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMenu));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu();
+    });
+    document.addEventListener('click', (e) => {
+      if (!navLinks.classList.contains('open')) return;
+      if (navLinks.contains(e.target) || navBurger.contains(e.target)) return;
+      closeMenu();
+    });
+  }
+
+  // ── Retour en haut (Portfolio / About) ────────────────────────
+  if (backToTop) {
+    const toggle = () => backToTop.classList.toggle('visible', window.scrollY > 600);
+    toggle();
+    window.addEventListener('scroll', toggle, { passive: true });
+    backToTop.addEventListener('click', () => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+  }
 
   // ── Grille + lightbox + filtres (page Portfolio uniquement) ──
   // La page Accueil et la page About n'ont ni grille ni lightbox dans leur
@@ -88,38 +125,43 @@ import { applySpans } from '../lib/spans.js';
       });
     });
 
-    // ── Filtres ─────────────────────────────────────────────────
+    // ── Filtres (boutons desktop + select mobile, mêmes valeurs) ──
     // "All" est le filtre par défaut (actif au chargement) ; les séparateurs
     // de catégorie (voir Work.astro) n'ont de sens qu'en vue "All" - ils sont
     // masqués dès qu'un filtre spécifique est actif.
     const buttons = document.querySelectorAll('.filter-btn');
+    const select = document.getElementById('filterSelect');
     const dividers = document.querySelectorAll('.cat-divider');
-    buttons.forEach((btn) => btn.setAttribute('aria-pressed', String(btn.dataset.filter === 'all')));
-    buttons.forEach((btn) => btn.classList.toggle('active', btn.dataset.filter === 'all'));
 
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const f = btn.dataset.filter;
-        buttons.forEach((b) => {
-          const isActive = b === btn;
-          b.classList.toggle('active', isActive);
-          b.setAttribute('aria-pressed', String(isActive));
-        });
-        dividers.forEach((d) => d.classList.toggle('hidden', f !== 'all'));
-
-        if (f === 'all') {
-          originalOrder.forEach((item) => item.classList.remove('hidden'));
-          applySpans(originalOrder);
-        } else {
-          const visible = [];
-          originalOrder.forEach((item) => {
-            if (item.dataset.cat === f) { item.classList.remove('hidden'); visible.push(item); }
-            else { item.classList.add('hidden'); }
-          });
-          applySpans(visible);
-        }
+    function applyFilter(f) {
+      buttons.forEach((b) => {
+        const isActive = b.dataset.filter === f;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-pressed', String(isActive));
       });
+      if (select && select.value !== f) select.value = f;
+      dividers.forEach((d) => d.classList.toggle('hidden', f !== 'all'));
+
+      if (f === 'all') {
+        originalOrder.forEach((item) => item.classList.remove('hidden'));
+        applySpans(originalOrder);
+      } else {
+        const visible = [];
+        originalOrder.forEach((item) => {
+          if (item.dataset.cat === f) { item.classList.remove('hidden'); visible.push(item); }
+          else { item.classList.add('hidden'); }
+        });
+        applySpans(visible);
+      }
+    }
+
+    applyFilter('all');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
     });
+    if (select) {
+      select.addEventListener('change', () => applyFilter(select.value));
+    }
   }
 
   // ── Contact form (POST /api/contact -> Resend, honeypot + délai anti-bot) ─

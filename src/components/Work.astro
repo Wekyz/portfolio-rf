@@ -16,6 +16,7 @@ const spans = computeSpans(
 );
 
 const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
+const ALL_FILTERS = ['all', ...FILTERS];
 
 // Un séparateur de section (titre centré) en tête de chaque catégorie -
 // l'ordre de videos.json est déjà groupé par catégorie (même ordre que
@@ -34,8 +35,9 @@ const gridEntries = projects.map((p, i) => {
     <span class="section-location">{t('work.location')}</span>
   </div>
 
+  <!-- Boutons (desktop/tablette) -->
   <div class="filters" role="group" aria-label={t('work.filterAria')}>
-    {['all', ...FILTERS].map((value, i) => (
+    {ALL_FILTERS.map((value, i) => (
       <>
         {i > 0 && <span class="filter-sep" aria-hidden="true">//</span>}
         <button class="filter-btn slide-label" data-filter={value}>
@@ -44,6 +46,16 @@ const gridEntries = projects.map((p, i) => {
         </button>
       </>
     ))}
+  </div>
+
+  <!-- Menu déroulant (mobile) - même liste, voir app.js pour la synchro -->
+  <div class="filter-select-wrap">
+    <label class="visually-hidden" for="filterSelect">{t('work.filterAria')}</label>
+    <select class="filter-select" id="filterSelect">
+      {ALL_FILTERS.map((value) => (
+        <option value={value}>{t(`cat.${value}`)}</option>
+      ))}
+    </select>
   </div>
 
   <div class="work-grid" id="workGrid">

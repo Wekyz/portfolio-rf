@@ -120,10 +120,14 @@ body {
 
 /* ── NAV ──────────────────────────────────────────────────── */
 nav {
+  position: relative;
   display: flex; align-items: center; justify-content: space-between;
   padding: 28px 56px;
   border-bottom: 1px solid var(--gray-light);
 }
+/* Accueil : le showreel touche le bas de la nav, le filet devient un faux
+   séparateur superflu au-dessus de la vidéo. */
+nav.nav-flush { border-bottom-color: transparent; }
 /* Wrapper sémantique : le H1 ne doit pas modifier l'apparence du logo. */
 .nav-logo-h1 { margin: 0; font-size: inherit; font-weight: inherit; line-height: 1; }
 .nav-logo {
@@ -154,6 +158,21 @@ nav {
 }
 .nav-lang:hover { color: var(--black) !important; border-color: var(--black); }
 
+/* Menu burger (mobile uniquement, voir media query 900px) */
+.nav-burger {
+  display: none;
+  flex-direction: column; justify-content: center; gap: 5px;
+  width: 32px; height: 32px; padding: 0;
+  background: none; border: none; cursor: pointer;
+}
+.nav-burger span {
+  display: block; width: 100%; height: 1.5px; background: var(--black);
+  transition: transform var(--t-mid) var(--ease), opacity var(--t-fast);
+}
+.nav-burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
 /* ── HERO (Accueil) ───────────────────────────────────────── */
 /* Même marge latérale que le reste du site (nav, #work, #about, #contact,
    footer) : le showreel ne doit pas être la seule chose au bord à bord. */
@@ -162,13 +181,27 @@ nav {
   position: relative; width: 100%; overflow: hidden;
   aspect-ratio: 1920 / 803; background: var(--black);
 }
-.showreel-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+/* "Cover" reconstruit nous-mêmes : le mode background=1 de Vimeo ne recadre
+   pas la vidéo de façon fiable sur un conteneur plus étroit que son ratio
+   natif (bandes noires constatées sur mobile, showreel 4/3 vs vidéo
+   1920/803). Hauteur fixée à 100% + ratio natif de la vidéo (largeur en
+   auto) : l'iframe déborde horizontalement sur les conteneurs plus étroits,
+   recadré par l'overflow:hidden de .showreel et centré via translate. Sur
+   un conteneur au même ratio que la vidéo (desktop), le calcul retombe
+   exactement sur 100% de largeur, sans aucune distorsion. */
+.showreel-frame {
+  position: absolute; top: 50%; left: 50%;
+  height: 100%; width: auto; min-width: 100%;
+  aspect-ratio: 1920 / 803;
+  border: 0;
+  transform: translate(-50%, -50%);
+}
 .hero-content {
-  max-width: 640px; margin: 56px auto 72px; text-align: center;
+  max-width: 900px; margin: 56px auto 72px; text-align: center;
 }
 .hero-tagline {
   font-family: var(--font-hennessy);
-  font-size: clamp(18px, 2.2vw, 26px);
+  font-size: clamp(11px, 1.1vw, 14px); white-space: nowrap;
   font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
   color: var(--gray-dark); margin-bottom: 32px;
 }
@@ -223,6 +256,16 @@ nav {
    au survol apparaissait plus haut que le texte au repos (.lbl-out, en flux
    normal, respecte lui le padding). On réaligne .lbl-in sur ce padding. */
 .filter-btn.slide-label .lbl-in { top: 8px; left: 2px; }
+
+/* Menu déroulant (mobile uniquement, voir media query 900px) - remplace la
+   rangée de boutons, qui s'écrasait sur les petits écrans. */
+.filter-select-wrap { display: none; }
+.filter-select {
+  width: 100%; padding: 12px 16px;
+  font-family: var(--font-body); font-size: 13px; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--black); background: var(--white);
+  border: 1px solid var(--gray-mid); border-radius: 4px;
+}
 
 /* ── SÉPARATEUR DE CATÉGORIE ─────────────────────────────────
    Un par section (Commercial, Feature Film… Live) - titre centré entre deux
@@ -360,7 +403,6 @@ nav {
   font-size: 16px; color: var(--black); line-height: 1.9; text-align: center;
   border-top: 1px solid var(--gray-light); padding-top: 24px;
 }
-.about-intro p + p { margin-top: 1.9em; }
 .about-intro em { font-style: italic; }
 .tools-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 40px; }
 .tool-tag {
@@ -498,6 +540,21 @@ footer {
 .footer-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .footer-credit a:hover { color: var(--black); }
 
+/* ── BACK TO TOP ──────────────────────────────────────────── */
+.back-to-top {
+  position: fixed; right: 24px; bottom: 24px; z-index: 900;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--black); color: var(--white); border: none; cursor: pointer;
+  opacity: 0; visibility: hidden; transform: translateY(8px);
+  transition: opacity var(--t-fast), transform var(--t-fast), visibility 0s var(--t-fast), background var(--t-fast);
+}
+.back-to-top.visible {
+  opacity: 1; visibility: visible; transform: translateY(0);
+  transition: opacity var(--t-fast), transform var(--t-fast), background var(--t-fast);
+}
+.back-to-top:hover { background: var(--gray-dark); }
+
 /* ── LIGHTBOX ─────────────────────────────────────────────── */
 .lightbox {
   display: none; position: fixed; inset: 0;
@@ -536,6 +593,44 @@ footer {
   /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */
   .showreel { aspect-ratio: 4 / 3; }
   .hero-content { margin-top: 40px; }
+  /* Le texte tenait sur une ligne en desktop (taille réduite) : sur mobile
+     on revient à une taille confortable, avec retour à la ligne normal. */
+  .hero-tagline { font-size: clamp(16px, 4.5vw, 20px); white-space: normal; }
+
+  /* Menu burger : la liste devient un tiroir déroulant sous la nav. */
+  .nav-burger { display: flex; }
+  .nav-links {
+    display: none;
+    position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; gap: 0;
+    max-height: 80vh; overflow-y: auto;
+    background: var(--white); border-bottom: 1px solid var(--gray-light);
+  }
+  .nav-links.open { display: flex; }
+  .nav-links li { border-top: 1px solid var(--gray-light); }
+  .nav-links li:first-child { border-top: none; }
+  .nav-links a { display: block; padding: 16px 24px; }
+  /* Même correctif que .filter-btn : .lbl-in (absolu) ignore le padding du
+     lien, il faut le réaligner explicitement dessus. */
+  .nav-links a.slide-label .lbl-in { top: 16px; left: 24px; }
+  .nav-links .nav-lang { display: inline-block; margin: 16px 24px; }
+
+  /* Filtres Portfolio : boutons -> menu déroulant (la rangée de boutons
+     s'écrasait sur petit écran). */
+  .filters { display: none; }
+  .filter-select-wrap { display: block; margin-bottom: 32px; }
+
+  /* "Paris · Angers · World" collé au gros titre "Portfolio" en ligne : on
+     empile au lieu de forcer la même ligne. */
+  .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* Le copyright et le crédit se touchaient (grille 3 colonnes trop
+     serrée sans gap explicite sur petit écran). */
+  footer {
+    grid-template-columns: 1fr; gap: 10px;
+    text-align: center; justify-items: center;
+  }
+  .footer-credit { justify-self: center; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */
