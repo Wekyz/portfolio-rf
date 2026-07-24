@@ -610,9 +610,14 @@ footer {
   .nav-links li { border-top: 1px solid var(--gray-light); }
   .nav-links li:first-child { border-top: none; }
   .nav-links a { display: block; padding: 16px 24px; }
-  /* Même correctif que .filter-btn : .lbl-in (absolu) ignore le padding du
-     lien, il faut le réaligner explicitement dessus. */
-  .nav-links a.slide-label .lbl-in { top: 16px; left: 24px; }
+  /* L'animation de glissement lbl-out/lbl-in n'a pas de sens au toucher (pas
+     de :hover durable sur mobile), et le padding du lien (24px) cassait le
+     calcul de translateX(-110%) de .lbl-in : le texte n'était plus poussé
+     assez loin pour sortir de la zone visible, d'où un morceau du mot
+     "fantôme" qui débordait à gauche de chaque lien. On désactive
+     simplement l'animation ici plutôt que de rafistoler le calcul. */
+  .nav-links a.slide-label .lbl-in { display: none; }
+  .nav-links a.slide-label .lbl-out { transform: none; }
   .nav-links .nav-lang { display: inline-block; margin: 16px 24px; }
 
   /* Filtres Portfolio : boutons -> menu déroulant (la rangée de boutons
