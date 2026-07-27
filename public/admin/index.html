@@ -7,6 +7,14 @@
   <title>Admin - Roxane Foare</title>
 </head>
 <body>
+  <!-- Lien vers le redéploiement manuel (voir redeploy.html) - en dehors de
+       l'app Sveltia CMS (chargée juste après), donc position fixe + z-index
+       élevé pour rester visible par-dessus quel que soit son propre DOM. -->
+  <a
+    href="/admin/redeploy.html"
+    style="position:fixed;bottom:16px;left:16px;z-index:2147483647;background:#0e0e0c;color:#fafaf8;padding:10px 16px;border-radius:8px;font:600 13px system-ui,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.3);"
+  >Redéployer</a>
+
   <!-- Sveltia CMS (remplaçant de Decap, lit le même config.yml) - épinglé + SRI -->
   <script
     src="https://unpkg.com/@sveltia/cms@0.167.2/dist/sveltia-cms.js"
