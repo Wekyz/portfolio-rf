@@ -6,7 +6,10 @@
  *
  * Variable d'environnement : CONTACT_EMAIL
  */
-export default function handler(req, res) {
+// `_req` : la signature Vercel impose les deux paramètres, mais cette fonction
+// ignore la requête (elle répond toujours la même redirection). Le préfixe `_`
+// est la convention que TypeScript reconnaît pour « inutilisé volontairement ».
+export default function handler(_req, res) {
   const email = process.env.CONTACT_EMAIL;
   if (!email) {
     res.status(500).setHeader('Content-Type', 'text/plain; charset=utf-8');

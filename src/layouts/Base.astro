@@ -111,6 +111,13 @@ const jsonLd = {
 // Le type de retour est volontairement le littéral `sha256-${string}` et non
 // `string` : c'est la forme exacte qu'attend Astro.csp.insertScriptHash
 // (type CspHashEntry), qui refuse une chaîne quelconque.
+//
+// Les deux balises correspondantes plus bas portent `is:inline`. Ça ne change
+// rien au rendu - Astro les traite déjà ainsi puisqu'elles ont un attribut
+// `type` qu'il ne prend pas en charge (vérifié : sortie identique octet pour
+// octet, mêmes hashes CSP) - mais ça déclare l'intention : ces scripts ne
+// doivent surtout pas être bundlés ni transpilés, sinon leur contenu ne
+// correspondrait plus au hash calculé ici.
 function sha256(content: string): `sha256-${string}` {
   return `sha256-${createHash('sha256').update(content, 'utf8').digest('base64')}`;
 }
@@ -195,9 +202,9 @@ if (videoLd.itemListElement.length > 0) {
   <script defer is:inline src="/_vercel/insights/script.js"></script>
 
   <!-- JSON-LD structured data (contenu + hash CSP calculés ci-dessus) -->
-  <script type="application/ld+json" set:html={personJsonLd} />
+  <script is:inline type="application/ld+json" set:html={personJsonLd} />
   {videoLd.itemListElement.length > 0 && (
-    <script type="application/ld+json" set:html={videoJsonLd} />
+    <script is:inline type="application/ld+json" set:html={videoJsonLd} />
   )}
 </head>
 <body>
