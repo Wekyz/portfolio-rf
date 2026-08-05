@@ -1,0 +1,20 @@
+# Fins de ligne
+#
+# Sans ce fichier, le comportement dépend du `core.autocrlf` de chaque poste :
+# le dépôt est aujourd'hui entièrement en LF uniquement parce que la machine
+# de développement est configurée ainsi. Un poste réglé autrement committerait
+# du CRLF et produirait un diff sur des fichiers entiers.
+#
+# `text=auto` : Git détecte les fichiers texte et les stocke toujours en LF.
+# `eol=lf`    : ils sont aussi restitués en LF dans la copie de travail, quel
+#               que soit le système - aucun fichier du projet n'exige de CRLF
+#               (pas de .bat ni de .cmd).
+* text=auto eol=lf
+
+# Binaires : aucune conversion, même si Git les détectait mal.
+*.woff2 binary
+*.webp  binary
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.ico   binary

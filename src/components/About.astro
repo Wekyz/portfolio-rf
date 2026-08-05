@@ -48,7 +48,7 @@ const BRANDS = [
   <div class="about-left">
     <h2 class="section-title">{t('about.title')}</h2>
     <div class="about-intro">
-      {introParagraphs.map((p) => <p set:html={p} />)}
+      {introParagraphs.map((p: string) => <p set:html={p} />)}
     </div>
     <div class="tools-list">
       <span class="tool-tag">Adobe Premiere Pro</span>

@@ -25,6 +25,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Type check (astro check)
+        run: npm run check
+
       - name: Test (smoke tests, /api/contact)
         run: npm test
 

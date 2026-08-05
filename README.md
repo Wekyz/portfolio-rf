@@ -10,11 +10,12 @@ reçoivent une prop `lang` et utilisent `useTranslations(lang)`.
 
 **3 pages** par langue : Accueil (`/`, `/fr` - showreel + CTA), Portfolio
 (`/portfolio`, `/fr/portfolio` - grille de projets + contact) et About
-(`/about`, `/fr/about` - présentation + contact). Chaque route Vercel non
-racine (`/portfolio`, `/about`, `/fr/portfolio`, `/fr/about`, `/fr`) a besoin
-d'un rewrite explicite dans `vercel.json` vers son `.html` (conséquence de
-`build.format: 'file'` dans `astro.config.mjs`) - toute nouvelle page doit
-ajouter son rewrite.
+(`/about`, `/fr/about` - présentation + contact). Le build utilise
+`build.format: 'directory'` (`astro.config.mjs`) : chaque page devient un
+dossier avec son `index.html`, que Vercel sert nativement. **Une nouvelle page
+n'a donc aucune règle de routage à déclarer.** `"trailingSlash": false` dans
+`vercel.json` renvoie un 308 de `/portfolio/` vers `/portfolio`, pour qu'une
+seule forme d'URL réponde.
 
 Application **Astro** (build statique), déployée sur Vercel.
 
@@ -132,6 +133,12 @@ la variable d'environnement `DEPLOY_HOOK_URL` (voir `api/redeploy.js`).
   image live) - fichier local sous `public/`, avec ses propres variantes
   `-640`/`-1280` générées par `sharp` (voir `public/live/`).
 - Régénérer manuellement : `npm run thumbs`.
+- `sharp` est en **`devDependencies`** : il ne sert qu'à ce script, au build.
+  Les fonctions serverless de `api/` n'en font aucun usage. Vercel installe les
+  devDependencies au moment du build, la génération des variantes fonctionne
+  donc normalement. (À noter : Astro le déclare aussi en `optionalDependencies`
+  pour son service d'images, donc il reste présent dans l'arbre installé même
+  sans notre déclaration - celle-ci sert surtout à dire d'où vient le besoin.)
 
 ### Vidéos privées restreintes par domaine
 

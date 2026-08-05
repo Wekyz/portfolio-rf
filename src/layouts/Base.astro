@@ -9,6 +9,7 @@ import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
 import { resolveThumb, getUploadDate, getDuration } from '../lib/thumb.js';
 import { useTranslations } from '../i18n/strings.js';
+import type { Project } from '../lib/types';
 
 // `page` détermine le head (title/description/canonical/JSON-LD) et le
 // routage - voir plus bas. 'portfolio' est la seule page à embarquer la
@@ -27,7 +28,7 @@ const pageTitle = t(`head.${page}.title`);
 const pageDescription = t(`head.${page}.description`);
 const pageKeywords = t(`head.${page}.keywords`);
 
-const projects = data.videos || data;
+const projects = (data.videos || data) as Project[];
 const isPortfolio = page === 'portfolio';
 
 // - Préchargement de l'image LCP (1ʳᵉ vignette) : seulement pertinent sur la
@@ -47,7 +48,7 @@ const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 1
 // présents dans le HTML (Google a besoin d'un <iframe> vers le player sur la
 // page indexée). La source Vimeo (i.vimeocdn.com) est déjà une URL absolue ;
 // seule une miniature locale (override `thumb`) a besoin du préfixe SITE.
-const abs = (p) => {
+const abs = (p: Project) => {
   const { src } = resolveThumb(p);
   if (!src) return undefined;
   return src.startsWith('/') ? `${SITE}${src}` : src;
@@ -107,7 +108,10 @@ const jsonLd = {
 // script client, qu'il hash automatiquement) : on calcule et on déclare
 // nous-mêmes le hash SHA-256 exact du contenu rendu, recalculé à chaque
 // build - donc à chaque modification de contenu via le CMS.
-function sha256(content) {
+// Le type de retour est volontairement le littéral `sha256-${string}` et non
+// `string` : c'est la forme exacte qu'attend Astro.csp.insertScriptHash
+// (type CspHashEntry), qui refuse une chaîne quelconque.
+function sha256(content: string): `sha256-${string}` {
   return `sha256-${createHash('sha256').update(content, 'utf8').digest('base64')}`;
 }
 const personJsonLd = JSON.stringify(jsonLd).replace(/</g, '\\u003c');

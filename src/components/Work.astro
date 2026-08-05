@@ -3,11 +3,12 @@ import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
 import WorkItem from './WorkItem.astro';
 import { useTranslations } from '../i18n/strings.js';
+import type { Category, Project } from '../lib/types';
 
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 
-const projects = data.videos || data;
+const projects = (data.videos || data) as Project[];
 
 // Pré-calcul des grid-column au build (même résultat que l'ancien applySpans
 // au chargement, mais sans flash ni recalcul JS au premier rendu).
@@ -22,7 +23,7 @@ const ALL_FILTERS = ['all', ...FILTERS];
 // l'ordre de videos.json est déjà groupé par catégorie (même ordre que
 // FILTERS ci-dessus), donc un simple suivi de la catégorie précédente suffit
 // à détecter les 7 changements de section.
-let lastCat = null;
+let lastCat: Category | null = null;
 const gridEntries = projects.map((p, i) => {
   const isNewCat = p.cat !== lastCat;
   lastCat = p.cat;

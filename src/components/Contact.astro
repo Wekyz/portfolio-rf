@@ -10,7 +10,12 @@ const t = useTranslations(lang);
     <p class="contact-tagline">{t('contact.tagline1')}<br /><em>{t('contact.tagline2')}</em></p>
     <p class="contact-desc">{t('contact.desc')}</p>
     <div class="contact-links">
-      <a href="/api/email" class="contact-link" id="email-link">
+      <!-- data-astro-prefetch="false" : `prefetchAll` (astro.config.mjs)
+           précharge tout lien interne au survol, or celui-ci n'est pas une
+           page mais une fonction serverless qui répond par une redirection
+           302 vers un `mailto:`. La précharger n'apporte rien et déclenche
+           une invocation de la fonction à chaque survol du lien. -->
+      <a href="/api/email" class="contact-link" id="email-link" data-astro-prefetch="false">
         <span class="contact-link-arrow" aria-hidden="true"></span>
         <span>{t('contact.emailLink')}</span>
       </a>

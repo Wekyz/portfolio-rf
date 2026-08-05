@@ -7,8 +7,14 @@ export default defineConfig({
   // Sortie 100 % statique (équivalent au site actuel) : `astro build` -> dossier `dist/`
   output: 'static',
   build: {
-    // Conserve l'arborescence simple (index.html à la racine de dist/)
-    format: 'file',
+    // Une page = un dossier avec son index.html (`/portfolio` ->
+    // `dist/portfolio/index.html`). Vercel sert nativement l'index d'un
+    // dossier : aucune règle de routage à écrire, alors que l'ancien
+    // `format: 'file'` imposait un rewrite explicite dans vercel.json par
+    // route non racine - une page ajoutée sans son rewrite renvoyait une 404
+    // en production, sans que rien ne le signale au build.
+    // Les URL publiques sont identiques dans les deux modes.
+    format: 'directory',
     // La feuille de style globale (~4 Ko) est petite et unique : l'inliner
     // dans le <head> évite une requête bloquant le rendu initial (LCP/FCP),
     // repérée par PageSpeed Insights (~90-160 ms sur /_astro/Base.*.css).
@@ -20,6 +26,15 @@ export default defineConfig({
   compressHTML: true,
   // Pas de télémétrie réseau pendant le build
   devToolbar: { enabled: false },
+  // Préchargement des pages internes au survol du lien (nav, CTA de l'accueil,
+  // pied de page) : le HTML est déjà en cache quand le clic arrive, ce qui rend
+  // la navigation quasi instantanée. Utile ici parce que chaque page recharge
+  // les ~17 Ko de CSS inline (voir `inlineStylesheets` plus haut).
+  // `hover` plutôt que `viewport` : on ne précharge que ce que le visiteur
+  // vise, et non les 4 liens de chaque page dès leur apparition à l'écran.
+  // Astro respecte de lui-même le mode économiseur de données et les
+  // connexions lentes, donc rien à prévoir côté mobile.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   // Aucun contenu Markdown/bloc de code sur ce site : on désactive Shiki (le
   // surligneur par défaut d'Astro) plutôt que de le laisser tourner pour
   // rien - il génère des styles inline incompatibles avec la CSP stricte
