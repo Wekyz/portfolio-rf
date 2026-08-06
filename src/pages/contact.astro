@@ -1,0 +1,14 @@
+---
+// Page Contact dédiée (EN). La section contact reste également en bas des
+// pages Portfolio et À propos : cette page existe pour avoir une URL courte à
+// donner dans une signature, derrière un QR code ou dans un message.
+import Base from '../layouts/Base.astro';
+import Contact from '../components/Contact.astro';
+import ContactInfo from '../components/ContactInfo.astro';
+import { useTranslations } from '../i18n/strings.js';
+const t = useTranslations('en');
+---
+<Base lang="en" page="contact" title={t('contactPage.title')} description={t('contactPage.description')}>
+  <Contact lang="en" level="h1" />
+  <ContactInfo lang="en" />
+</Base>

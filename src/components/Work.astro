@@ -32,6 +32,13 @@ const spans = computeSpans(
 const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
 const ALL_FILTERS = ['all', ...FILTERS];
 
+// Compteur par catégorie : « Documentaire (3) » annonce la profondeur du
+// portfolio dans chaque domaine et évite un filtre qui déçoit. Calculé, donc
+// toujours juste après une modification depuis le CMS.
+const counts: Record<string, number> = { all: projects.length };
+for (const cat of FILTERS) counts[cat] = projects.filter((p) => p.cat === cat).length;
+const label = (value: string) => `${t(`cat.${value}`)} (${counts[value]})`;
+
 // Un séparateur de section (titre centré) en tête de chaque catégorie -
 // l'ordre de videos.json est déjà groupé par catégorie (même ordre que
 // FILTERS ci-dessus), donc un simple suivi de la catégorie précédente suffit
@@ -55,8 +62,8 @@ const gridEntries = projects.map((p, i) => {
       <>
         {i > 0 && <span class="filter-sep" aria-hidden="true">//</span>}
         <button class="filter-btn slide-label" data-filter={value}>
-          <span class="lbl-out">{t(`cat.${value}`)}</span>
-          <span class="lbl-in" aria-hidden="true">{t(`cat.${value}`)}</span>
+          <span class="lbl-out">{label(value)}</span>
+          <span class="lbl-in" aria-hidden="true">{label(value)}</span>
         </button>
       </>
     ))}
@@ -67,7 +74,7 @@ const gridEntries = projects.map((p, i) => {
     <label class="visually-hidden" for="filterSelect">{t('work.filterAria')}</label>
     <select class="filter-select" id="filterSelect">
       {ALL_FILTERS.map((value) => (
-        <option value={value}>{t(`cat.${value}`)}</option>
+        <option value={value}>{label(value)}</option>
       ))}
     </select>
   </div>

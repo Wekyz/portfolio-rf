@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import Contact from '../../components/Contact.astro';
+import ContactInfo from '../../components/ContactInfo.astro';
+import { useTranslations } from '../../i18n/strings.js';
+const t = useTranslations('fr');
+---
+<Base lang="fr" page="contact" title={t('contactPage.title')} description={t('contactPage.description')}>
+  <Contact lang="fr" level="h1" />
+  <ContactInfo lang="fr" />
+</Base>

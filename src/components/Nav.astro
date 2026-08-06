@@ -9,7 +9,12 @@ const base = lang === 'fr' ? '/fr' : '';
 const homeHref = base || '/';
 const portfolioHref = `${base}/portfolio`;
 const aboutHref = `${base}/about`;
-const contactHref = page === 'home' ? `${portfolioHref}#contact` : '#contact';
+// Le lien Contact vise désormais une page à part entière, et non plus l'ancre
+// tout en bas du Portfolio. Il existe ainsi une URL courte à donner dans une
+// signature ou derrière un QR code, la même depuis toutes les pages. La
+// section contact reste en bas de Portfolio et de À propos pour ceux qui
+// défilent.
+const contactHref = `${base}/contact`;
 
 // Bascule de langue : sur le chemin réel, et non plus déduit de `page`. Les
 // pages projet ont un chemin à deux segments (/portfolio/[slug]) qui n'est pas

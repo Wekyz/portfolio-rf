@@ -70,26 +70,80 @@ import { applySpans } from '../lib/spans.js';
     const originalOrder = Array.from(grid.querySelectorAll('.work-item'));
 
     // ── Lightbox ────────────────────────────────────────────────
-    let lastFocused = null; // élément déclencheur, pour y revenir à la fermeture
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxMeta = document.getElementById('lightboxMeta');
+    const lightboxSheet = document.getElementById('lightboxSheet');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
 
-    function openLightbox(vimeoId, hash, trigger) {
+    let lastFocused = null; // élément déclencheur, pour y revenir à la fermeture
+    let currentItem = null; // vignette en cours d'affichage, pour prev/suivant
+
+    /**
+     * Projets navigables : ceux qui ont une vidéo et qui sont visibles.
+     * Recalculé à chaque ouverture parce que le filtre de catégorie change la
+     * liste - enchaîner dans « Documentaire » ne doit pas ramener une pub.
+     */
+    function playable() {
+      return originalOrder.filter((el) => el.dataset.id && !el.classList.contains('hidden'));
+    }
+
+    function fillInfo(item) {
+      const title = item.querySelector('.work-title');
+      const prod = item.querySelector('.work-prod');
+      const year = item.querySelector('.work-year');
+      const link = item.querySelector('a.work-thumb-wrap');
+      lightboxTitle.textContent = title ? title.textContent : '';
+      lightboxMeta.textContent = [prod && prod.textContent, year && year.textContent]
+        .filter(Boolean)
+        .join(' · ');
+      // Le lien « voir la fiche » n'a de sens que vers une page projet, pas
+      // vers un site externe (qui ouvre déjà son propre onglet).
+      const href = link && link.target !== '_blank' ? link.getAttribute('href') : null;
+      lightboxSheet.hidden = !href;
+      if (href) lightboxSheet.setAttribute('href', href);
+
+      const list = playable();
+      const many = list.length > 1;
+      lightboxPrev.hidden = !many;
+      lightboxNext.hidden = !many;
+    }
+
+    function openLightbox(item, trigger) {
       // `trigger` explicite plutôt que document.activeElement : Safari ne
       // donne pas le focus à un <a> au clic, on perdrait le retour de focus
       // à la fermeture (a11y).
-      lastFocused = trigger || document.activeElement;
+      if (trigger !== undefined) lastFocused = trigger || document.activeElement;
+      currentItem = item;
+      const { id, hash } = item.dataset;
       const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
       if (hash) params.set('h', hash);
-      lightboxFrame.src = `https://player.vimeo.com/video/${vimeoId}?${params}`;
+      lightboxFrame.src = `https://player.vimeo.com/video/${id}?${params}`;
+      fillInfo(item);
       lightboxEl.classList.add('open', 'loading'); // 'loading' : affiche le spinner
       document.body.style.overflow = 'hidden';
       lightboxClose.focus();
     }
+
+    /** Passe au projet voisin, en bouclant aux extrémités. */
+    function step(delta) {
+      const list = playable();
+      if (list.length < 2 || !currentItem) return;
+      const i = list.indexOf(currentItem);
+      if (i === -1) return;
+      const next = list[(i + delta + list.length) % list.length];
+      lightboxEl.classList.add('loading');
+      openLightbox(next); // `trigger` omis : on garde la vignette d'origine
+    }
+    lightboxPrev.addEventListener('click', () => step(-1));
+    lightboxNext.addEventListener('click', () => step(1));
     // Le player Vimeo a fini de charger -> on masque le spinner.
     lightboxFrame.addEventListener('load', () => lightboxEl.classList.remove('loading'));
     function closeLightbox() {
       lightboxEl.classList.remove('open');
       lightboxFrame.src = '';
       document.body.style.overflow = '';
+      currentItem = null;
       // Rend le focus à la vignette qui a ouvert la modale (a11y).
       if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
       lastFocused = null;
@@ -99,9 +153,18 @@ import { applySpans } from '../lib/spans.js';
     document.addEventListener('keydown', (e) => {
       if (!lightboxEl.classList.contains('open')) return;
       if (e.key === 'Escape') { closeLightbox(); return; }
+      // Flèches : enchaîner les projets sans fermer la modale. Ignorées quand
+      // le focus est dans le lecteur, où Vimeo s'en sert pour la lecture.
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.activeElement !== lightboxFrame) {
+        e.preventDefault();
+        step(e.key === 'ArrowLeft' ? -1 : 1);
+        return;
+      }
       // Piège à focus : maintient la tabulation à l'intérieur de la modale.
       if (e.key === 'Tab') {
-        const focusables = [lightboxClose, lightboxFrame];
+        const focusables = [lightboxClose, lightboxPrev, lightboxNext, lightboxFrame].filter(
+          (el) => !el.hidden
+        );
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
         if (e.shiftKey && document.activeElement === first) {
@@ -125,10 +188,9 @@ import { applySpans } from '../lib/spans.js';
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
         // Lien externe (projet sans vidéo Vimeo) : il ouvre déjà son onglet.
         if (link.target === '_blank') return;
-        const { id, hash } = item.dataset;
-        if (!id) return;
+        if (!item.dataset.id) return;
         e.preventDefault();
-        openLightbox(id, hash || '', link);
+        openLightbox(item, link);
       });
     });
 
@@ -176,7 +238,6 @@ import { applySpans } from '../lib/spans.js';
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      if (Date.now() - formLoadTime < 3000) return; // soumission trop rapide => bot
 
       const form = e.target;
       const btn = form.querySelector('.form-submit');
@@ -190,11 +251,22 @@ import { applySpans } from '../lib/spans.js';
       // aria-live annonce le même statut aux lecteurs d'écran.
       if (formStatus) formStatus.textContent = FORM_LABELS.sending;
 
-      fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
+      // Délai anti-bot : l'envoi est DIFFÉRÉ jusqu'aux 3 secondes, il n'est
+      // plus annulé. L'ancienne version faisait `return` en silence - clic sur
+      // « Envoyer », rien ne bouge, aucun message. Ça ne gênait pas les bots,
+      // qui postent directement sur l'API, et ça pénalisait l'humain le plus
+      // motivé : celui qui arrive avec son texte déjà prêt. Le contrôle reste
+      // actif, le visiteur voit simplement « Envoi… » un instant de plus.
+      const wait = Math.max(0, 3000 - (Date.now() - formLoadTime));
+
+      new Promise((resolve) => setTimeout(resolve, wait))
+        .then(() =>
+          fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+        )
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           btn.innerHTML = FORM_LABELS.sent;

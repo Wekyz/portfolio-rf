@@ -118,6 +118,12 @@ export const ui = {
     'contact.messagePh': 'Tell me about your project…',
     'contact.send': 'Send',
     'contact.honeypot': "Don't fill this out:",
+    'contactPage.title': 'Contact - Roxane Foare, Video Editor',
+    'contactPage.description': 'Get in touch with Roxane Foare, freelance video editor based in Paris & Angers. Contact form, email and practical details.',
+    'contactPage.area': 'Working area',
+    'contactPage.languages': 'Languages',
+    'contactPage.languagesValue': 'French, English',
+    'contactPage.elsewhere': 'Elsewhere',
 
     // Footer
     'footer.rights': 'All rights reserved',
@@ -130,6 +136,9 @@ export const ui = {
     'lb.dialog': 'Video player',
     'lb.close': 'Close video',
     'lb.frameTitle': 'Vimeo video player',
+    'lb.prev': 'Previous project',
+    'lb.next': 'Next project',
+    'lb.sheet': 'Project page',
   },
 
   fr: {
@@ -241,6 +250,12 @@ export const ui = {
     'contact.messagePh': 'Parlez-moi de votre projet…',
     'contact.send': 'Envoyer',
     'contact.honeypot': 'Ne remplissez pas ce champ :',
+    'contactPage.title': 'Contact - Roxane Foare, Monteuse vidéo',
+    'contactPage.description': "Contacter Roxane Foare, monteuse vidéo freelance à Paris & Angers. Formulaire, e-mail et informations pratiques.",
+    'contactPage.area': "Zone d'intervention",
+    'contactPage.languages': 'Langues',
+    'contactPage.languagesValue': 'Français, anglais',
+    'contactPage.elsewhere': 'Ailleurs',
 
     // Footer
     'footer.rights': 'Tous droits réservés',
@@ -253,6 +268,9 @@ export const ui = {
     'lb.dialog': 'Lecteur vidéo',
     'lb.close': 'Fermer la vidéo',
     'lb.frameTitle': 'Lecteur vidéo Vimeo',
+    'lb.prev': 'Projet précédent',
+    'lb.next': 'Projet suivant',
+    'lb.sheet': 'Voir la fiche',
   },
 };
 

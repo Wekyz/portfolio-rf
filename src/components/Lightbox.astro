@@ -9,5 +9,19 @@ const t = useTranslations(lang);
     <button type="button" class="lightbox-close" id="lightboxClose" aria-label={t('lb.close')}>&times;</button>
     <div class="lightbox-spinner" id="lightboxSpinner" aria-hidden="true"></div>
     <iframe id="lightboxFrame" src="" title={t('lb.frameTitle')} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+
+    <!-- Barre d'information et navigation : une fois la vidéo ouverte, plus
+         rien n'indiquait ce qu'on regardait ni pour qui, et il fallait fermer
+         puis rouvrir pour passer au projet suivant. Les libellés sont remplis
+         par app.js depuis les data-* de la vignette cliquée. -->
+    <div class="lightbox-bar">
+      <button type="button" class="lightbox-nav" id="lightboxPrev" aria-label={t('lb.prev')}>&larr;</button>
+      <div class="lightbox-info">
+        <p class="lightbox-title" id="lightboxTitle"></p>
+        <p class="lightbox-meta" id="lightboxMeta"></p>
+      </div>
+      <a class="lightbox-sheet" id="lightboxSheet" href="">{t('lb.sheet')} &rarr;</a>
+      <button type="button" class="lightbox-nav" id="lightboxNext" aria-label={t('lb.next')}>&rarr;</button>
+    </div>
   </div>
 </div>

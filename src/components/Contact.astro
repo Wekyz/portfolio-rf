@@ -1,12 +1,23 @@
 ---
 // Section Contact + formulaire (envoyé via la fonction /api/contact -> Resend)
+//
+// Présente en bas des pages Portfolio et À propos, et seule sur la page
+// /contact. D'où le niveau de titre paramétrable : sur sa propre page elle
+// porte le H1, ailleurs elle reste une section parmi d'autres.
 import { useTranslations } from '../i18n/strings.js';
-const { lang = 'en' } = Astro.props;
+
+interface Props {
+  lang?: 'en' | 'fr';
+  level?: 'h1' | 'h2';
+}
+
+const { lang = 'en', level = 'h2' } = Astro.props;
+const Heading = level;
 const t = useTranslations(lang);
 ---
 <section id="contact">
   <div class="contact-left">
-    <h2 class="section-title">{t('contact.title')}</h2>
+    <Heading class="section-title">{t('contact.title')}</Heading>
     <p class="contact-tagline">{t('contact.tagline1')}<br /><em>{t('contact.tagline2')}</em></p>
     <p class="contact-desc">{t('contact.desc')}</p>
     <div class="contact-links">

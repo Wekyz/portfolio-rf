@@ -469,6 +469,21 @@ nav.nav-flush { border-bottom-color: transparent; }
 .project-related-title { display: block; margin-top: 12px; font-size: 14px; }
 .project-related-credit { display: block; font-size: 12px; color: var(--gray-mid); }
 
+/* ── PAGE CONTACT : bloc pratique ─────────────────────────── */
+.contact-info {
+  padding: 0 56px 104px; max-width: 1180px; margin: 0 auto;
+}
+.contact-info dl {
+  display: flex; flex-wrap: wrap; gap: 48px;
+  padding-top: 28px; border-top: 1px solid var(--gray-light);
+}
+.contact-info dt {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--gray-mid); margin-bottom: 8px;
+}
+.contact-info dd { font-size: 14px; display: flex; gap: 16px; }
+.contact-info dd a { color: var(--black); text-underline-offset: 3px; }
+
 /* ── SÉLECTION (accueil) ──────────────────────────────────── */
 .featured { padding: 96px 56px 24px; }
 .featured-head {
@@ -780,7 +795,51 @@ footer {
   align-items: center; justify-content: center;
 }
 .lightbox.open { display: flex; }
-.lightbox-inner { position: relative; width: 90vw; max-width: 1100px; aspect-ratio: 16/9; }
+/* La largeur est aussi bornée par la hauteur disponible. La modale centre le
+   lecteur seul : la barre d'information, posée en dessous, sortait de l'écran
+   sur un format court (mesuré : 32 px de débordement en 1280x680). Les 170 px
+   réservés couvrent la barre, son espacement et une marge basse. */
+.lightbox-inner {
+  position: relative;
+  width: min(90vw, 1100px, calc((100vh - 170px) * 16 / 9));
+  aspect-ratio: 16/9;
+}
+
+/* Barre d'information sous le lecteur (titre, crédit, navigation).
+   Positionnée hors du cadre 16/9 pour ne pas rogner la vidéo. */
+.lightbox-bar {
+  position: absolute; top: 100%; left: 0; right: 0;
+  display: flex; align-items: center; gap: 16px;
+  padding-top: 16px; color: var(--white);
+}
+.lightbox-info { flex: 1; min-width: 0; }
+.lightbox-title {
+  font-family: var(--font-hennessy); font-size: 17px; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lightbox-meta {
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .58); margin-top: 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lightbox-sheet {
+  flex-shrink: 0;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .72); text-decoration: none; white-space: nowrap;
+  transition: color var(--t-fast) ease;
+}
+.lightbox-sheet:hover { color: var(--white); }
+.lightbox-nav {
+  flex-shrink: 0; order: -1;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid rgba(255, 255, 255, .28); border-radius: 50%;
+  color: var(--white); font-size: 15px; cursor: pointer;
+  transition: border-color var(--t-fast) ease, background var(--t-fast) ease;
+}
+.lightbox-nav:hover { border-color: var(--white); background: rgba(255, 255, 255, .1); }
+#lightboxNext { order: 1; }
+.lightbox-bar [hidden] { display: none; }
 .lightbox-inner iframe { width: 100%; height: 100%; border: none; }
 .lightbox-close {
   position: absolute; top: -44px; right: 0;
@@ -803,7 +862,7 @@ footer {
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 900px) {
-  body > nav, #work, #about, #contact, footer, .hero, .project, .legal, .notfound, .featured { padding-left: 24px; padding-right: 24px; }
+  body > nav, #work, #about, #contact, footer, .hero, .project, .legal, .notfound, .featured, .contact-info { padding-left: 24px; padding-right: 24px; }
   /* Une colonne : trois vignettes côte à côte deviennent illisibles. */
   .featured-grid { grid-template-columns: 1fr; }
   /* Terme au-dessus de la valeur : deux colonnes deviennent illisibles sous

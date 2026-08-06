@@ -1,0 +1,39 @@
+---
+/**
+ * Bloc pratique de la page /contact : zone d'intervention, langues et canaux
+ * directs. Complète le formulaire plutôt qu'il ne le remplace.
+ */
+import { useTranslations } from '../i18n/strings.js';
+import { CONTACT } from '../data/contact.js';
+
+interface Props {
+  lang?: 'en' | 'fr';
+}
+
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
+---
+<section class="contact-info">
+  <dl>
+    <div>
+      <dt>{t('contactPage.area')}</dt>
+      <dd>{t('work.location')}</dd>
+    </div>
+    <div>
+      <dt>{t('contactPage.languages')}</dt>
+      <dd>{t('contactPage.languagesValue')}</dd>
+    </div>
+    <div>
+      <dt>{t('contactPage.elsewhere')}</dt>
+      <dd>
+        <a href={CONTACT.imdb} target="_blank" rel="noopener noreferrer me">IMDb</a>
+        {/* Le bouton n'apparaît que si un lien est renseigné - voir
+            data/contact.js pour le format attendu (lien court WhatsApp
+            Business, le seul qui ne dévoile pas le numéro). */}
+        {CONTACT.whatsapp && (
+          <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        )}
+      </dd>
+    </div>
+  </dl>
+</section>

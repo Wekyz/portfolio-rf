@@ -13,7 +13,7 @@ const SITE = 'https://roxane-foare.com';
 // Ni `changefreq` ni `priority` : Google a confirmé en 2023 ne plus les lire,
 // et Bing l'avait annoncé avant. C'était deux valeurs à arbitrer sans qu'aucun
 // moteur ne s'en serve.
-const FIXED_PAGES = ['', '/portfolio', '/about', '/legal', '/privacy'];
+const FIXED_PAGES = ['', '/portfolio', '/about', '/contact', '/legal', '/privacy'];
 
 export function GET() {
   const lastmod = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
