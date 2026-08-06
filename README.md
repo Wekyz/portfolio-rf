@@ -155,10 +155,18 @@ La CI (`.github/workflows/ci.yml`) fait build + tests + `npm audit` sur chaque
 push/PR vers `main`.
 
 Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
-`CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`, `DEPLOY_HOOK_URL`. Rate
-limiting du formulaire et du bouton de redéploiement (optionnel) :
-`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (intégration Vercel
-Marketplace Upstash).
+`CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`, `DEPLOY_HOOK_URL`,
+**`REDEPLOY_TOKEN`**. Rate limiting du formulaire et du bouton de
+redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
+`UPSTASH_REDIS_REST_TOKEN` (intégration Vercel Marketplace Upstash).
+
+> **`REDEPLOY_TOKEN` est obligatoire pour que le bouton de redéploiement
+> fonctionne.** Sans elle, `/api/redeploy` refuse tout (503) : l'endpoint
+> déclenche un build de production, il vaut mieux qu'il soit condamné que
+> laissé ouvert. Choisir une valeur longue et aléatoire, puis la
+> communiquer à la monteuse - elle la saisit une fois par onglet sur
+> `/admin/redeploy.html`. Elle n'est jamais écrite dans la page, qui est
+> publique.
 
 ## Édition du contenu (monteuse)
 
@@ -188,6 +196,13 @@ pour y revenir). Fonctionne via un [Vercel Deploy
 Hook](https://vercel.com/docs/deployments/deploy-hooks) : *Project Settings →
 Git → Deploy Hooks*, créer un hook sur la branche `main`, coller son URL dans
 la variable d'environnement `DEPLOY_HOOK_URL` (voir `api/redeploy.js`).
+
+La page demande une **phrase secrète** (`REDEPLOY_TOKEN`), retenue le temps de
+l'onglet. Sans elle, l'endpoint était public : un simple `curl -X POST`
+suffisait à relancer un build de production, brûler des minutes de build,
+purger le cache edge et déclencher une cascade d'appels à l'API Vimeo. La page
+est publique et contient l'appel en clair, le secret ne peut donc pas y être
+écrit - il est saisi, jamais livré.
 
 ## Miniatures automatiques
 

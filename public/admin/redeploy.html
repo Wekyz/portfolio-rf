@@ -21,6 +21,13 @@
     }
     h1 { font-size: 18px; font-weight: 600; margin: 0 0 12px; }
     p { font-size: 14px; color: #a8a89f; line-height: 1.6; margin: 0 0 24px; }
+    .field { display: block; text-align: left; font-size: 12px; color: #a8a89f; margin-bottom: 6px; }
+    input {
+      width: 100%; padding: 12px 14px; margin-bottom: 16px;
+      border-radius: 8px; border: 1px solid #2e2e29;
+      background: #0e0e0c; color: #fafaf8; font-size: 14px;
+    }
+    input:focus { outline: 2px solid #fafaf8; outline-offset: 2px; }
     button {
       width: 100%; padding: 14px 20px; border-radius: 8px; border: none;
       background: #fafaf8; color: #0e0e0c; font-size: 14px; font-weight: 600;
@@ -43,32 +50,65 @@
       Vimeo</strong> (ex. miniature) sans passer par le CMS - un enregistrement dans
       le CMS relance déjà le site automatiquement, pas besoin de ce bouton dans ce cas.
     </p>
+    <label class="field" for="token">Phrase secrète</label>
+    <input id="token" type="password" autocomplete="current-password" placeholder="••••••••••••" />
     <button id="btn" type="button">Lancer un redéploiement</button>
     <p id="status" role="status" aria-live="polite"></p>
     <a class="back" href="/admin/">&larr; Retour au CMS</a>
   </div>
 
   <script>
+    // La phrase secrète n'est jamais écrite dans cette page : elle est
+    // publique, n'importe qui pourrait la lire. Elle est saisie ici et gardée
+    // le temps de l'onglet seulement (sessionStorage, effacé à la fermeture),
+    // pour ne pas avoir à la retaper à chaque essai.
+    const KEY = 'rf-redeploy-token';
     const btn = document.getElementById('btn');
     const status = document.getElementById('status');
-    btn.addEventListener('click', () => {
+    const token = document.getElementById('token');
+
+    const saved = sessionStorage.getItem(KEY);
+    if (saved) token.value = saved;
+
+    function run() {
+      const value = token.value.trim();
+      if (!value) {
+        status.className = 'err';
+        status.textContent = 'Saisis la phrase secrète.';
+        token.focus();
+        return;
+      }
       btn.disabled = true;
       status.className = '';
       status.textContent = 'Déclenchement en cours…';
-      fetch('/api/redeploy', { method: 'POST' })
+      fetch('/api/redeploy', {
+        method: 'POST',
+        headers: { 'X-Redeploy-Token': value },
+      })
         .then((res) => {
+          if (res.status === 401) {
+            sessionStorage.removeItem(KEY);
+            throw new Error('unauthorized');
+          }
           if (!res.ok) throw new Error('HTTP ' + res.status);
+          sessionStorage.setItem(KEY, value);
           status.className = 'ok';
           status.textContent = 'C\'est parti - le nouveau build prend quelques minutes.';
         })
-        .catch(() => {
+        .catch((err) => {
           status.className = 'err';
-          status.textContent = 'Échec du déclenchement, réessaie dans un instant.';
+          status.textContent =
+            err.message === 'unauthorized'
+              ? 'Phrase secrète incorrecte.'
+              : 'Échec du déclenchement, réessaie dans un instant.';
         })
         .finally(() => {
           setTimeout(() => { btn.disabled = false; }, 15000);
         });
-    });
+    }
+
+    btn.addEventListener('click', run);
+    token.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
   </script>
 </body>
 </html>
