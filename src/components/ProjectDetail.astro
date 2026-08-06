@@ -28,6 +28,14 @@ const langBase = lang === 'fr' ? '/fr' : '';
 // que cherchent les productions.
 const duration = formatDuration(getDuration(p));
 
+// Découpage en paragraphes fait ici et non dans le template : une regex
+// contenant `{2,}` y serait lue comme une expression JSX par le vérificateur
+// de types et par ESLint (le compilateur Astro, lui, l'acceptait - d'où une
+// erreur invisible au build).
+const paragraphs = p.description
+  ? p.description.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean)
+  : [];
+
 const facts: { label: string; value: string }[] = [];
 if (p.credit) facts.push({ label: t('project.production'), value: p.credit });
 if (p.year) facts.push({ label: t('project.year'), value: p.year });
@@ -59,6 +67,12 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
       allowfullscreen
     ></iframe>
   </div>
+
+  {paragraphs.length > 0 && (
+    <div class="project-text">
+      {paragraphs.map((para) => <p>{para}</p>)}
+    </div>
+  )}
 
   <dl class="project-facts">
     {facts.map((f) => (

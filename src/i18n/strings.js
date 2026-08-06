@@ -42,13 +42,18 @@ export const ui = {
     'hero.ctaPortfolio': 'View portfolio',
     'hero.ctaAbout': 'About',
     'hero.showreelLabel': 'Showreel',
+    'featured.title': 'Selected work',
+    'featured.all': 'See all projects',
 
     // Work
     'work.title': 'Portfolio',
-    'work.location': 'Paris · Angers · World',
+    // « World » seul sonne étrangement en anglais, « Worldwide » est la
+    // formulation attendue. Le français « Monde » fonctionne tel quel.
+    'work.location': 'Paris · Angers · Worldwide',
     'work.filterAria': 'Filter projects by category',
     'work.watch': 'Watch',
     'work.watchAria': 'Watch',
+    'work.stillImage': 'Illustration photo',
 
     // Distinctions (JSON-LD `award`) - reprises de la bio, section About
     'award.cyprus': 'Best Editing Award, Cyprus International Film Festival - En mille morceaux',
@@ -160,6 +165,8 @@ export const ui = {
     'hero.ctaPortfolio': 'Voir le portfolio',
     'hero.ctaAbout': 'À propos',
     'hero.showreelLabel': 'Showreel',
+    'featured.title': 'Sélection',
+    'featured.all': 'Voir tous les projets',
 
     // Work
     'work.title': 'Projets',
@@ -167,6 +174,7 @@ export const ui = {
     'work.filterAria': 'Filtrer les projets par catégorie',
     'work.watch': 'Voir',
     'work.watchAria': 'Regarder',
+    'work.stillImage': "Photo d'illustration",
 
     // Distinctions (JSON-LD `award`) - reprises de la bio, section About
     'award.cyprus':

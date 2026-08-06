@@ -31,6 +31,10 @@ export interface Project {
   thumb?: string;
   /** URL externe, ouverte au clic à la place du lecteur Vimeo. */
   externalLink?: string;
+  /** Texte de présentation affiché sur la page projet et repris dans le VideoObject. */
+  description?: string;
+  /** Mis en avant sur la page d'accueil. */
+  featured?: boolean;
   /** Force le segment d'URL de la page projet (défaut : dérivé du titre). */
   slug?: string;
   /** Occupe les 12 colonnes de la grille. */

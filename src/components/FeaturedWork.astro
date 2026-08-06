@@ -1,0 +1,73 @@
+---
+/**
+ * Projets mis en avant sur la page d'accueil.
+ *
+ * La sélection se fait depuis le CMS : chaque projet porte une case « Mettre
+ * en avant sur l'accueil » (champ `featured`). La monteuse peut donc changer
+ * la vitrine quand elle veut, sans intervention technique.
+ *
+ * Deux garde-fous :
+ *  - seuls les projets disposant d'une page (donc d'une vidéo Vimeo) sont
+ *    retenus : mettre en avant une vignette qui ne mène nulle part irait
+ *    contre le but de la section ;
+ *  - si aucun projet n'est coché, on retombe sur les trois premiers de la
+ *    liste. L'accueil montre ainsi toujours du travail, plutôt qu'un blanc.
+ */
+import { useTranslations } from '../i18n/strings.js';
+import { resolveThumb } from '../lib/thumb.js';
+import { buildSlugMap } from '../lib/slug.js';
+import data from '../data/videos.json';
+import type { Project } from '../lib/types';
+
+interface Props {
+  lang?: 'en' | 'fr';
+}
+
+const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
+const langBase = lang === 'fr' ? '/fr' : '';
+
+const LIMIT = 3;
+const projects = (data.videos || data) as Project[];
+const slugMap = buildSlugMap(projects);
+
+const withPage = projects.filter((p) => slugMap.has(p));
+const chosen = withPage.filter((p) => p.featured);
+const featured = (chosen.length > 0 ? chosen : withPage).slice(0, LIMIT);
+---
+{featured.length > 0 && (
+  <section class="featured">
+    <div class="featured-head">
+      <h2 class="featured-title">{t('featured.title')}</h2>
+      <a class="featured-all" href={`${langBase}/portfolio`}>{t('featured.all')} &rarr;</a>
+    </div>
+
+    <ul class="featured-grid">
+      {featured.map((p, i) => {
+        const { src, srcset } = resolveThumb(p);
+        return (
+          <li>
+            <a href={`${langBase}/portfolio/${slugMap.get(p)}`}>
+              {src && (
+                <img
+                  src={src}
+                  srcset={srcset}
+                  sizes="(max-width: 900px) 100vw, 33vw"
+                  alt={p.title}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  width="1280"
+                  height="800"
+                />
+              )}
+              <span class="featured-name">{p.title}</span>
+              <span class="featured-meta">
+                {[p.credit, p.year].filter(Boolean).join(' · ')}
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+)}

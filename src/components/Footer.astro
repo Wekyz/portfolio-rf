@@ -11,6 +11,11 @@ const base = lang === 'fr' ? '/fr' : '';
   <nav class="footer-legal" aria-label={t('footer.legalAria')}>
     <a href={`${base}/legal`}>{t('footer.legal')}</a>
     <a href={`${base}/privacy`}>{t('footer.privacy')}</a>
+    <!-- Le profil IMDb n'existait que dans le JSON-LD : aucun visiteur ne le
+         voyait. Pour un métier où la vérification passe par les crédits,
+         c'est la seule preuve externe disponible - pas de Vimeo public ni de
+         réseau social. -->
+    <a href="https://www.imdb.com/fr/name/nm8663077/" target="_blank" rel="noopener noreferrer me">IMDb</a>
   </nav>
   <div class="footer-copy footer-credit">
     {t('footer.creditPrefix')} <a href="https://evrox.fr" target="_blank" rel="noopener noreferrer">Evrox</a>

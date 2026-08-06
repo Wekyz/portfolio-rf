@@ -76,16 +76,22 @@ export function buildProjectMeta(project, slug, lang) {
   const canonical = `${SITE}${lang === 'fr' ? '/fr' : ''}${path}`;
 
   // « Hanro, Publicité (2024). Publicité monté par Roxane Foare... »
+  //
+  // Cette description reste synthétique parce qu'elle sert de <meta
+  // description> : au-delà d'environ 155 caractères, Google la tronque. Le
+  // texte libre saisi dans le CMS, lui, peut être long - il alimente la page
+  // et le VideoObject, pas la balise meta.
   const bits = [p.title];
   if (p.credit) bits.push(p.credit);
   const head = bits.join(' - ') + (p.year ? ` (${p.year})` : '');
   const description = `${head}. ${catLabel} ${t('project.descSuffix')}`;
+  const richDescription = p.description?.trim() || description;
 
   const videoObject = {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
     name: p.title,
-    description,
+    description: richDescription,
     thumbnailUrl: absThumb(p),
     // Date d'upload réelle résolue au build depuis Vimeo (fetch-thumbs.mjs) ;
     // repli sur le 1er janvier de `year` en UTC complet si indisponible.

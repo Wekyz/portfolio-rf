@@ -87,6 +87,19 @@ collections:
                 required: false
                 hint: "Affiche la vidéo sur toute la largeur (Feature Film)"
 
+              - name: description
+                label: "Présentation du projet"
+                widget: text
+                required: false
+                hint: "Trois à cinq phrases : le parti pris de montage, le format, les contraintes, votre rôle exact. Affiché sur la page du projet et repris par Google et les moteurs de réponse. Facultatif - à remplir en priorité pour les projets les plus représentatifs."
+
+              - name: featured
+                label: "Mettre en avant sur l'accueil"
+                widget: boolean
+                default: false
+                required: false
+                hint: "Les projets cochés apparaissent sur la page d'accueil, dans l'ordre de cette liste (3 maximum). Si aucun n'est coché, les 3 premiers projets sont affichés."
+
               - name: externalLink
                 label: "Lien externe"
                 widget: string

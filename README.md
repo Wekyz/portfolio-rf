@@ -96,6 +96,19 @@ npm test         # tests fumée (node:test), ex. /api/contact
 └─ astro.config.mjs
 ```
 
+### Champs pilotés depuis le CMS
+
+Deux champs par projet changent le site sans intervention technique :
+
+- **Présentation du projet** (`description`) : texte libre affiché sur la page
+  du projet et repris dans le `VideoObject`. La `<meta description>` reste, elle,
+  la version courte générée, pour ne pas être tronquée par Google.
+- **Mettre en avant sur l'accueil** (`featured`) : les projets cochés
+  apparaissent sur l'accueil, dans l'ordre de la liste, 3 au maximum. Seuls les
+  projets ayant une page (donc une vidéo Vimeo) sont retenus. Si aucun n'est
+  coché, les 3 premiers de la liste s'affichent, pour que l'accueil ne soit
+  jamais vide.
+
 ### Fichiers pour les moteurs de réponse
 
 `llms.txt` et `llms-full.txt` sont **générés au build** (`src/pages/`), comme
