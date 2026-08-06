@@ -1,0 +1,97 @@
+---
+/**
+ * Corps d'une page projet : lecteur visible, informations, maillage interne.
+ *
+ * Le lecteur est délibérément en tête de page, à pleine largeur de colonne et
+ * sans `loading="lazy"` : c'est la condition pour que Google indexe la vidéo
+ * (dans la zone rendue au chargement, > 140 px de haut, > 140 px de large et
+ * au moins un tiers de la page). Ne pas le repousser sous un pli ni le
+ * réduire sans revoir le VideoObject de lib/project-page.js.
+ */
+import { useTranslations } from '../i18n/strings.js';
+import { resolveThumb } from '../lib/thumb.js';
+import { embedUrl } from '../lib/project-page.js';
+import type { Project } from '../lib/types';
+
+interface Props {
+  project: Project;
+  related?: { project: Project; slug: string }[];
+  lang?: 'en' | 'fr';
+}
+
+const { project: p, related = [], lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
+const langBase = lang === 'fr' ? '/fr' : '';
+
+const facts: { label: string; value: string }[] = [];
+if (p.credit) facts.push({ label: t('project.production'), value: p.credit });
+if (p.year) facts.push({ label: t('project.year'), value: p.year });
+facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
+---
+<article class="project">
+  <nav class="project-back" aria-label={t('project.back')}>
+    <a href={`${langBase}/portfolio`}>&larr; {t('project.back')}</a>
+  </nav>
+
+  <header class="project-head">
+    <p class="project-cat">{t(`cat.${p.cat}`)}</p>
+    <h1 class="project-title">{p.title}</h1>
+  </header>
+
+  <div class="project-player">
+    <iframe
+      src={embedUrl(p)}
+      title={`${p.title} - ${t('project.playerTitle')}`}
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <dl class="project-facts">
+    {facts.map((f) => (
+      <div class="project-fact">
+        <dt>{f.label}</dt>
+        <dd>{f.value}</dd>
+      </div>
+    ))}
+  </dl>
+
+  {p.externalLink && (
+    <p class="project-cta">
+      <a href={p.externalLink} target="_blank" rel="noopener noreferrer">
+        {t('project.watchFull')} &rarr;
+      </a>
+    </p>
+  )}
+
+  {related.length > 0 && (
+    <section class="project-related">
+      <h2>{t('project.related')}</h2>
+      <ul>
+        {related.map(({ project: r, slug }) => {
+          const { src, srcset } = resolveThumb(r);
+          return (
+            <li>
+              <a href={`${langBase}/portfolio/${slug}`}>
+                {src && (
+                  <img
+                    src={src}
+                    srcset={srcset}
+                    sizes="(max-width: 900px) 100vw, 33vw"
+                    alt={r.title}
+                    loading="lazy"
+                    decoding="async"
+                    width="1280"
+                    height="800"
+                  />
+                )}
+                <span class="project-related-title">{r.title}</span>
+                {r.credit && <span class="project-related-credit">{r.credit}</span>}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  )}
+</article>

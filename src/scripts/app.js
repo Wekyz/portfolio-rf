@@ -72,8 +72,11 @@ import { applySpans } from '../lib/spans.js';
     // ── Lightbox ────────────────────────────────────────────────
     let lastFocused = null; // élément déclencheur, pour y revenir à la fermeture
 
-    function openLightbox(vimeoId, hash) {
-      lastFocused = document.activeElement;
+    function openLightbox(vimeoId, hash, trigger) {
+      // `trigger` explicite plutôt que document.activeElement : Safari ne
+      // donne pas le focus à un <a> au clic, on perdrait le retour de focus
+      // à la fermeture (a11y).
+      lastFocused = trigger || document.activeElement;
       const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
       if (hash) params.set('h', hash);
       lightboxFrame.src = `https://player.vimeo.com/video/${vimeoId}?${params}`;
@@ -110,18 +113,22 @@ import { applySpans } from '../lib/spans.js';
     });
 
     // ── Clic sur une vignette ───────────────────────────────────
+    // La vignette est un <a> vers sa page projet (voir WorkItem.astro). On
+    // intercepte le clic simple pour ouvrir la lightbox, comportement
+    // inchangé pour le visiteur ; toute autre forme de clic suit le lien.
     originalOrder.forEach((item) => {
-      const btn = item.querySelector('button.work-thumb-wrap');
-      if (!btn) return;
-      btn.addEventListener('click', () => {
-        const { external, id, hash } = item.dataset;
-        // N'ouvre que des URL http(s) - empêche un schéma type `javascript:`
-        // de s'exécuter via window.open si une donnée du CMS était malformée.
-        if (external && /^https?:\/\//i.test(external)) {
-          window.open(external, '_blank', 'noopener,noreferrer');
-        } else if (id) {
-          openLightbox(id, hash || '');
-        }
+      const link = item.querySelector('a.work-thumb-wrap');
+      if (!link) return;
+      link.addEventListener('click', (e) => {
+        // Clic modifié = intention explicite de naviguer (nouvel onglet,
+        // nouvelle fenêtre, téléchargement) : on ne s'interpose pas.
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        // Lien externe (projet sans vidéo Vimeo) : il ouvre déjà son onglet.
+        if (link.target === '_blank') return;
+        const { id, hash } = item.dataset;
+        if (!id) return;
+        e.preventDefault();
+        openLightbox(id, hash || '', link);
       });
     });
 

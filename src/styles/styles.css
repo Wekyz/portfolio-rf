@@ -303,25 +303,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   cursor: pointer;
   border: none; padding: 0; display: block;
   font: inherit; color: inherit; text-align: left;
-}
-
-/* Lecteur réel (voir WorkItem.astro) : présent dans le HTML pour l'indexation
-   vidéo (Google veut un <iframe> vers le player effectivement sur la page),
-   mais masqué visuellement - la lecture visible passe par la lightbox
-   partagée. Masqué façon "visually-hidden" (pas `display:none`) : un élément
-   sans dimensions ne peut pas être évalué par le navigateur pour le
-   lazy-loading (`loading="lazy"` chargerait tout immédiatement faute de
-   distance calculable à l'écran) - ici il garde une taille réelle (1px) et
-   une position dans le flux, donc le chargement ne se déclenche qu'à
-   l'approche du scroll, comme les vignettes. */
-.work-embed {
-  position: absolute;
-  width: 1px; height: 1px;
-  margin: -1px; padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  text-decoration: none;
 }
 .work-item[data-portrait="true"] .work-thumb-wrap { aspect-ratio: 2/3; }
 .work-thumb {
@@ -392,9 +374,86 @@ nav.nav-flush { border-bottom-color: transparent; }
    <button> pour les items cliquables et un <div> pour les autres : cibler
    `:not(button)` désactive le curseur/l'icône play uniquement sur les
    items réellement non interactifs, quelle que soit leur catégorie. */
-.work-thumb-wrap:not(button) { cursor: default; }
-.work-thumb-wrap:not(button) .work-play { display: none; }
-.work-thumb-wrap:not(button):hover .work-thumb { transform: none; }
+/* Vignette non cliquable (projet `noClick` : live sans lien) - rendue en
+   <div> plutôt qu'en <a>, voir WorkItem.astro. */
+.work-thumb-wrap:not(a) { cursor: default; }
+.work-thumb-wrap:not(a) .work-play { display: none; }
+.work-thumb-wrap:not(a):hover .work-thumb { transform: none; }
+
+/* ── PAGE PROJET (/portfolio/[slug]) ──────────────────────── */
+.project { padding: 40px 56px 104px; max-width: 1180px; margin: 0 auto; }
+
+.project-back { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.project-back a { color: var(--gray-mid); text-decoration: none; }
+.project-back a:hover { color: var(--black); }
+
+.project-head { margin: 24px 0 22px; }
+.project-cat {
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 10px;
+}
+.project-title {
+  font-family: var(--font-hennessy);
+  font-size: clamp(32px, 4.6vw, 52px);
+  font-weight: 400; letter-spacing: -.02em; line-height: 1.05;
+}
+
+/* Le lecteur doit tenir ENTIÈREMENT dans la zone rendue au chargement, sans
+   descendre sous la ligne de flottaison : Google refuse d'indexer une vidéo
+   « hors de la zone d'affichage ». On borne donc sa largeur par la hauteur
+   disponible (viewport moins l'en-tête, ~300 px) plutôt que de la laisser
+   remplir la colonne.
+   Les 400 px réservés couvrent l'en-tête mesuré (334 px) plus une seconde
+   ligne de titre pour les intitulés longs. Le plancher à 34vw garantit que le
+   lecteur reste toujours au-dessus du tiers de largeur de page exigé, y
+   compris sur un écran très bas. */
+.project-player {
+  position: relative;
+  width: min(100%, calc((100vh - 400px) * 16 / 9));
+  min-width: min(100%, 34vw);
+  aspect-ratio: 16/9;
+  background: var(--black); overflow: hidden;
+}
+.project-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+.project-facts {
+  display: flex; flex-wrap: wrap; gap: 40px;
+  margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--gray-light);
+}
+.project-fact dt {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--gray-mid); margin-bottom: 6px;
+}
+.project-fact dd { font-size: 15px; color: var(--black); }
+
+.project-cta { margin-top: 32px; }
+.project-cta a {
+  display: inline-block; padding: 12px 24px;
+  border: 1px solid var(--black); color: var(--black);
+  text-decoration: none; font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; transition: background var(--t-fast) ease, color var(--t-fast) ease;
+}
+.project-cta a:hover { background: var(--black); color: var(--white); }
+
+.project-related { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--gray-light); }
+.project-related h2 {
+  font-family: var(--font-hennessy); font-size: 24px; font-weight: 400;
+  margin-bottom: 28px;
+}
+.project-related ul { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.project-related a { text-decoration: none; color: inherit; display: block; }
+/* `height: auto` est indispensable : l'attribut height="800" de la balise fixe
+   une hauteur définie, et `aspect-ratio` n'a d'effet que si l'une des deux
+   dimensions reste auto. Sans lui les vignettes s'étirent en 340x800. */
+.project-related img {
+  width: 100%; height: auto; aspect-ratio: 16/10;
+  object-fit: cover; display: block;
+  background: var(--gray-light);
+  transition: opacity var(--t-fast) ease;
+}
+.project-related a:hover img { opacity: .82; }
+.project-related-title { display: block; margin-top: 12px; font-size: 14px; }
+.project-related-credit { display: block; font-size: 12px; color: var(--gray-mid); }
 
 /* ── ABOUT ────────────────────────────────────────────────── */
 #about { padding: 120px 56px; border-top: 1px solid var(--gray-light); }
@@ -591,9 +650,13 @@ footer {
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 900px) {
-  nav, #work, #about, #contact, footer, .hero { padding-left: 24px; padding-right: 24px; }
+  nav, #work, #about, #contact, footer, .hero, .project { padding-left: 24px; padding-right: 24px; }
   #about, #contact { grid-template-columns: 1fr; gap: 48px; }
   .work-item { grid-column: span 12 !important; }
+  /* Une seule colonne : trois vignettes liées côte à côte tomberaient sous
+     les 140 px de large exigés pour rester exploitables. */
+  .project-related ul { grid-template-columns: 1fr; }
+  .project-facts { gap: 28px; }
   .form-row { grid-template-columns: 1fr; }
   nav { padding-top: 20px; padding-bottom: 20px; }
   /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */

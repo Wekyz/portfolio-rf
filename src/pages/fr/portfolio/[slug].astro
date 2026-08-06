@@ -1,0 +1,29 @@
+---
+/**
+ * Page projet (FR) - miroir de src/pages/portfolio/[slug].astro.
+ * Le slug est volontairement identique dans les deux langues : les deux pages
+ * forment une paire hreflang (voir lib/slug.js).
+ */
+import Base from '../../../layouts/Base.astro';
+import ProjectDetail from '../../../components/ProjectDetail.astro';
+import Contact from '../../../components/Contact.astro';
+import data from '../../../data/videos.json';
+import { projectRoutes } from '../../../lib/slug.js';
+import { buildProjectMeta, relatedProjects } from '../../../lib/project-page.js';
+import type { Project } from '../../../lib/types';
+
+export function getStaticPaths() {
+  const routes = projectRoutes((data.videos || data) as Project[]);
+  return routes.map(({ project, slug }) => ({
+    params: { slug },
+    props: { project, slug, related: relatedProjects(project, routes) },
+  }));
+}
+
+const { project, slug, related } = Astro.props;
+const meta = buildProjectMeta(project, slug, 'fr');
+---
+<Base lang="fr" page="project" {...meta}>
+  <ProjectDetail project={project} related={related} lang="fr" />
+  <Contact lang="fr" />
+</Base>

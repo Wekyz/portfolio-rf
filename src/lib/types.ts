@@ -31,6 +31,8 @@ export interface Project {
   thumb?: string;
   /** URL externe, ouverte au clic à la place du lecteur Vimeo. */
   externalLink?: string;
+  /** Force le segment d'URL de la page projet (défaut : dérivé du titre). */
+  slug?: string;
   /** Occupe les 12 colonnes de la grille. */
   fullWidth?: boolean;
   /** Désactive le clic même si un ID Vimeo est renseigné. */

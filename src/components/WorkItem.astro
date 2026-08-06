@@ -8,7 +8,7 @@
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
 
-const { project, placement, priority = false, lang = 'en' } = Astro.props;
+const { project, placement, priority = false, lang = 'en', href } = Astro.props;
 const t = useTranslations(lang);
 const p = project;
 
@@ -18,7 +18,15 @@ const p = project;
 const loading = priority ? 'eager' : 'lazy';
 const fetchpriority = priority ? 'high' : undefined;
 
-const interactive = !p.noClick && (p.id || p.externalLink);
+// La vignette est un vrai <a> et non plus un <button> : elle a désormais une
+// destination réelle (la page projet, ou le lien externe à défaut de vidéo
+// Vimeo). Le clic ordinaire reste intercepté par app.js pour ouvrir la
+// lightbox, comme avant - mais le Ctrl+clic, le clic milieu, le partage du
+// lien, les lecteurs d'écran et les robots d'indexation obtiennent enfin une
+// URL. `href` est calculé par Work.astro (qui seul connaît la liste complète,
+// nécessaire pour garantir l'unicité des slugs).
+const external = !p.id && p.externalLink;
+const interactive = !p.noClick && href;
 const prod = p.credit || t(`cat.${p.cat}`) || p.cat;
 const imgWidth = p.portrait ? 600 : 1280;
 const imgHeight = p.portrait ? 900 : 800;
@@ -40,7 +48,13 @@ const sizes = responsive
   data-portrait={p.portrait ? 'true' : undefined}
 >
   {interactive ? (
-    <button type="button" class="work-thumb-wrap" aria-label={`${t('work.watchAria')} - ${p.title}`}>
+    <a
+      href={href}
+      class="work-thumb-wrap"
+      aria-label={`${t('work.watchAria')} - ${p.title}`}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
+    >
       {thumbSrc && (
         <img
           class="work-thumb"
@@ -79,7 +93,7 @@ const sizes = responsive
           {p.externalLink && <span class="work-badge">{t('work.watch')} &rarr;</span>}
         </div>
       </div>
-    </button>
+    </a>
   ) : (
     <div class="work-thumb-wrap">
       {thumbSrc && (
@@ -107,23 +121,6 @@ const sizes = responsive
           <div class="work-meta"><span class="work-prod">{prod}</span></div>
         </div>
       </div>
-    </div>
-  )}
-  {p.id && (
-    // Lecteur réel présent dans le HTML (masqué, chargement différé) : la
-    // lightbox (voir Lightbox.astro/app.js) réutilise le même src au clic
-    // pour l'expérience utilisateur, mais Google a besoin qu'un <iframe>
-    // vers le player soit effectivement présent sur la page pour indexer la
-    // vidéo (cf. Search Console : "la vidéo n'est pas sur une page de lecture").
-    <div class="work-embed" aria-hidden="true">
-      <iframe
-        class="work-embed-frame"
-        loading="lazy"
-        tabindex="-1"
-        src={`https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`}
-        title={p.title}
-        allow="autoplay; fullscreen; picture-in-picture"
-      ></iframe>
     </div>
   )}
 </div>

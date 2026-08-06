@@ -91,7 +91,14 @@ collections:
                 label: "Lien externe"
                 widget: string
                 required: false
-                hint: "URL externe - remplace le lecteur Vimeo au clic"
+                hint: "URL externe - affichée en bouton sur la page du projet"
+
+              - name: slug
+                label: "Identifiant d'URL"
+                widget: string
+                required: false
+                pattern: ["^[a-z0-9]+(-[a-z0-9]+)*$", "Minuscules, chiffres et tirets uniquement"]
+                hint: "Laisser vide : l'adresse est déduite du titre. À remplir uniquement pour figer une adresse déjà en ligne avant de renommer le projet."
 
               - name: noClick
                 label: "Non cliquable"

@@ -1,12 +1,15 @@
 /**
  * Sitemap généré au build, avec un `lastmod` à la date du build (plus de date
- * figée à maintenir à la main). Site bilingue, 3 pages (Accueil/Portfolio/
- * About) x 2 langues = 6 URL, avec alternances hreflang par page.
+ * figée à maintenir à la main). Site bilingue : 3 pages fixes + une page par
+ * projet vidéo, le tout x 2 langues, avec alternances hreflang par page.
  */
+import data from '../data/videos.json';
+import { projectRoutes } from '../lib/slug.js';
+
 const SITE = 'https://roxane-foare.com';
 
 // path : segment commun aux deux langues ('' pour l'accueil).
-const PAGES = [
+const FIXED_PAGES = [
   { path: '', priority: '1.0' },
   { path: '/portfolio', priority: '0.9' },
   { path: '/about', priority: '0.8' },
@@ -14,6 +17,19 @@ const PAGES = [
 
 export function GET() {
   const lastmod = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+  // Les pages projet passent après les pages fixes et en priorité plus basse :
+  // elles sont nombreuses et alimentent le portfolio, qui reste la porte
+  // d'entrée du référencement.
+  const PAGES = [
+    ...FIXED_PAGES,
+    ...projectRoutes(
+      /** @type {import('../lib/types').Project[]} */ (data.videos || data)
+    ).map(({ slug }) => ({
+      path: `/portfolio/${slug}`,
+      priority: '0.7',
+    })),
+  ];
 
   const urls = PAGES.flatMap(({ path, priority }) => {
     const enLoc = `${SITE}${path || '/'}`;

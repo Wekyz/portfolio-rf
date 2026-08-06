@@ -1,8 +1,8 @@
 ---
-// Barre de navigation - commune aux 3 pages (Accueil / Portfolio / About).
+// Barre de navigation - commune à toutes les pages.
 // Menu burger sur mobile (voir app.js pour le toggle).
 import { useTranslations } from '../i18n/strings.js';
-const { lang = 'en', page = 'home' } = Astro.props;
+const { lang = 'en', page = 'home', path } = Astro.props;
 const t = useTranslations(lang);
 
 const base = lang === 'fr' ? '/fr' : '';
@@ -11,7 +11,11 @@ const portfolioHref = `${base}/portfolio`;
 const aboutHref = `${base}/about`;
 const contactHref = page === 'home' ? `${portfolioHref}#contact` : '#contact';
 
-const otherHref = lang === 'fr' ? (page === 'home' ? '/' : `/${page}`) : (page === 'home' ? '/fr' : `/fr/${page}`);
+// Bascule de langue : sur le chemin réel, et non plus déduit de `page`. Les
+// pages projet ont un chemin à deux segments (/portfolio/[slug]) qui n'est pas
+// dérivable du nom de page - `path` est fourni par Base.astro.
+const currentPath = path ?? (page === 'home' ? '' : `/${page}`);
+const otherHref = lang === 'fr' ? currentPath || '/' : `/fr${currentPath}`;
 ---
 <nav class:list={[page === 'home' && 'nav-flush']}>
   <h1 class="nav-logo-h1">

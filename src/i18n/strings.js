@@ -52,6 +52,17 @@ export const ui = {
     'work.watch': 'Watch',
     'work.watchAria': 'Watch',
 
+    // Pages projet (/portfolio/[slug])
+    'project.back': 'All projects',
+    'project.production': 'Production',
+    'project.year': 'Year',
+    'project.category': 'Category',
+    'project.watchFull': 'Watch the full film',
+    'project.related': 'More in this category',
+    'project.playerTitle': 'Video player',
+    'project.titleSuffix': 'Roxane Foare, Video Editor',
+    'project.descSuffix': 'edited by Roxane Foare, freelance video editor based in Paris & Angers.',
+
     // Categories (filtres + libelles de vignettes)
     'cat.all': 'All',
     'cat.pub': 'Commercial',
@@ -143,6 +154,17 @@ export const ui = {
     'work.filterAria': 'Filtrer les projets par catégorie',
     'work.watch': 'Voir',
     'work.watchAria': 'Regarder',
+
+    // Pages projet (/portfolio/[slug])
+    'project.back': 'Tous les projets',
+    'project.production': 'Production',
+    'project.year': 'Année',
+    'project.category': 'Catégorie',
+    'project.watchFull': 'Voir le film complet',
+    'project.related': 'Dans la même catégorie',
+    'project.playerTitle': 'Lecteur vidéo',
+    'project.titleSuffix': 'Roxane Foare, Monteuse vidéo',
+    'project.descSuffix': 'monté par Roxane Foare, monteuse vidéo freelance à Paris & Angers.',
 
     // Categories
     'cat.all': 'Tous',

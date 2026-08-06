@@ -3,12 +3,25 @@ import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
 import WorkItem from './WorkItem.astro';
 import { useTranslations } from '../i18n/strings.js';
+import { buildSlugMap } from '../lib/slug.js';
 import type { Category, Project } from '../lib/types';
 
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 
 const projects = (data.videos || data) as Project[];
+
+// Destination de chaque vignette. Les slugs sont calculés ici, sur la liste
+// complète : leur unicité en dépend (voir lib/slug.js). Un projet sans vidéo
+// Vimeo n'a pas de page ; s'il porte un lien externe, la vignette pointe
+// directement dessus.
+const slugMap = buildSlugMap(projects);
+const langBase = lang === 'fr' ? '/fr' : '';
+const hrefFor = (p: Project) => {
+  const slug = slugMap.get(p);
+  if (slug) return `${langBase}/portfolio/${slug}`;
+  return p.externalLink || undefined;
+};
 
 // Pré-calcul des grid-column au build (même résultat que l'ancien applySpans
 // au chargement, mais sans flash ni recalcul JS au premier rendu).
@@ -69,7 +82,7 @@ const gridEntries = projects.map((p, i) => {
             <span class="cat-divider-line" aria-hidden="true"></span>
           </div>
         )}
-        <WorkItem project={p} placement={placement} priority={i < 3} lang={lang} />
+        <WorkItem project={p} placement={placement} priority={i < 3} lang={lang} href={hrefFor(p)} />
       </>
     ))}
   </div>
