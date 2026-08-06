@@ -14,6 +14,14 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # TypeScript 7 casse `astro check` : son compilateur natif n'expose pas
+      # encore l'API programmatique dont dépend le vérificateur d'Astro, qui
+      # refuse explicitement de démarrer au-delà de la 6.x. Vérifié le
+      # 2026-08-06 en tentant la montée. À rouvrir quand Astro l'annoncera :
+      # https://github.com/withastro/roadmap/discussions/1321
+      - dependency-name: "typescript"
+        versions: [">=7.0.0"]
 
   # Actions GitHub (si des workflows sont ajoutés plus tard)
   - package-ecosystem: "github-actions"

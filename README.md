@@ -170,6 +170,14 @@ Signature du jeton anti-bot du formulaire (recommandé) : `FORM_SECRET` - à
 défaut, la clé se dérive de `RESEND_API_KEY`, de toute façon nécessaire pour
 que le formulaire fonctionne (voir `api/_lib/form-token.js`).
 
+**Version de Node.** `engines.node` (`package.json`) fait autorité : la
+documentation Vercel précise qu'il **prime sur le réglage Node.js du projet**.
+Le runtime des fonctions serverless est donc épinglé depuis le dépôt, et non
+depuis le tableau de bord. `.nvmrc` porte la même valeur pour le poste de
+développement et la CI ; `tests/routes.test.mjs` vérifie qu'elles ne divergent
+pas. Ne pas déclarer de bloc `functions.runtime` dans `vercel.json` : ce champ
+attend un nom de paquet de runtime personnalisé, pas une version de Node.
+
 > **`REDEPLOY_TOKEN` est obligatoire pour que le bouton de redéploiement
 > fonctionne.** Sans elle, `/api/redeploy` refuse tout (503) : l'endpoint
 > déclenche un build de production, il vaut mieux qu'il soit condamné que

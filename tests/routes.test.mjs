@@ -121,3 +121,22 @@ test('aucun fichier du build ne dépasse un poids déraisonnable', { skip }, () 
   walk(DIST);
   assert.deepEqual(gros, []);
 });
+
+// ── Version de Node : une seule source, trois consommateurs ─────────────────
+
+test('engines.node, .nvmrc et la CI déclarent la même version majeure', () => {
+  // Contrairement à ce que supposait l'audit, `engines.node` ne se contente
+  // pas de cadrer le build : la documentation Vercel indique qu'il PRIME sur
+  // le réglage Node.js du projet. Le runtime des fonctions serverless est donc
+  // bien épinglé depuis le dépôt. Reste à empêcher les trois déclarations de
+  // diverger - un .nvmrc oublié lors d'une montée ferait tourner la CI sur une
+  // version différente de la production, sans que rien ne le signale.
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  const nvmrc = readFileSync(new URL('../.nvmrc', import.meta.url), 'utf8').trim();
+  const ci = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+
+  const majeure = pkg.engines.node.match(/^(\d+)/)[1];
+  assert.equal(nvmrc.match(/^(\d+)/)[1], majeure, '.nvmrc diverge de engines.node');
+  // La CI lit .nvmrc : c'est ce lien qu'on vérifie, pas une valeur en dur.
+  assert.match(ci, /node-version-file:\s*\.nvmrc/);
+});
