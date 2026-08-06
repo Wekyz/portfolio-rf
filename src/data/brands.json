@@ -1,0 +1,126 @@
+{
+  "accor": {
+    "width": 78,
+    "height": 64
+  },
+  "bnp": {
+    "width": 289,
+    "height": 64
+  },
+  "bosch": {
+    "width": 57,
+    "height": 64
+  },
+  "carolina-herrera": {
+    "width": 1016,
+    "height": 64
+  },
+  "carrefour": {
+    "width": 86,
+    "height": 64
+  },
+  "celio": {
+    "width": 296,
+    "height": 64
+  },
+  "chaumet": {
+    "width": 132,
+    "height": 64
+  },
+  "davidoff": {
+    "width": 518,
+    "height": 64
+  },
+  "estee-lauder": {
+    "width": 506,
+    "height": 64
+  },
+  "fabio-salsa": {
+    "width": 370,
+    "height": 64
+  },
+  "fiat": {
+    "width": 84,
+    "height": 64
+  },
+  "givenchy": {
+    "width": 612,
+    "height": 64
+  },
+  "hennessy": {
+    "width": 117,
+    "height": 64
+  },
+  "ioma": {
+    "width": 153,
+    "height": 64
+  },
+  "jp-morgan": {
+    "width": 459,
+    "height": 64
+  },
+  "lacoste": {
+    "width": 155,
+    "height": 64
+  },
+  "loreal": {
+    "width": 352,
+    "height": 64
+  },
+  "louboutin": {
+    "width": 130,
+    "height": 64
+  },
+  "maif": {
+    "width": 81,
+    "height": 64
+  },
+  "meetic": {
+    "width": 210,
+    "height": 64
+  },
+  "messika": {
+    "width": 231,
+    "height": 64
+  },
+  "ol": {
+    "width": 55,
+    "height": 64
+  },
+  "pgw": {
+    "width": 64,
+    "height": 64
+  },
+  "psg": {
+    "width": 64,
+    "height": 64
+  },
+  "ricard": {
+    "width": 77,
+    "height": 64
+  },
+  "sanofi": {
+    "width": 250,
+    "height": 64
+  },
+  "siemens": {
+    "width": 398,
+    "height": 64
+  },
+  "soge": {
+    "width": 319,
+    "height": 64
+  },
+  "square": {
+    "width": 610,
+    "height": 64
+  },
+  "waffle": {
+    "width": 181,
+    "height": 64
+  },
+  "yves-rocher": {
+    "width": 156,
+    "height": 64
+  }
+}

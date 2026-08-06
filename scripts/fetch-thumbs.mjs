@@ -38,7 +38,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const DATA = join(ROOT, 'src', 'data', 'videos.json');
 const CACHE_FILE = join(ROOT, 'src', 'data', 'vimeo-thumbs.json');
+const LOCAL_CACHE_FILE = join(ROOT, 'src', 'data', 'local-images.json');
+const BRANDS_CACHE_FILE = join(ROOT, 'src', 'data', 'brands.json');
 const LIVE_DIR = join(ROOT, 'public', 'live');
+const BRANDS_DIR = join(ROOT, 'public', 'brands');
 
 // Variantes responsive générées pour les images posées à la main (public/live/).
 const VARIANTS = [
@@ -47,6 +50,18 @@ const VARIANTS = [
   { suffix: '-640', width: 640, quality: 78 },
 ];
 const VARIANT_RE = /-(?:1280|960|640)\.webp$/;
+
+// Logos de marques (public/brands/) : affichés à 32 px de haut (.brand-logo img
+// dans styles.css). Les fichiers d'origine font tous 160 px, soit 5x la taille
+// utile. On génère les deux densités réellement servies - 64 px pour un écran
+// 2x, 96 px pour un 3x - et le `srcset` d'About.astro laisse le navigateur
+// choisir. L'original 160 px reste la source de regénération, il n'est jamais
+// demandé par le navigateur.
+const BRAND_VARIANTS = [
+  { suffix: '-64', height: 64, quality: 88 },
+  { suffix: '-96', height: 96, quality: 88 },
+];
+const BRAND_VARIANT_RE = /-(?:64|96)\.webp$/;
 
 // Domaine autorisé pour les vidéos privées Vimeo (restreintes par domaine).
 // Vimeo ne renvoie la miniature que si la requête oEmbed provient de ce domaine.
@@ -147,6 +162,100 @@ async function ensureVariants(dir) {
   return { made, kept };
 }
 
+async function ensureBrandVariants(dir) {
+  let files;
+  try {
+    files = await readdir(dir);
+  } catch {
+    return { made: 0, kept: 0 };
+  }
+  let made = 0;
+  let kept = 0;
+  for (const name of files) {
+    if (!name.endsWith('.webp') || BRAND_VARIANT_RE.test(name)) continue;
+    let src = null;
+    for (const { suffix, height, quality } of BRAND_VARIANTS) {
+      const variant = join(dir, name.replace(/\.webp$/, `${suffix}.webp`));
+      if (await exists(variant)) {
+        kept++;
+        continue;
+      }
+      try {
+        if (!src) src = await readFile(join(dir, name));
+        const out = await sharp(src)
+          .resize({ height, withoutEnlargement: true })
+          .webp({ quality })
+          .toBuffer();
+        await writeFile(variant, out);
+        made++;
+      } catch (err) {
+        console.warn(`  ⚠ logo ${suffix} échoué ${name} : ${err.message}`);
+      }
+    }
+  }
+  return { made, kept };
+}
+
+/**
+ * Mesure la largeur RÉELLE de chaque image d'un dossier et regroupe, pour
+ * chaque image de base, la liste des candidats exploitables.
+ *
+ * Sans ça, `thumb.js` annonçait des largeurs inventées : un `1920w` figé pour
+ * toutes les images de base alors qu'une seule les fait réellement, et des
+ * variantes `-1280`/`-960` déclarées telles quelles bien que `withoutEnlargement`
+ * les ait laissées à la taille de l'original. Le navigateur téléchargeait donc
+ * un fichier plus petit que promis, puis l'étirait.
+ *
+ * À largeur égale on garde le fichier le plus léger, ce qui élimine au passage
+ * les doublons (l'original de live4 pèse 82 Ko pour exactement les mêmes pixels
+ * que sa variante -1280 à 78 Ko).
+ */
+async function measureCandidates(dir, urlPrefix) {
+  let files;
+  try {
+    files = await readdir(dir);
+  } catch {
+    return {};
+  }
+  const webp = files.filter((f) => f.endsWith('.webp'));
+  const measured = new Map();
+  for (const name of webp) {
+    try {
+      const path = join(dir, name);
+      const buf = await readFile(path);
+      const { width, height } = await sharp(buf).metadata();
+      measured.set(name, { width, height, bytes: buf.length });
+    } catch (err) {
+      console.warn(`  ⚠ mesure impossible ${name} : ${err.message}`);
+    }
+  }
+
+  const out = {};
+  for (const name of webp) {
+    if (VARIANT_RE.test(name)) continue;
+    const base = measured.get(name);
+    if (!base) continue;
+    const stem = name.replace(/\.webp$/, '');
+    const family = [name, ...VARIANTS.map((v) => `${stem}${v.suffix}.webp`)];
+
+    const byWidth = new Map();
+    for (const f of family) {
+      const m = measured.get(f);
+      if (!m) continue;
+      const kept = byWidth.get(m.width);
+      if (!kept || m.bytes < kept.bytes) byWidth.set(m.width, { src: `${urlPrefix}${f}`, ...m });
+    }
+    out[`${urlPrefix}${name}`] = {
+      width: base.width,
+      height: base.height,
+      candidates: [...byWidth.values()]
+        .sort((a, b) => a.width - b.width)
+        .map(({ src, width }) => ({ src, width })),
+    };
+  }
+  return out;
+}
+
 async function main() {
   const raw = JSON.parse(await readFile(DATA, 'utf8'));
   const videos = raw.videos || raw;
@@ -188,6 +297,31 @@ async function main() {
 
   const vl = await ensureVariants(LIVE_DIR);
   console.log(`[variants] ${vl.made} générée(s), ${vl.kept} déjà présente(s).`);
+
+  // Largeurs réelles des images locales -> descripteurs srcset exacts.
+  const local = await measureCandidates(LIVE_DIR, '/live/');
+  await writeFile(LOCAL_CACHE_FILE, JSON.stringify(local, null, 2) + '\n');
+  const nCand = Object.values(local).reduce((a, e) => a + e.candidates.length, 0);
+  console.log(`[srcset] ${Object.keys(local).length} image(s) locale(s), ${nCand} candidat(s) mesuré(s).`);
+
+  const bl = await ensureBrandVariants(BRANDS_DIR);
+  console.log(`[logos] ${bl.made} variante(s) générée(s), ${bl.kept} déjà présente(s).`);
+
+  // Dimensions du fichier 64 px : servent d'attributs width/height (donc de
+  // ratio) sur les <img> du bandeau, pour éviter tout saut de mise en page.
+  const brands = {};
+  for (const [name, info] of Object.entries(await measureCandidates(BRANDS_DIR, '/brands/'))) {
+    const slug = name.replace('/brands/', '').replace(/\.webp$/, '');
+    if (BRAND_VARIANT_RE.test(`${slug}.webp`)) continue;
+    try {
+      const meta = await sharp(await readFile(join(BRANDS_DIR, `${slug}-64.webp`))).metadata();
+      brands[slug] = { width: meta.width, height: meta.height };
+    } catch {
+      brands[slug] = { width: info.width, height: info.height };
+    }
+  }
+  await writeFile(BRANDS_CACHE_FILE, JSON.stringify(brands, null, 2) + '\n');
+  console.log(`[logos] ${Object.keys(brands).length} dimension(s) enregistrée(s).`);
 }
 
 main().catch((err) => {

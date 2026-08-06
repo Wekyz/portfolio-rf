@@ -1,0 +1,118 @@
+{
+  "/live/live1.webp": {
+    "width": 1400,
+    "height": 1000,
+    "candidates": [
+      {
+        "src": "/live/live1-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/live1-960.webp",
+        "width": 960
+      },
+      {
+        "src": "/live/live1-1280.webp",
+        "width": 1280
+      },
+      {
+        "src": "/live/live1.webp",
+        "width": 1400
+      }
+    ]
+  },
+  "/live/live2.webp": {
+    "width": 1500,
+    "height": 844,
+    "candidates": [
+      {
+        "src": "/live/live2-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/live2-960.webp",
+        "width": 960
+      },
+      {
+        "src": "/live/live2-1280.webp",
+        "width": 1280
+      },
+      {
+        "src": "/live/live2.webp",
+        "width": 1500
+      }
+    ]
+  },
+  "/live/live3.webp": {
+    "width": 800,
+    "height": 450,
+    "candidates": [
+      {
+        "src": "/live/live3-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/live3-960.webp",
+        "width": 800
+      }
+    ]
+  },
+  "/live/live4.webp": {
+    "width": 1200,
+    "height": 627,
+    "candidates": [
+      {
+        "src": "/live/live4-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/live4-960.webp",
+        "width": 960
+      },
+      {
+        "src": "/live/live4-1280.webp",
+        "width": 1200
+      }
+    ]
+  },
+  "/live/live5.webp": {
+    "width": 1920,
+    "height": 1077,
+    "candidates": [
+      {
+        "src": "/live/live5-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/live5-960.webp",
+        "width": 960
+      },
+      {
+        "src": "/live/live5-1280.webp",
+        "width": 1280
+      },
+      {
+        "src": "/live/live5.webp",
+        "width": 1920
+      }
+    ]
+  },
+  "/live/live6.webp": {
+    "width": 1200,
+    "height": 800,
+    "candidates": [
+      {
+        "src": "/live/live6-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/live6-960.webp",
+        "width": 960
+      },
+      {
+        "src": "/live/live6-1280.webp",
+        "width": 1200
+      }
+    ]
+  }
+}

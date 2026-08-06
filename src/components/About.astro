@@ -7,41 +7,52 @@ const introParagraphs = t('about.introParagraphs');
 
 // Logos clients (bandeau défilant) - fichiers pré-détourés/redimensionnés
 // (voir public/brands/, générés depuis le dossier "Logos RF" fourni par la
-// monteuse). width/height = dimensions réelles du fichier (hauteur commune
-// 160px) : évite un saut de mise en page pendant le chargement, la taille
-// d'affichage réelle est pilotée en CSS (.brand-logo img).
+// monteuse). Les originaux font 160 px de haut pour un affichage à 32 px
+// (.brand-logo img dans styles.css) : le build en tire deux densités, 64 px
+// et 96 px, et le srcset laisse le navigateur prendre celle qu'il lui faut.
+// Les dimensions viennent de brands.json (mesurées au build, voir
+// scripts/fetch-thumbs.mjs) : elles fixent le ratio et évitent un saut de
+// mise en page pendant le chargement.
+import brandSizes from '../data/brands.json';
+
+const brandImg = (slug: string) => ({
+  src: `/brands/${slug}-64.webp`,
+  srcset: `/brands/${slug}-64.webp 2x, /brands/${slug}-96.webp 3x`,
+  width: brandSizes[slug as keyof typeof brandSizes]?.width,
+  height: brandSizes[slug as keyof typeof brandSizes]?.height,
+});
 const BRANDS = [
-  { slug: 'accor', name: 'Accor', width: 196, height: 160 },
-  { slug: 'bnp', name: 'BNP Paribas', width: 722, height: 160 },
-  { slug: 'bosch', name: 'Bosch', width: 143, height: 160 },
-  { slug: 'carolina-herrera', name: 'Carolina Herrera', width: 2540, height: 160 },
-  { slug: 'carrefour', name: 'Carrefour', width: 214, height: 160 },
-  { slug: 'celio', name: 'Celio', width: 739, height: 160 },
-  { slug: 'chaumet', name: 'Chaumet', width: 330, height: 160 },
-  { slug: 'davidoff', name: 'Davidoff', width: 1296, height: 160 },
-  { slug: 'estee-lauder', name: 'Estée Lauder', width: 1266, height: 160 },
-  { slug: 'fabio-salsa', name: 'Fabio Salsa', width: 925, height: 160 },
-  { slug: 'fiat', name: 'Fiat', width: 211, height: 160 },
-  { slug: 'givenchy', name: 'Givenchy', width: 1530, height: 160 },
-  { slug: 'hennessy', name: 'Hennessy', width: 292, height: 160 },
-  { slug: 'ioma', name: 'Ioma', width: 382, height: 160 },
-  { slug: 'jp-morgan', name: 'JP Morgan', width: 1147, height: 160 },
-  { slug: 'lacoste', name: 'Lacoste', width: 387, height: 160 },
-  { slug: 'loreal', name: "L'Oréal", width: 881, height: 160 },
-  { slug: 'louboutin', name: 'Louboutin', width: 325, height: 160 },
-  { slug: 'maif', name: 'MAIF', width: 203, height: 160 },
-  { slug: 'meetic', name: 'Meetic', width: 526, height: 160 },
-  { slug: 'messika', name: 'Messika', width: 578, height: 160 },
-  { slug: 'ol', name: 'OL', width: 138, height: 160 },
-  { slug: 'pgw', name: 'Paris Games Week', width: 160, height: 160 },
-  { slug: 'psg', name: 'PSG', width: 160, height: 160 },
-  { slug: 'ricard', name: 'Ricard', width: 193, height: 160 },
-  { slug: 'sanofi', name: 'Sanofi', width: 624, height: 160 },
-  { slug: 'siemens', name: 'Siemens', width: 995, height: 160 },
-  { slug: 'soge', name: 'Société Générale', width: 798, height: 160 },
-  { slug: 'square', name: 'Square Enix', width: 1526, height: 160 },
-  { slug: 'waffle', name: 'Waffle Factory', width: 452, height: 160 },
-  { slug: 'yves-rocher', name: 'Yves Rocher', width: 389, height: 160 },
+  { slug: 'accor', name: 'Accor' },
+  { slug: 'bnp', name: 'BNP Paribas' },
+  { slug: 'bosch', name: 'Bosch' },
+  { slug: 'carolina-herrera', name: 'Carolina Herrera' },
+  { slug: 'carrefour', name: 'Carrefour' },
+  { slug: 'celio', name: 'Celio' },
+  { slug: 'chaumet', name: 'Chaumet' },
+  { slug: 'davidoff', name: 'Davidoff' },
+  { slug: 'estee-lauder', name: 'Estée Lauder' },
+  { slug: 'fabio-salsa', name: 'Fabio Salsa' },
+  { slug: 'fiat', name: 'Fiat' },
+  { slug: 'givenchy', name: 'Givenchy' },
+  { slug: 'hennessy', name: 'Hennessy' },
+  { slug: 'ioma', name: 'Ioma' },
+  { slug: 'jp-morgan', name: 'JP Morgan' },
+  { slug: 'lacoste', name: 'Lacoste' },
+  { slug: 'loreal', name: "L'Oréal" },
+  { slug: 'louboutin', name: 'Louboutin' },
+  { slug: 'maif', name: 'MAIF' },
+  { slug: 'meetic', name: 'Meetic' },
+  { slug: 'messika', name: 'Messika' },
+  { slug: 'ol', name: 'OL' },
+  { slug: 'pgw', name: 'Paris Games Week' },
+  { slug: 'psg', name: 'PSG' },
+  { slug: 'ricard', name: 'Ricard' },
+  { slug: 'sanofi', name: 'Sanofi' },
+  { slug: 'siemens', name: 'Siemens' },
+  { slug: 'soge', name: 'Société Générale' },
+  { slug: 'square', name: 'Square Enix' },
+  { slug: 'waffle', name: 'Waffle Factory' },
+  { slug: 'yves-rocher', name: 'Yves Rocher' },
 ];
 ---
 <section id="about">
@@ -89,14 +100,14 @@ const BRANDS = [
           <div class="brand-marquee-group">
             {BRANDS.map((b) => (
               <span class="brand-logo">
-                <img src={`/brands/${b.slug}.webp`} alt={b.name} width={b.width} height={b.height} loading="lazy" decoding="async" />
+                <img {...brandImg(b.slug)} alt={b.name} loading="lazy" decoding="async" />
               </span>
             ))}
           </div>
           <div class="brand-marquee-group" aria-hidden="true">
             {BRANDS.map((b) => (
               <span class="brand-logo">
-                <img src={`/brands/${b.slug}.webp`} alt="" width={b.width} height={b.height} loading="lazy" decoding="async" />
+                <img {...brandImg(b.slug)} alt="" loading="lazy" decoding="async" />
               </span>
             ))}
           </div>
