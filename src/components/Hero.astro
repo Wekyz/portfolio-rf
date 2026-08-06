@@ -12,9 +12,15 @@ const base = lang === 'fr' ? '/fr' : '';
 // revanche PAS fiable via ce mode sur un conteneur plus étroit que la vidéo
 // (bandes noires constatées sur mobile) : on le refait nous-mêmes en CSS
 // (.showreel-frame), voir le commentaire associé dans styles.css.
+// Pas de `quality=1080p` : ce paramètre épinglait le rendu 1080p sur TOUS les
+// écrans, y compris un mobile de 390 px de large où les pixels n'existent pas
+// pour l'afficher - 45% des visiteurs. Sans lui, Vimeo sert son flux adaptatif
+// et choisit la définition selon la taille du lecteur et le débit.
+// Contrepartie : sur un grand écran, la définition peut monter en une seconde
+// ou deux au lieu d'être maximale d'emblée.
 const VIMEO_ID = '1211961310';
 const VIMEO_HASH = '33632a8dbb';
-const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&background=1&autoplay=1&loop=1&muted=1&quality=1080p`;
+const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&background=1&autoplay=1&loop=1&muted=1`;
 ---
 <section id="hero" class="hero">
   <div class="showreel" role="img" aria-label={t('hero.showreelLabel')}>

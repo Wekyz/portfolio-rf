@@ -8,14 +8,35 @@ Site **bilingue** : anglais sur `/` (par défaut), français sur `/fr`. Tous les
 textes d'interface sont centralisés dans `src/i18n/strings.js` ; les composants
 reçoivent une prop `lang` et utilisent `useTranslations(lang)`.
 
-**3 pages** par langue : Accueil (`/`, `/fr` - showreel + CTA), Portfolio
+**3 pages fixes** par langue : Accueil (`/`, `/fr` - showreel + CTA), Portfolio
 (`/portfolio`, `/fr/portfolio` - grille de projets + contact) et About
-(`/about`, `/fr/about` - présentation + contact). Le build utilise
+(`/about`, `/fr/about` - présentation + contact), **plus une page par projet
+vidéo** (`/portfolio/[slug]`), générée au build depuis `videos.json` - soit 68
+pages au total. Le build utilise
 `build.format: 'directory'` (`astro.config.mjs`) : chaque page devient un
 dossier avec son `index.html`, que Vercel sert nativement. **Une nouvelle page
 n'a donc aucune règle de routage à déclarer.** `"trailingSlash": false` dans
 `vercel.json` renvoie un 308 de `/portfolio/` vers `/portfolio`, pour qu'une
 seule forme d'URL réponde.
+
+### Pages projet et indexation vidéo
+
+Chaque projet doté d'un `id` Vimeo a sa page, avec **un lecteur visible** et son
+JSON-LD `VideoObject`. Ce n'est pas cosmétique : Google n'indexe une vidéo que
+si la page qui la déclare contient un lecteur entièrement dans la zone rendue au
+chargement, de plus de 140 px de haut, de plus de 140 px de large **et** d'au
+moins un tiers de la largeur de page. Le CSS de `.project-player`
+(`styles.css`) borne la largeur du lecteur par la hauteur disponible pour
+respecter ces seuils - **le modifier sans revérifier ces contraintes fait
+retomber les vidéos hors index.**
+
+L'adresse est dérivée du titre (`src/lib/slug.js`). **Renommer un projet dans le
+CMS change donc son URL** : pour figer une adresse déjà indexée, renseigner le
+champ « Identifiant d'URL » avec l'ancienne valeur *avant* de renommer.
+
+La grille de `/portfolio` reste inchangée : la vignette est un `<a>` vers la
+page projet, dont `app.js` intercepte le clic simple pour ouvrir la lightbox
+comme avant. Ctrl+clic, clic milieu et robots suivent le lien.
 
 Application **Astro** (build statique), déployée sur Vercel.
 
@@ -49,14 +70,19 @@ npm test         # tests fumée (node:test), ex. /api/contact
 ├─ src/
 │  ├─ pages/index.astro        # Accueil EN (/)
 │  ├─ pages/portfolio.astro    # Portfolio EN (/portfolio)
+│  ├─ pages/portfolio/[slug].astro    # Pages projet EN (/portfolio/<slug>)
 │  ├─ pages/about.astro        # About EN (/about)
 │  ├─ pages/fr/index.astro     # Accueil FR (/fr)
 │  ├─ pages/fr/portfolio.astro # Portfolio FR (/fr/portfolio)
+│  ├─ pages/fr/portfolio/[slug].astro # Pages projet FR (/fr/portfolio/<slug>)
 │  ├─ pages/fr/about.astro     # About FR (/fr/about)
+│  ├─ pages/sitemap.xml.js     # sitemap généré au build (pages fixes + pages projet)
 │  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue + page
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
-│  ├─ components/              # Nav, Hero, Work, WorkItem, About, Contact, Footer, Lightbox
+│  ├─ components/              # Nav, Hero, Work, WorkItem, ProjectDetail, About, Contact, Footer, Lightbox
 │  ├─ lib/spans.js             # pattern de grille (build + client)
+│  ├─ lib/slug.js              # slugs des pages projet (dérivés du titre, unicité garantie)
+│  ├─ lib/project-page.js      # métadonnées + JSON-LD VideoObject d'une page projet
 │  ├─ lib/thumb.js             # résolution src/srcset miniature (Vimeo CDN ou override local)
 │  ├─ scripts/app.js           # interactivité client (filtres, lightbox, form)
 │  ├─ styles/styles.css        # feuille de style du site
@@ -69,6 +95,20 @@ npm test         # tests fumée (node:test), ex. /api/contact
 ├─ vercel.json                 # headers / CSP / cache (déploiement Vercel)
 └─ astro.config.mjs
 ```
+
+### Cache
+
+`vercel.json` ne peut pas porter de commentaires (le schéma Vercel refuse toute
+clé hors `source`/`headers`/`has`/`missing`), d'où cette note. Trois politiques :
+
+| Ressource | Politique | Pourquoi |
+|---|---|---|
+| `/_astro/`, `*.woff2` | `immutable`, 1 an | Nom porteur d'une empreinte de contenu : un changement produit un nouveau nom. |
+| `/live/`, `/brands/`, favicons, `og-image.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
+| HTML | `max-age=0, must-revalidate` (défaut Vercel) | Le contenu change à chaque publication CMS. L'edge Vercel le met **déjà** en cache de lui-même (`X-Vercel-Cache: HIT`), il n'y a donc rien à ajouter côté CDN. |
+
+Sans la règle `/brands/`, les 93 fichiers de logos étaient revalidés à chaque
+visite de la page À propos.
 
 ## Déploiement
 
