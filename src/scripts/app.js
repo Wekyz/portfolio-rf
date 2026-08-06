@@ -296,13 +296,37 @@ import { applySpans } from '../lib/spans.js';
 
     contactForm.addEventListener('focusin', ensureToken, { once: true });
 
+    /**
+     * Attend que Turnstile ait rempli son champ caché, au plus `limit` ms.
+     * Le widget résout en général en moins d'une seconde, largement couvert
+     * par le délai anti-bot ; cette attente ne sert que sur connexion lente,
+     * où l'on préfère patienter un peu plutôt que d'essuyer un refus.
+     * Sans widget (captcha désactivé), retourne immédiatement.
+     */
+    function waitForCaptcha(limit = 5000) {
+      if (!contactForm.querySelector('.cf-turnstile')) return Promise.resolve();
+      const filled = () => {
+        const f = contactForm.querySelector('[name="cf-turnstile-response"]');
+        return f && f.value;
+      };
+      if (filled()) return Promise.resolve();
+      const start = Date.now();
+      return new Promise((resolve) => {
+        const tick = setInterval(() => {
+          if (filled() || Date.now() - start > limit) {
+            clearInterval(tick);
+            resolve();
+          }
+        }, 150);
+      });
+    }
+
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
 
       const form = e.target;
       const btn = form.querySelector('.form-submit');
       const originalHTML = btn.innerHTML;
-      const payload = Object.fromEntries(new FormData(form).entries());
 
       btn.innerHTML = FORM_LABELS.sending;
       btn.disabled = true;
@@ -327,11 +351,18 @@ import { applySpans } from '../lib/spans.js';
           const wait = Math.max(0, 3000 - (Date.now() - from));
           return new Promise((resolve) => setTimeout(resolve, wait));
         })
+        .then(waitForCaptcha)
         .then(() =>
           fetch('/api/contact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...payload, formToken }),
+            // Les champs sont relus MAINTENANT et non au clic : Turnstile
+            // remplit son champ caché pendant le délai anti-bot, un instantané
+            // pris plus tôt l'aurait perdu et le serveur aurait refusé l'envoi.
+            body: JSON.stringify({
+              ...Object.fromEntries(new FormData(form).entries()),
+              formToken,
+            }),
           })
         )
         .then((res) => {
