@@ -14,6 +14,12 @@ interface Props {
 const { lang = 'en', level = 'h2' } = Astro.props;
 const Heading = level;
 const t = useTranslations(lang);
+
+// Captcha Turnstile : rien n'est rendu tant que la clé publique n'est pas
+// définie. Aucune requête vers Cloudflare, et la politique de confidentialité
+// reste exacte quand elle affirme qu'aucun tiers ne reçoit l'adresse IP du
+// visiteur. Voir api/_lib/turnstile.js avant d'activer.
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 <section id="contact">
   <div class="contact-left">
@@ -59,6 +65,10 @@ const t = useTranslations(lang);
       <textarea id="message" name="message" rows="5" placeholder={t('contact.messagePh')}></textarea>
     </div>
 
+    {turnstileKey && (
+      <div class="cf-turnstile" data-sitekey={turnstileKey} data-appearance="interaction-only" />
+    )}
+
     <button type="submit" class="form-submit">
       {t('contact.send')}
       <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
@@ -67,4 +77,12 @@ const t = useTranslations(lang);
     </button>
     <p class="visually-hidden" id="formStatus" role="status" aria-live="polite"></p>
   </form>
+
+  {turnstileKey && (
+    <script
+      is:inline
+      defer
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    ></script>
+  )}
 </section>

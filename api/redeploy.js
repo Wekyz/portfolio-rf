@@ -32,18 +32,9 @@
  *   UPSTASH_REDIS_REST_TOKEN  idem
  */
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
 
-let ratelimit = null;
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(3, '10 m'),
-    analytics: true,
-    prefix: 'redeploy',
-  });
-}
+const ratelimit = createLimiter('redeploy', 3, '10 m');
 
 /**
  * Comparaison à temps constant. Les deux valeurs sont hachées d'abord :
@@ -71,15 +62,16 @@ export default async function handler(req, res) {
   // préalable, ce qui écarte au passage la falsification de requête.
   const provided = req.headers['x-redeploy-token'];
   if (!provided || !sameSecret(provided, expected)) {
+    countRejection('redeploy-bad-token');
     return res.status(401).json({ error: 'Phrase secrète invalide.' });
   }
 
   // Le rate-limit reste une défense de second rideau : il n'empêche pas un
   // secret volé d'être utilisé, mais il borne les dégâts.
   if (ratelimit) {
-    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-    const { success } = await ratelimit.limit(ip);
+    const { success } = await ratelimit.limit(clientIp(req));
     if (!success) {
+      countRejection('redeploy-rate-limit');
       return res.status(429).json({ error: 'Trop de tentatives, réessayez dans quelques minutes.' });
     }
   }

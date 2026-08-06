@@ -1,6 +1,12 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+// Captcha Turnstile : entièrement conditionné à la présence de la clé
+// publique. Tant qu'elle est absente, rien n'est rendu, aucun domaine tiers
+// n'entre dans la CSP, et la politique de confidentialité reste exacte quand
+// elle affirme qu'aucun tiers ne reçoit l'adresse IP du visiteur.
+const TURNSTILE = Boolean(process.env.PUBLIC_TURNSTILE_SITE_KEY);
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://roxane-foare.com',
@@ -47,7 +53,18 @@ export default defineConfig({
   // garder identiques à avant) sont ajoutées telles quelles.
   security: {
     csp: {
+      // Turnstile n'entre dans la CSP que s'il est réellement activé (voir
+      // api/_lib/turnstile.js) : inutile d'ouvrir un domaine tiers pour une
+      // fonctionnalité éteinte. `script-src` ne se déclare pas dans
+      // `directives` - Astro le gère lui-même pour y placer les hashes, et
+      // impose de passer par `scriptDirective.resources`.
+      ...(TURNSTILE
+        ? { scriptDirective: { resources: ["'self'", 'https://challenges.cloudflare.com'] } }
+        : {}),
       directives: [
+        TURNSTILE
+          ? 'frame-src https://player.vimeo.com https://challenges.cloudflare.com'
+          : 'frame-src https://player.vimeo.com',
         "default-src 'self'",
         "base-uri 'self'",
         "form-action 'self'",
@@ -60,7 +77,6 @@ export default defineConfig({
         // SAMEORIGIN (vercel.json), non soumis à cette limitation.
         "font-src 'self' data:",
         "img-src 'self' data: blob: https://*.vimeocdn.com https://*.vimeo.com https://i.vimeocdn.com",
-        "frame-src https://player.vimeo.com",
         "connect-src 'self' https://*.vimeo.com https://api.vimeo.com https://fresnel.vimeo.com https://vimeo.com",
       ],
     },

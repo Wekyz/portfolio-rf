@@ -171,6 +171,28 @@ que le formulaire fonctionne (voir `api/_lib/form-token.js`).
 > `/admin/redeploy.html`. Elle n'est jamais écrite dans la page, qui est
 > publique.
 
+### Antispam
+
+Trois couches, de la plus discrète à la plus visible :
+
+1. **Honeypot** + **jeton horodaté signé** côté serveur (`api/_lib/form-token.js`).
+2. **Limitation de débit** Upstash, 5 envois / 10 min par IP. Optionnelle : sans
+   `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`, elle est désactivée et
+   la fonction l'écrit dans ses journaux (Vercel → Logs) - rien ne le disait
+   auparavant. **Vérifier que ces deux variables existent bien sur
+   l'environnement Production.**
+3. **Cloudflare Turnstile**, *désactivé par défaut*. S'active en définissant
+   `PUBLIC_TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` : le widget, le domaine
+   dans la CSP et le paragraphe de confidentialité apparaissent alors seuls.
+   À n'activer qu'au vu des compteurs (ci-dessous). **Turnstile transmet
+   l'adresse IP du visiteur à Cloudflare**, ce que le site évite partout
+   ailleurs - c'est un arbitrage, pas une évidence.
+
+Chaque rejet incrémente un compteur mensuel dans Upstash, sous
+`abuse:AAAA-MM:<motif>` (`honeypot`, `rate-limit`, `too-fast`, `bad-token`,
+`too-long`, `invalid-fields`, `captcha-*`). Sans ça, aucune trace ne permettait
+de savoir si le dispositif était surdimensionné ou déjà dépassé.
+
 ### Mise à jour du CMS (Sveltia)
 
 Sveltia est chargé depuis unpkg à une version épinglée, avec une empreinte SRI.

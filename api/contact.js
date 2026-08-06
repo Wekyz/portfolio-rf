@@ -22,9 +22,9 @@
  * simplement désactivé (le formulaire continue de fonctionner normalement,
  * protégé par le honeypot + délai anti-bot déjà en place côté client).
  */
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
 import { verifyToken } from './_lib/form-token.js';
+import { verifyTurnstile } from './_lib/turnstile.js';
 
 /**
  * Neutralise les retours à la ligne. Le sujet d'un email est un en-tête :
@@ -34,15 +34,7 @@ import { verifyToken } from './_lib/form-token.js';
  */
 const headerSafe = (s) => s.replace(/[\r\n]+/g, ' ').trim();
 
-let ratelimit = null;
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(5, '10 m'),
-    analytics: true,
-    prefix: 'contact-form',
-  });
-}
+const ratelimit = createLimiter('contact-form', 5, '10 m');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -50,9 +42,9 @@ export default async function handler(req, res) {
   }
 
   if (ratelimit) {
-    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-    const { success } = await ratelimit.limit(ip);
+    const { success } = await ratelimit.limit(clientIp(req));
     if (!success) {
+      countRejection('rate-limit');
       return res.status(429).json({ error: 'Trop de tentatives, réessayez plus tard.' });
     }
   }
@@ -70,7 +62,10 @@ export default async function handler(req, res) {
   const honeypot = (body['bot-field'] || '').toString().trim();
 
   // Honeypot rempli => bot. On répond OK sans rien envoyer.
-  if (honeypot) return res.status(200).json({ ok: true });
+  if (honeypot) {
+    countRejection('honeypot');
+    return res.status(200).json({ ok: true });
+  }
 
   // Longueurs maximales. Il n'y en avait aucune : un prénom de 100 000
   // caractères partait tel quel dans le sujet de l'email.
@@ -81,10 +76,12 @@ export default async function handler(req, res) {
     message.length > 5000,
   ].some(Boolean);
   if (TOO_LONG) {
+    countRejection('too-long');
     return res.status(413).json({ error: 'Un des champs dépasse la longueur autorisée.' });
   }
 
   if (!firstName || !lastName || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    countRejection('invalid-fields');
     return res.status(400).json({ error: 'Champs requis manquants ou email invalide.' });
   }
 
@@ -94,10 +91,23 @@ export default async function handler(req, res) {
   // de bloquer un formulaire par ailleurs fonctionnel.
   const tokenState = verifyToken(body.formToken);
   if (tokenState === 'too-fast') {
+    countRejection('too-fast');
     return res.status(429).json({ error: 'Envoi trop rapide, réessayez dans quelques secondes.' });
   }
   if (tokenState === 'missing' || tokenState === 'invalid' || tokenState === 'expired') {
+    countRejection('bad-token');
     return res.status(400).json({ error: 'Session de formulaire expirée, rechargez la page.' });
+  }
+
+  // Captcha : inactif tant que TURNSTILE_SECRET_KEY n'est pas définie. Une
+  // indisponibilité de Cloudflare (`unreachable`) laisse passer - un service
+  // tiers en panne ne doit pas empêcher un client d'écrire.
+  // `cf-turnstile-response` est le nom du champ caché que le widget injecte
+  // lui-même dans le formulaire : rien à câbler côté client.
+  const captcha = await verifyTurnstile(body['cf-turnstile-response'], clientIp(req));
+  if (captcha === 'missing' || captcha === 'invalid') {
+    countRejection(`captcha-${captcha}`);
+    return res.status(400).json({ error: 'Vérification anti-robot échouée, réessayez.' });
   }
 
   const apiKey = process.env.RESEND_API_KEY;

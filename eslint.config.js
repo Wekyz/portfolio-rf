@@ -44,7 +44,15 @@ export default [
 
   // Code serveur / build : fonctions Vercel, scripts de build, tests, config.
   {
-    files: ['api/**/*.js', 'scripts/**/*.mjs', 'tests/**/*.mjs', 'eslint.config.js'],
+    // `astro.config.mjs` lit process.env pour conditionner le captcha
+    // (voir la constante TURNSTILE) : il tourne bien sous Node au build.
+    files: [
+      'api/**/*.js',
+      'scripts/**/*.mjs',
+      'tests/**/*.mjs',
+      'eslint.config.js',
+      'astro.config.mjs',
+    ],
     languageOptions: { globals: globals.node },
   },
 ];

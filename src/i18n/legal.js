@@ -10,6 +10,32 @@
  */
 import { LEGAL } from '../data/legal.js';
 
+/**
+ * Le captcha Turnstile transmet l'adresse IP du visiteur à Cloudflare. Tant
+ * qu'il est désactivé, la page affirme à raison qu'aucun tiers ne la reçoit ;
+ * dès qu'il est activé, le paragraphe correspondant apparaît de lui-même.
+ * Voir api/_lib/turnstile.js.
+ */
+const TURNSTILE = Boolean(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY);
+
+const captchaSection = (fr) =>
+  TURNSTILE
+    ? [
+        {
+          title: fr ? 'Protection anti-robot' : 'Anti-bot protection',
+          paragraphs: fr
+            ? [
+                "Le formulaire de contact est protégé par Cloudflare Turnstile, qui vérifie que la soumission provient d'une personne et non d'un programme automatisé. Ce service ne dépose pas de cookie de suivi, mais il reçoit votre adresse IP ainsi que des signaux techniques relatifs à votre navigateur.",
+                "Cloudflare, Inc. est établie aux États-Unis : ce traitement implique un transfert hors de l'Union européenne, encadré par les clauses contractuelles types de la Commission européenne. La base légale est l'intérêt légitime de l'éditrice à protéger son formulaire des envois automatisés abusifs.",
+              ]
+            : [
+                'The contact form is protected by Cloudflare Turnstile, which checks that a submission comes from a person rather than an automated program. The service sets no tracking cookie, but it does receive your IP address along with technical signals about your browser.',
+                'Cloudflare, Inc. is established in the United States, so this involves a transfer outside the European Union, governed by the European Commission’s standard contractual clauses. The legal basis is the publisher’s legitimate interest in protecting the form from automated abuse.',
+              ],
+        },
+      ]
+    : [];
+
 /** Valeur manquante : rendue visible plutôt que silencieusement omise. */
 const todo = (fr) => (fr ? '[à compléter]' : '[to be completed]');
 const val = (v, fr) => v || todo(fr);
@@ -80,6 +106,7 @@ export const legalPages = {
             "La mesure d'audience repose sur Vercel Web Analytics, qui fonctionne sans cookie et sans identifiant persistant. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
           ],
         },
+        ...captchaSection(true),
         {
           title: 'Responsable du traitement',
           facts: [
@@ -158,6 +185,7 @@ export const legalPages = {
             'Audience measurement relies on Vercel Web Analytics, which works without cookies and without persistent identifiers. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
           ],
         },
+        ...captchaSection(false),
         {
           title: 'Data controller',
           facts: [
