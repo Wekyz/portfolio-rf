@@ -18,7 +18,8 @@
     "check": "astro check",
     "lint": "eslint .",
     "test": "node --test tests/*.test.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:a11y": "playwright test a11y"
   },
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@sveltia/cms": "^0.167.5",

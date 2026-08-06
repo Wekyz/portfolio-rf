@@ -49,6 +49,12 @@
   --gray-mid:   #6e6e68;          /* ~4.9:1 sur --white : WCAG AA (petit texte) */
   --gray-dark:  #5a5a54;
   --accent:     #c8b89a;
+  /* L'accent ne tient pas le contraste sur fond clair : 1,86:1, très loin des
+     4,5:1 exigés pour du petit texte. Même teinte et même saturation (38°,
+     30 %), clarté descendue de 70 à 40 % -> 4,65:1. Réservé au texte posé sur
+     le fond crème ; `--accent` reste tel quel là où il est décoratif ou posé
+     sur fond sombre. Trouvé par axe, pas par la relecture manuelle. */
+  --accent-text: #856e47;
 
   --font-hennessy: 'HennessySerif1765', Georgia, serif;
   --font-dala:     'DalaFloda', Georgia, serif;
@@ -439,7 +445,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .project-head { margin: 24px 0 22px; }
 .project-cat {
   font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 10px;
+  color: var(--accent-text); margin-bottom: 10px;
 }
 .project-title {
   font-family: var(--font-hennessy);
