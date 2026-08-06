@@ -3,5 +3,27 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 
+# Robots d'IA : autorisés explicitement, et non par simple défaut hérité de la
+# règle ci-dessus. Un portfolio a tout intérêt à être cité par les moteurs de
+# réponse ; l'écrire noir sur blanc évite qu'un changement ultérieur renverse
+# cette intention par inadvertance. Voir aussi /llms.txt et /llms-full.txt.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bingbot
+User-agent: CCBot
+User-agent: Meta-ExternalAgent
+User-agent: Amazonbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
 Sitemap: https://roxane-foare.com/sitemap.xml
 Sitemap: https://roxane-foare.com/sitemap-video.xml

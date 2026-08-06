@@ -1,10 +1,11 @@
 ---
-// About (FR) : présentation + contact.
+// About (FR) : présentation + FAQ + contact.
 import Base from '../../layouts/Base.astro';
 import About from '../../components/About.astro';
 import Contact from '../../components/Contact.astro';
+import { buildFaqLd } from '../../i18n/faq.js';
 ---
-<Base lang="fr" page="about">
+<Base lang="fr" page="about" faq={buildFaqLd('fr')}>
   <About lang="fr" />
   <Contact lang="fr" />
 </Base>

@@ -16,7 +16,7 @@ export const LEGAL = {
   name: 'Roxane Foare',
 
   /** Adresse postale de l'entreprise (celle déclarée à l'INSEE). */
-  address: null,
+  address: '7 rue de la Chapelle, 49750 Beaulieu-sur-Layon',
 
   /**
    * Adresse de courrier électronique.
@@ -30,10 +30,10 @@ export const LEGAL = {
    *  - laisser `null` : la page renvoie alors vers le formulaire de contact,
    *    ce qui est une pratique répandue mais juridiquement moins sûre.
    */
-  email: null,
+  email: 'roxane.foare@gmail.com',
 
   /** Numéro SIRET à 14 chiffres. */
-  siret: null,
+  siret: '889 530 739 00024',
 
   /** Hébergeur - adresse relevée dans la politique de confidentialité de Vercel. */
   host: {

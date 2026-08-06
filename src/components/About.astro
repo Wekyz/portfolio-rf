@@ -14,6 +14,14 @@ const introParagraphs = t('about.introParagraphs');
 // scripts/fetch-thumbs.mjs) : elles fixent le ratio et évitent un saut de
 // mise en page pendant le chargement.
 import brandSizes from '../data/brands.json';
+import videos from '../data/videos.json';
+import Faq from './Faq.astro';
+
+const projectCount = (videos.videos || videos).length;
+const summary =
+  lang === 'fr'
+    ? `Monteuse vidéo freelance depuis plus de dix ans, basée à Paris et Angers et disponible partout ailleurs. ${projectCount} projets référencés en publicité, long métrage, documentaire, corporate, événementiel, teaser et captation live. Deux prix du meilleur montage. Travail en français et en anglais.`
+    : `Freelance video editor for over ten years, based in Paris and Angers and available anywhere else. ${projectCount} projects across commercials, feature films, documentaries, corporate films, events, teasers and live broadcast. Two Best Editing Awards. Works in French and English.`;
 
 const brandImg = (slug: string) => ({
   src: `/brands/${slug}-64.webp`,
@@ -58,6 +66,12 @@ const BRANDS = [
 <section id="about">
   <div class="about-left">
     <h1 class="section-title">{t('about.title')}</h1>
+    <!-- Synthèse factuelle en tête de bio : les faits chiffrés (ancienneté,
+         volume, domaines, distinctions, langues, zone) étaient jusqu'ici
+         dispersés dans cinq paragraphes de prose, donc difficiles à citer
+         pour un moteur de réponse. Le nombre de projets est calculé, il ne
+         peut pas se désynchroniser du CMS. -->
+    <p class="about-summary">{summary}</p>
     <div class="about-intro">
       {introParagraphs.map((p: string) => <p set:html={p} />)}
     </div>
@@ -69,6 +83,17 @@ const BRANDS = [
       <span class="tool-tag">XPression by Ross</span>
       <span class="tool-tag">LSM by EVS</span>
       <span class="tool-tag">Blackmagic ATEM</span>
+    </div>
+
+    <!-- DISTINCTIONS -->
+    <!-- Les deux prix n'existaient que dans une phrase au milieu de la bio.
+         Ils sont désormais aussi dans le JSON-LD Person (`award`). -->
+    <div class="credits-block">
+      <h2 class="credits-heading">{t('about.awards')}</h2>
+      <ul class="award-list">
+        <li>{t('award.cyprus')}</li>
+        <li>{t('award.athens')}</li>
+      </ul>
     </div>
 
     <!-- PRODUCTIONS -->
@@ -114,5 +139,7 @@ const BRANDS = [
         </div>
       </div>
     </div>
+
+    <Faq lang={lang} />
   </div>
 </section>

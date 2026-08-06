@@ -94,6 +94,8 @@ export const ui = {
     ],
     'about.productions': 'Productions',
     'about.brands': 'Brands',
+    'about.awards': 'Awards',
+    'faq.title': 'Frequently asked questions',
 
     // Contact
     'contact.title': 'Contact',
@@ -212,6 +214,8 @@ export const ui = {
     ],
     'about.productions': 'Productions',
     'about.brands': 'Marques',
+    'about.awards': 'Distinctions',
+    'faq.title': 'Questions fréquentes',
 
     // Contact
     'contact.title': 'Contact',

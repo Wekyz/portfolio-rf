@@ -469,6 +469,44 @@ nav.nav-flush { border-bottom-color: transparent; }
 .project-related-title { display: block; margin-top: 12px; font-size: 14px; }
 .project-related-credit { display: block; font-size: 12px; color: var(--gray-mid); }
 
+/* ── DISTINCTIONS ─────────────────────────────────────────── */
+.award-list { list-style: none; display: grid; gap: 10px; }
+.award-list li {
+  position: relative; padding-left: 22px;
+  font-size: 14px; color: var(--gray-dark); line-height: 1.6;
+}
+.award-list li::before {
+  content: ''; position: absolute; left: 0; top: .62em;
+  width: 8px; height: 1px; background: var(--accent);
+}
+
+/* ── FAQ ──────────────────────────────────────────────────── */
+/* Délibérément discrète : les réponses sont dans le HTML (c'est le but,
+   les moteurs de réponse les lisent) mais repliées à l'affichage. */
+.faq-list { border-top: 1px solid var(--gray-light); }
+.faq-item { border-bottom: 1px solid var(--gray-light); }
+.faq-item summary {
+  list-style: none; cursor: pointer;
+  padding: 16px 28px 16px 0; position: relative;
+  font-size: 14px; color: var(--gray-dark);
+  transition: color var(--t-fast) ease;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:hover { color: var(--black); }
+/* Chevron tracé en CSS : deux traits, pivotés à l'ouverture. */
+.faq-item summary::after {
+  content: ''; position: absolute; right: 4px; top: 50%;
+  width: 8px; height: 8px; margin-top: -6px;
+  border-right: 1px solid var(--gray-mid); border-bottom: 1px solid var(--gray-mid);
+  transform: rotate(45deg); transition: transform var(--t-mid) var(--ease);
+}
+.faq-item[open] summary { color: var(--black); }
+.faq-item[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.faq-item p {
+  padding: 0 40px 20px 0; font-size: 14px;
+  color: var(--gray-mid); line-height: 1.75;
+}
+
 /* ── PAGES LÉGALES ────────────────────────────────────────── */
 .legal { padding: 56px 56px 120px; max-width: 780px; margin: 0 auto; }
 .legal-heading {
@@ -524,6 +562,11 @@ nav.nav-flush { border-bottom-color: transparent; }
   border-top: 1px solid var(--gray-light); padding-top: 24px;
 }
 .about-intro em { font-style: italic; }
+/* Synthèse factuelle : plus dense que la prose qui suit, sans la concurrencer. */
+.about-summary {
+  font-size: 14px; color: var(--gray-mid); line-height: 1.7;
+  text-align: center; margin-bottom: 28px;
+}
 .tools-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 40px; }
 .tool-tag {
   padding: 6px 14px; border: 1px solid var(--gray-light);

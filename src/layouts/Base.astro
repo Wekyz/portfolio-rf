@@ -29,8 +29,15 @@ const {
   ogImage,
   videoObject,
   breadcrumb,
+  faq,
   noindex = false,
 } = Astro.props;
+
+// Signal de fraîcheur : les moteurs de réponse pondèrent fortement la date de
+// mise à jour quand ils arbitrent entre plusieurs sources, et le site n'en
+// exposait aucune. La date du build fait foi - chaque publication depuis le
+// CMS en déclenche un, elle reflète donc bien la dernière modification.
+const buildDate = new Date().toISOString().slice(0, 10);
 const t = useTranslations(lang);
 
 const SITE = 'https://roxane-foare.com';
@@ -172,7 +179,20 @@ function sha256(content: string): `sha256-${string}` {
 // Person (partout), puis selon la page : ItemList du portfolio ou VideoObject
 // du projet, et le fil d'Ariane des pages projet. Chaque bloc a son propre
 // hash CSP.
-const ldBlocks = [jsonLd, serviceLd, secondaryLd, breadcrumb]
+const pageLd = noindex
+  ? null
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      url: canonical,
+      name: pageTitle,
+      description: pageDescription,
+      inLanguage: lang,
+      dateModified: buildDate,
+      isPartOf: { '@type': 'WebSite', name: 'Roxane Foare', url: `${SITE}/` },
+    };
+
+const ldBlocks = [jsonLd, pageLd, serviceLd, secondaryLd, breadcrumb, faq]
   .filter(Boolean)
   .map((block) => JSON.stringify(block).replace(/</g, '\\u003c'));
 ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
