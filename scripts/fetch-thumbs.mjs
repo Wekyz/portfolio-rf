@@ -28,7 +28,7 @@
  * Les images posées à la main dans public/live/ gardent leur propre pipeline
  * de variantes responsive (sharp), inchangé.
  */
-import { readFile, writeFile, mkdir, access, readdir } from 'node:fs/promises';
+import { readFile, writeFile, appendFile, mkdir, access, readdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -71,6 +71,21 @@ const SITE_DOMAIN = process.env.SITE_DOMAIN || 'https://roxane-foare.com';
 // pour en extraire l'URL de base, à laquelle on rajoute ensuite la largeur
 // voulue (voir WorkItem.astro).
 const WIDTH_SUFFIX_RE = /_\d+(\?.*)?$/;
+
+/**
+ * Ajoute une ligne au résumé de job GitHub Actions, quand il existe.
+ * Le nombre de miniatures résolues n'apparaissait que dans les journaux,
+ * qu'il faut penser à ouvrir : ici, il est visible depuis la liste des runs.
+ */
+async function summarize(line) {
+  const file = process.env.GITHUB_STEP_SUMMARY;
+  if (!file) return;
+  try {
+    await appendFile(file, line + '\n');
+  } catch {
+    // Un résumé qui échoue ne doit pas faire tomber le build.
+  }
+}
 
 async function exists(p) {
   try {
@@ -294,6 +309,22 @@ async function main() {
 
   await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2) + '\n');
   console.log(`[thumbs] ${resolved} vidéo(s) résolue(s), ${failed} échec(s).`);
+  await summarize(`Miniatures Vimeo : **${resolved}** résolue(s), **${failed}** échec(s).`);
+
+  // Échec TOTAL : plus aucune miniature ne se résout. Le repli sur le cache
+  // précédent couvre les incidents ponctuels, mais un zéro pointé signale
+  // autre chose - Vimeo qui durcit sa restriction de domaine, une clé
+  // révoquée, un changement d'API. Sans ce garde-fou, le build passait quand
+  // même et le site partait avec des miniatures manquantes.
+  const attendus = videos.filter((v) => v.id && !v.thumb).length;
+  if (attendus > 0 && resolved === 0) {
+    console.error(
+      `\n[thumbs] ERREUR : aucune des ${attendus} miniatures n'a pu être résolue.\n` +
+        "         Un échec partiel reste toléré, un échec total ne l'est pas :\n" +
+        '         le site partirait sans vignettes. Build interrompu.\n'
+    );
+    process.exit(1);
+  }
 
   const vl = await ensureVariants(LIVE_DIR);
   console.log(`[variants] ${vl.made} générée(s), ${vl.kept} déjà présente(s).`);

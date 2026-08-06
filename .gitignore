@@ -2,12 +2,16 @@
 dist/
 .astro/
 
+# Playwright : rapports et traces des parcours de bout en bout
+playwright-report/
+test-results/
+
 # Les caches de src/data/ (vimeo-thumbs, local-images, brands) sont générés par
 # scripts/fetch-thumbs.mjs mais VERSIONNÉS, volontairement, pour deux raisons :
 #
-#  1. `npm run check` et `npm test` s'exécutent avant `npm run build` en CI,
-#     donc avant que `prebuild` ne les génère. Absents du dépôt, ils font
-#     échouer un clone neuf dès qu'un fichier typé les importe (vérifié).
+#  1. `npm run check` s'exécute avant `npm run build` en CI, donc avant que
+#     `prebuild` ne les génère. Absents du dépôt, ils font échouer un clone
+#     neuf dès qu'un fichier typé les importe (vérifié).
 #  2. En cas d'indisponibilité de l'API Vimeo pendant un build, le script
 #     retombe sur le contenu précédent. Sans fichier versionné, ce repli n'a
 #     rien sur quoi retomber et le site partirait sans aucune miniature.

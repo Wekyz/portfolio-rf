@@ -52,6 +52,8 @@ export default [
       'tests/**/*.mjs',
       'eslint.config.js',
       'astro.config.mjs',
+      'playwright.config.mjs',
+      'e2e/**/*.mjs',
     ],
     languageOptions: { globals: globals.node },
   },

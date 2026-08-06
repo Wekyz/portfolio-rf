@@ -60,8 +60,15 @@ npm run preview  # sert dist/ sur http://localhost:4321
 > les tester. Tout le reste (grille, filtres, lightbox Vimeo, responsive) marche.
 
 ```bash
-npm test         # tests fumée (node:test), ex. /api/contact
+npm test         # tests unitaires (node:test) : slugs, grille, miniatures,
+                 # fonctions serverless, routes et budgets de poids
+npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 ```
+
+> `npm test` inclut des contrôles qui s'appuient sur `dist/` (cohérence
+> sitemap, budgets de poids). Ils sont **ignorés** si le dossier n'existe pas,
+> pour ne pas casser un `npm test` lancé sans build - en CI, les tests
+> passent après le build, donc ils s'exécutent.
 
 ## Structure du dépôt
 
