@@ -43,9 +43,9 @@ if (duration) facts.push({ label: t('project.duration'), value: duration });
 facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
 ---
 <article class="project">
-  <!-- Fil d'Ariane : sert à la fois de navigation retour et de source au
+  {/* Fil d'Ariane : sert à la fois de navigation retour et de source au
        BreadcrumbList JSON-LD (voir lib/project-page.js), que Google utilise
-       pour afficher un chemin lisible à la place de l'URL brute. -->
+       pour afficher un chemin lisible à la place de l'URL brute. */}
   <nav class="project-crumbs" aria-label={t('project.breadcrumb')}>
     <ol>
       <li><a href={langBase || '/'}>{t('nav.home')}</a></li>

@@ -66,11 +66,11 @@ const BRANDS = [
 <section id="about">
   <div class="about-left">
     <h1 class="section-title">{t('about.title')}</h1>
-    <!-- Synthèse factuelle en tête de bio : les faits chiffrés (ancienneté,
+    {/* Synthèse factuelle en tête de bio : les faits chiffrés (ancienneté,
          volume, domaines, distinctions, langues, zone) étaient jusqu'ici
          dispersés dans cinq paragraphes de prose, donc difficiles à citer
          pour un moteur de réponse. Le nombre de projets est calculé, il ne
-         peut pas se désynchroniser du CMS. -->
+         peut pas se désynchroniser du CMS. */}
     <p class="about-summary">{summary}</p>
     <div class="about-intro">
       {introParagraphs.map((p: string) => <p set:html={p} />)}
@@ -86,8 +86,8 @@ const BRANDS = [
     </div>
 
     <!-- DISTINCTIONS -->
-    <!-- Les deux prix n'existaient que dans une phrase au milieu de la bio.
-         Ils sont désormais aussi dans le JSON-LD Person (`award`). -->
+    {/* Les deux prix n'existaient que dans une phrase au milieu de la bio.
+         Ils sont désormais aussi dans le JSON-LD Person (`award`). */}
     <div class="credits-block">
       <h2 class="credits-heading">{t('about.awards')}</h2>
       <ul class="award-list">
@@ -111,17 +111,42 @@ const BRANDS = [
 
     <!-- BRANDS (bandeau défilant de logos) -->
     <div class="credits-block">
-      <h2 class="credits-heading">{t('about.brands')}</h2>
+      <div class="brands-head">
+        <h2 class="credits-heading">{t('about.brands')}</h2>
+        {/* WCAG 2.2.2 : tout mouvement automatique de plus de 5 secondes doit
+             pouvoir être arrêté. L'animation tourne en boucle sur 70 s. Elle se
+             met bien en pause au survol, mais le survol n'existe ni au doigt ni
+             au clavier ; `prefers-reduced-motion` ne couvre que ceux qui ont
+             activé le réglage système. Ce bouton couvre tout le monde, et rend
+             aussi service à qui veut simplement lire un logo au passage. */}
+        <button
+          type="button"
+          class="brands-toggle"
+          id="brandsToggle"
+          aria-pressed="false"
+          data-label-pause={t('about.brandsPause')}
+          data-label-play={t('about.brandsPlay')}
+          aria-label={t('about.brandsPause')}
+        >
+          <svg class="icon-pause" width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
+            <rect x="0" y="0" width="3" height="12" fill="currentColor" />
+            <rect x="7" y="0" width="3" height="12" fill="currentColor" />
+          </svg>
+          <svg class="icon-play" width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
+            <path d="M0 0L10 6L0 12Z" fill="currentColor" />
+          </svg>
+        </button>
+      </div>
       <div class="brand-marquee">
         <div class="brand-marquee-track">
-          <!-- Deux groupes identiques, translateX(-50%) en boucle : avec un
+          {/* Deux groupes identiques, translateX(-50%) en boucle : avec un
                `gap` posé sur .brand-marquee-track, la moitié du track ne
                correspond pas exactement à la largeur d'un groupe (le gap qui
                relie les deux groupes casse la symétrie), d'où un saut visible
                à la relance. En isolant chaque groupe dans son propre flex
                (gap interne + padding-right en bout, sans gap au niveau du
                track), les deux groupes ont une largeur strictement identique
-               et -50% tombe pile entre les deux. -->
+               et -50% tombe pile entre les deux. */}
           <div class="brand-marquee-group">
             {BRANDS.map((b) => (
               <span class="brand-logo">

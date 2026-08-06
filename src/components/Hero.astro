@@ -18,25 +18,34 @@ const base = lang === 'fr' ? '/fr' : '';
 // et choisit la définition selon la taille du lecteur et le débit.
 // Contrepartie : sur un grand écran, la définition peut monter en une seconde
 // ou deux au lieu d'être maximale d'emblée.
+// Accessibilité du conteneur : il portait un `role="img"` qui rendait ses
+// descendants présentationnels pour les technologies d'assistance, alors que
+// l'iframe restait atteignable au clavier - le focus pouvait donc atterrir
+// dans un élément annoncé comme une simple image. Retiré : l'iframe porte
+// déjà son propre `title`, qui suffit.
+// `tabindex="-1"` : le showreel tourne en mode `background=1`, sans aucune
+// commande. S'y arrêter à la tabulation ne mène à rien, autant retirer cette
+// étape morte du parcours clavier.
 const VIMEO_ID = '1211961310';
 const VIMEO_HASH = '33632a8dbb';
 const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&background=1&autoplay=1&loop=1&muted=1`;
 ---
 <section id="hero" class="hero">
-  <div class="showreel" role="img" aria-label={t('hero.showreelLabel')}>
+  <div class="showreel">
     <iframe
       class="showreel-frame"
       src={embedSrc}
       title={t('hero.showreelLabel')}
       allow="autoplay; fullscreen"
       loading="eager"
+      tabindex="-1"
     ></iframe>
   </div>
 
   <div class="hero-content">
-    <!-- H1 de l'accueil : la tagline porte déjà les mots-clés utiles
+    {/* H1 de l'accueil : la tagline porte déjà les mots-clés utiles
          (monteuse vidéo, Paris, Angers, types de montage), là où le logo ne
-         répétait que le nom de domaine. -->
+         répétait que le nom de domaine. */}
     <h1 class="hero-tagline">{t('hero.tagline')}</h1>
     <div class="hero-cta">
       <a href={`${base}/portfolio`} class="hero-cta-btn hero-cta-primary">

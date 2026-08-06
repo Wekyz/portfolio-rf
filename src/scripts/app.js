@@ -47,6 +47,22 @@ import { applySpans } from '../lib/spans.js';
     });
   }
 
+  // ── Bandeau de logos : arrêt / reprise (page À propos) ────────
+  // WCAG 2.2.2 : un mouvement automatique de plus de 5 secondes doit pouvoir
+  // être arrêté. La classe `paused` fige l'animation, voir styles.css.
+  const brandsToggle = document.getElementById('brandsToggle');
+  if (brandsToggle) {
+    const marquee = document.querySelector('.brand-marquee');
+    brandsToggle.addEventListener('click', () => {
+      const paused = marquee.classList.toggle('paused');
+      brandsToggle.setAttribute('aria-pressed', String(paused));
+      brandsToggle.setAttribute(
+        'aria-label',
+        brandsToggle.dataset[paused ? 'labelPlay' : 'labelPause']
+      );
+    });
+  }
+
   // ── Retour en haut (Portfolio / About) ────────────────────────
   if (backToTop) {
     // Le bouton est fixé à 24 px du bas et de la droite : arrivé en bas de

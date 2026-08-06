@@ -21,15 +21,22 @@ const contactHref = `${base}/contact`;
 // dérivable du nom de page - `path` est fourni par Base.astro.
 const currentPath = path ?? (page === 'home' ? '' : `/${page}`);
 const otherHref = lang === 'fr' ? currentPath || '/' : `/fr${currentPath}`;
+// Le libellé et l'intitulé du lien de bascule sont écrits dans l'AUTRE langue
+// (« Voir le site en français » figure dans le dictionnaire anglais). Sans
+// `lang`, un lecteur d'écran les prononce avec la phonétique de la page.
+// `hreflang` est de toute façon justifié : le lien mène à l'autre version.
+const otherLang = lang === 'fr' ? 'en' : 'fr';
 ---
 <nav class:list={[page === 'home' && 'nav-flush']}>
-  <!-- Le logo n'est PAS un H1 : il est identique sur toutes les pages, alors
+  {/* Le logo n'est PAS un H1 : il est identique sur toutes les pages, alors
        que le H1 doit annoncer le contenu propre à chacune. L'identité de
        Roxane est déjà portée par le <title>, le domaine et le JSON-LD Person.
        Chaque page pose son propre H1 (tagline, Portfolio, À propos, titre du
-       projet). -->
+       projet). */}
   <div class="nav-logo-wrap">
-    <a href={homeHref} class="nav-logo">
+    {/* Le logo mène à l'accueil : sur l'accueil, il désigne la page courante
+        au même titre que les autres liens de la navigation. */}
+    <a href={homeHref} class="nav-logo" aria-current={page === 'home' ? 'page' : undefined}>
       Roxane Foare
       <span class="nav-logo-sub">{t('nav.sub')}</span>
     </a>
@@ -41,6 +48,6 @@ const otherHref = lang === 'fr' ? currentPath || '/' : `/fr${currentPath}`;
     <li><a class="slide-label" href={portfolioHref} aria-current={page === 'portfolio' ? 'page' : undefined}><span class="lbl-out">{t('nav.work')}</span><span class="lbl-in" aria-hidden="true">{t('nav.work')}</span></a></li>
     <li><a class="slide-label" href={aboutHref} aria-current={page === 'about' ? 'page' : undefined}><span class="lbl-out">{t('nav.about')}</span><span class="lbl-in" aria-hidden="true">{t('nav.about')}</span></a></li>
     <li><a class="slide-label" href={contactHref}><span class="lbl-out">{t('nav.contact')}</span><span class="lbl-in" aria-hidden="true">{t('nav.contact')}</span></a></li>
-    <li><a class="nav-lang" href={otherHref} aria-label={t('nav.langAria')}>{t('nav.langLabel')}</a></li>
+    <li><a class="nav-lang" href={otherHref} lang={otherLang} hreflang={otherLang} aria-label={t('nav.langAria')}>{t('nav.langLabel')}</a></li>
   </ul>
 </nav>

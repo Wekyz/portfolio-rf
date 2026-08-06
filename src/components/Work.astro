@@ -61,7 +61,15 @@ const gridEntries = projects.map((p, i) => {
     {ALL_FILTERS.map((value, i) => (
       <>
         {i > 0 && <span class="filter-sep" aria-hidden="true">//</span>}
-        <button class="filter-btn slide-label" data-filter={value}>
+        {/* `aria-pressed` et `active` sont posés dès le build : ils n'étaient
+            appliqués qu'au premier applyFilter('all') du script, laissant les
+            boutons sans état exposé entre le rendu HTML et l'exécution du JS.
+            Le script se contente désormais de les mettre à jour. */}
+        <button
+          class:list={['filter-btn', 'slide-label', value === 'all' && 'active']}
+          data-filter={value}
+          aria-pressed={value === 'all' ? 'true' : 'false'}
+        >
           <span class="lbl-out">{label(value)}</span>
           <span class="lbl-in" aria-hidden="true">{label(value)}</span>
         </button>

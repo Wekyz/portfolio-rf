@@ -10,10 +10,10 @@ const t = useTranslations(lang);
     <div class="lightbox-spinner" id="lightboxSpinner" aria-hidden="true"></div>
     <iframe id="lightboxFrame" src="" title={t('lb.frameTitle')} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 
-    <!-- Barre d'information et navigation : une fois la vidéo ouverte, plus
+    {/* Barre d'information et navigation : une fois la vidéo ouverte, plus
          rien n'indiquait ce qu'on regardait ni pour qui, et il fallait fermer
          puis rouvrir pour passer au projet suivant. Les libellés sont remplis
-         par app.js depuis les data-* de la vignette cliquée. -->
+         par app.js depuis les data-* de la vignette cliquée. */}
     <div class="lightbox-bar">
       <button type="button" class="lightbox-nav" id="lightboxPrev" aria-label={t('lb.prev')}>&larr;</button>
       <div class="lightbox-info">

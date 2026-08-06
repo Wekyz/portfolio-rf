@@ -34,7 +34,7 @@ export const ui = {
     'nav.about': 'About',
     'nav.contact': 'Contact',
     'nav.langLabel': 'FR',
-    'nav.langAria': 'Voir le site en francais',
+    'nav.langAria': 'Voir le site en français',
     'nav.menuAria': 'Menu',
 
     // Hero (Accueil)
@@ -100,6 +100,8 @@ export const ui = {
     'about.productions': 'Productions',
     'about.brands': 'Brands',
     'about.awards': 'Awards',
+    'about.brandsPause': 'Pause the scrolling logos',
+    'about.brandsPlay': 'Resume the scrolling logos',
     'faq.title': 'Frequently asked questions',
 
     // Contact
@@ -133,7 +135,7 @@ export const ui = {
     'footer.legalAria': 'Legal pages',
 
     // Lightbox
-    'lb.dialog': 'Video player',
+    'lb.dialog': 'Video player - press Escape to close',
     'lb.close': 'Close video',
     'lb.frameTitle': 'Vimeo video player',
     'lb.prev': 'Previous project',
@@ -232,6 +234,8 @@ export const ui = {
     'about.productions': 'Productions',
     'about.brands': 'Marques',
     'about.awards': 'Distinctions',
+    'about.brandsPause': 'Mettre en pause le défilement des logos',
+    'about.brandsPlay': 'Relancer le défilement des logos',
     'faq.title': 'Questions fréquentes',
 
     // Contact
@@ -265,7 +269,7 @@ export const ui = {
     'footer.legalAria': 'Pages légales',
 
     // Lightbox
-    'lb.dialog': 'Lecteur vidéo',
+    'lb.dialog': 'Lecteur vidéo - appuyez sur Échap pour fermer',
     'lb.close': 'Fermer la vidéo',
     'lb.frameTitle': 'Lecteur vidéo Vimeo',
     'lb.prev': 'Projet précédent',

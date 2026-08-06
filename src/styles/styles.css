@@ -706,7 +706,24 @@ nav.nav-flush { border-bottom-color: transparent; }
   display: flex; width: max-content;
   animation: brand-scroll 70s linear infinite;
 }
-.brand-marquee:hover .brand-marquee-track { animation-play-state: paused; }
+.brand-marquee:hover .brand-marquee-track,
+.brand-marquee.paused .brand-marquee-track { animation-play-state: paused; }
+
+/* En-tête du bandeau : titre + bouton d'arrêt (WCAG 2.2.2). */
+.brands-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.brands-toggle {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--gray-light); border-radius: 50%;
+  color: var(--gray-mid); cursor: pointer;
+  transition: border-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+.brands-toggle:hover { border-color: var(--black); color: var(--black); }
+/* L'icône reflète l'action à venir : pause quand ça défile, lecture sinon. */
+.brands-toggle .icon-play { display: none; }
+.brands-toggle[aria-pressed='true'] .icon-pause { display: none; }
+.brands-toggle[aria-pressed='true'] .icon-play { display: block; }
 /* Un groupe = une itération complète des logos. Le gap interne ET le
    padding-right (même valeur) assurent un espacement uniforme partout,
    y compris à la jointure entre les deux groupes - condition nécessaire
