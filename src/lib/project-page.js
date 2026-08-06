@@ -103,7 +103,6 @@ export function buildProjectMeta(project, slug, lang) {
     path,
     title: `${p.title} - ${t('project.titleSuffix')}`,
     description,
-    keywords: [p.title, p.credit, catLabel, t('project.titleSuffix')].filter(Boolean).join(', '),
     ogImage: absThumb(p),
     videoObject,
   };

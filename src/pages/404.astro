@@ -1,0 +1,40 @@
+---
+/**
+ * Page 404 - remplace la page générique de Vercel.
+ *
+ * Astro la sort en `404.html` à la racine même sous `build.format: 'directory'`
+ * (vérifié : elle échappe à la règle du dossier + index.html), et Vercel la
+ * reconnaît nativement. Aucune règle à déclarer dans vercel.json.
+ *
+ * Une seule page pour tout le site : Vercel sert le même fichier quelle que
+ * soit l'URL manquante, y compris sous /fr. Elle est donc en anglais, la
+ * langue par défaut (x-default), et propose un accès à la version française.
+ *
+ * `path=""` force le sélecteur de langue de la navigation à viser l'accueil
+ * français : sans lui il visait /fr/404, qui n'existe pas.
+ */
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n/strings.js';
+
+const t = useTranslations('en');
+---
+<Base
+  lang="en"
+  page="404"
+  title={t('notfound.title')}
+  description={t('notfound.description')}
+  noindex
+  path=""
+>
+  <section class="notfound">
+    <p class="notfound-code" aria-hidden="true">404</p>
+    <h1 class="notfound-heading">{t('notfound.heading')}</h1>
+    <p class="notfound-text">{t('notfound.text')}</p>
+    <div class="notfound-links">
+      <a href="/portfolio" class="hero-cta-btn hero-cta-primary">{t('nav.work')}</a>
+      <a href="/about" class="hero-cta-btn hero-cta-secondary">{t('nav.about')}</a>
+      <a href="/portfolio#contact" class="hero-cta-btn hero-cta-secondary">{t('nav.contact')}</a>
+    </div>
+    <p class="notfound-lang"><a href="/fr">Voir le site en français</a></p>
+  </section>
+</Base>

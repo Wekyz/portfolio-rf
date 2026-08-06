@@ -33,9 +33,16 @@ export function getUploadDate(p, vimeo = vimeoThumbs) {
 // Durée ISO 8601 (ex. "PT1M33S") pour le JSON-LD VideoObject (Base.astro) -
 // affiche un badge de durée dans les résultats vidéo Google. Secondes
 // résolues au build via l'API oEmbed (voir scripts/fetch-thumbs.mjs).
-export function getDuration(p, vimeo = vimeoThumbs) {
+// Durée brute en secondes. Le sitemap vidéo l'exige sous cette forme, là où
+// le JSON-LD veut l'ISO 8601 : une seule source, deux formats.
+export function getDurationSeconds(p, vimeo = vimeoThumbs) {
   const seconds = p.id ? vimeo[p.id]?.durationSeconds : null;
-  if (!Number.isFinite(seconds) || seconds <= 0) return null;
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+}
+
+export function getDuration(p, vimeo = vimeoThumbs) {
+  const seconds = getDurationSeconds(p, vimeo);
+  if (seconds === null) return null;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.round(seconds % 60);

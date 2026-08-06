@@ -18,7 +18,7 @@ import type { Project } from '../lib/types';
 //
 // Les pages projet (/portfolio/[slug]) ne peuvent pas dériver leur head des
 // traductions : leur titre dépend du projet. Elles passent donc `path`,
-// `title`, `description`, `keywords` et `videoObject` explicitement. Le
+// `title`, `description` et `videoObject` explicitement. Le
 // comportement des 3 pages fixes est inchangé quand ces props sont absentes.
 const {
   lang = 'en',
@@ -26,10 +26,10 @@ const {
   path,
   title,
   description,
-  keywords,
   ogImage,
   videoObject,
   breadcrumb,
+  noindex = false,
 } = Astro.props;
 const t = useTranslations(lang);
 
@@ -42,8 +42,12 @@ const frHref = `${SITE}/fr${pagePath}`;
 
 const pageTitle = title ?? t(`head.${page}.title`);
 const pageDescription = description ?? t(`head.${page}.description`);
-const pageKeywords = keywords ?? t(`head.${page}.keywords`);
 const ogImageUrl = ogImage ?? `${SITE}/og-image.jpg`;
+
+// Pas de <meta name="keywords"> : Google l'ignore depuis 2009, Bing aussi. Six
+// variantes étaient maintenues à la main dans strings.js pour rien.
+// Pas de og:logo non plus : la propriété n'existe pas dans la spécification
+// Open Graph, aucun consommateur ne la lit.
 
 const projects = (data.videos || data) as Project[];
 const isPortfolio = page === 'portfolio';
@@ -87,7 +91,18 @@ const listLd = {
 // d'Ariane, lui, ne concerne que les pages projet (seules à être imbriquées).
 const secondaryLd = videoObject ?? (listLd.itemListElement.length > 0 ? listLd : null);
 
-// Identité de Roxane (Person) : présente sur les 3 pages, chacune est un
+// Domaines d'expertise : servent à la fois de `knowsAbout` sur la Person et de
+// `serviceType` sur l'activité, ce sont les mêmes compétences.
+const SERVICES = [
+  'Film editing',
+  'Documentary editing',
+  'Commercial editing',
+  'Corporate video',
+  'Live broadcast',
+  'Post-production',
+];
+
+// Identité de Roxane (Person) : présente sur toutes les pages, chacune est un
 // point d'entrée valable pour les moteurs et les agents.
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -96,21 +111,44 @@ const jsonLd = {
   jobTitle: t('head.jobTitle'),
   url: canonical,
   image: `${SITE}/og-image.jpg`,
+  // `sameAs` se limite à IMDb : c'est le seul profil public existant. Pas de
+  // LinkedIn, pas de Vimeo public, pas de réseau social - déclarer des URL
+  // mortes affaiblirait le signal au lieu de le renforcer.
   sameAs: ['https://www.imdb.com/fr/name/nm8663077/'],
+  // Les deux prix étaient dans la bio sans être déclarés nulle part. Ce sont
+  // les faits les plus forts du profil.
+  award: [t('award.cyprus'), t('award.athens')],
   address: [
     { '@type': 'PostalAddress', addressLocality: 'Paris', addressCountry: 'FR' },
     { '@type': 'PostalAddress', addressLocality: 'Angers', addressCountry: 'FR' },
   ],
-  knowsAbout: [
-    'Film editing',
-    'Documentary editing',
-    'Commercial editing',
-    'Corporate video',
-    'Live broadcast',
-    'Post-production',
-  ],
+  knowsAbout: SERVICES,
   knowsLanguage: ['fr', 'en'],
 };
+
+// Le positionnement est explicitement local (geo.region déclaré, deux villes
+// dans l'adresse) sans qu'aucun schéma d'activité ne le porte. Posé sur
+// l'accueil et la page À propos seulement : le répéter sur les 69 pages
+// n'ajouterait rien.
+const serviceLd =
+  page === 'home' || page === 'about'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ProfessionalService',
+        name: 'Roxane Foare',
+        description: pageDescription,
+        url: `${SITE}${langBase || '/'}`,
+        image: `${SITE}/og-image.jpg`,
+        provider: { '@type': 'Person', name: 'Roxane Foare' },
+        serviceType: SERVICES,
+        areaServed: [
+          { '@type': 'City', name: 'Paris' },
+          { '@type': 'City', name: 'Angers' },
+          { '@type': 'Country', name: 'France' },
+        ],
+        availableLanguage: ['fr', 'en'],
+      }
+    : null;
 
 // - CSP : hash des scripts JSON-LD ci-dessous ------------------------------
 // Leur contenu vient de `videos.json` (édité via le CMS) et des traductions,
@@ -134,7 +172,7 @@ function sha256(content: string): `sha256-${string}` {
 // Person (partout), puis selon la page : ItemList du portfolio ou VideoObject
 // du projet, et le fil d'Ariane des pages projet. Chaque bloc a son propre
 // hash CSP.
-const ldBlocks = [jsonLd, secondaryLd, breadcrumb]
+const ldBlocks = [jsonLd, serviceLd, secondaryLd, breadcrumb]
   .filter(Boolean)
   .map((block) => JSON.stringify(block).replace(/</g, '\\u003c'));
 ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
@@ -148,15 +186,23 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
 
   <title>{pageTitle}</title>
   <meta name="description" content={pageDescription} />
-  <meta name="keywords" content={pageKeywords} />
   <meta name="author" content="Roxane Foare" />
 
-  <link rel="canonical" href={canonical} />
+  {/* La page 404 ne décrit aucune URL réelle : ni canonique ni hreflang, qui
+      désigneraient une adresse qui n'existe pas. Le noindex évite qu'elle
+      remonte dans les résultats à la place d'une vraie page. */}
+  {noindex ? (
+    <meta name="robots" content="noindex, follow" />
+  ) : (
+    <Fragment>
+      <link rel="canonical" href={canonical} />
 
-  <!-- Versions linguistiques (hreflang), pour cette page précisément -->
-  <link rel="alternate" hreflang="en" href={enHref} />
-  <link rel="alternate" hreflang="fr" href={frHref} />
-  <link rel="alternate" hreflang="x-default" href={enHref} />
+      <!-- Versions linguistiques (hreflang), pour cette page précisément -->
+      <link rel="alternate" hreflang="en" href={enHref} />
+      <link rel="alternate" hreflang="fr" href={frHref} />
+      <link rel="alternate" hreflang="x-default" href={enHref} />
+    </Fragment>
+  )}
 
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -170,7 +216,6 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   {!ogImage && <meta property="og:image:width" content="1200" />}
   {!ogImage && <meta property="og:image:height" content="630" />}
   <meta property="og:image:alt" content={t('head.ogImageAlt')} />
-  <meta property="og:logo" content={`${SITE}/favicon.png`} />
   <meta property="og:url" content={canonical} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content={t('head.ogLocale')} />

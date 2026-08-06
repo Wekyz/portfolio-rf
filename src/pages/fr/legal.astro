@@ -1,0 +1,12 @@
+---
+// Le segment d'URL reste identique dans les deux langues (/legal et
+// /fr/legal), comme /about : c'est ce qui permet à Base.astro d'apparier les
+// deux versions en hreflang sans table de correspondance.
+import Base from '../../layouts/Base.astro';
+import LegalPage from '../../components/LegalPage.astro';
+import { legalPages } from '../../i18n/legal.js';
+const c = legalPages.fr.legal;
+---
+<Base lang="fr" page="legal" title={`${c.heading} - Roxane Foare`} description={c.intro}>
+  <LegalPage lang="fr" doc="legal" />
+</Base>

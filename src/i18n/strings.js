@@ -18,13 +18,10 @@ export const ui = {
     // Document / SEO - par page (title/description utilisés aussi pour OG + Twitter)
     'head.home.title': 'Roxane Foare - Video Editor · Paris & Angers',
     'head.home.description': 'Roxane Foare - freelance video editor based in Paris & Angers. Film, documentary, commercial, corporate, live and event editing.',
-    'head.home.keywords': 'video editor Paris, freelance editor France, film editing, documentary editing, commercial editing, post-production Paris, monteuse video, montage Paris',
     'head.portfolio.title': 'Portfolio - Roxane Foare, Video Editor',
     'head.portfolio.description': 'Selected work by Roxane Foare: feature films, documentaries, commercials, corporate videos, live broadcast and events.',
-    'head.portfolio.keywords': 'video editing portfolio, film editing reel, documentary editing, commercial editing, corporate video editing, montage Paris',
     'head.about.title': 'About - Roxane Foare, Video Editor',
     'head.about.description': "Meet Roxane Foare, freelance video editor based in Paris & Angers with over 10 years' experience across film, documentary, commercial and corporate projects.",
-    'head.about.keywords': 'freelance video editor Paris, monteuse video experience, video editor bio, editing software Premiere DaVinci Avid',
 
     // A11y
     'a11y.skip': 'Skip to content',
@@ -52,6 +49,16 @@ export const ui = {
     'work.filterAria': 'Filter projects by category',
     'work.watch': 'Watch',
     'work.watchAria': 'Watch',
+
+    // Distinctions (JSON-LD `award`) - reprises de la bio, section About
+    'award.cyprus': 'Best Editing Award, Cyprus International Film Festival - En mille morceaux',
+    'award.athens': 'Best Editing Award, Athens International Film Festival - En mille morceaux',
+
+    // Page 404
+    'notfound.title': 'Page not found - Roxane Foare',
+    'notfound.description': 'This page does not exist. Browse the portfolio or get in touch.',
+    'notfound.heading': 'This page does not exist',
+    'notfound.text': 'The link may be outdated, or the address mistyped. Here is where to go next.',
 
     // Pages projet (/portfolio/[slug])
     'project.back': 'All projects',
@@ -108,6 +115,9 @@ export const ui = {
     // Footer
     'footer.rights': 'All rights reserved',
     'footer.creditPrefix': 'Website produced by',
+    'footer.legal': 'Legal notice',
+    'footer.privacy': 'Privacy',
+    'footer.legalAria': 'Legal pages',
 
     // Lightbox
     'lb.dialog': 'Video player',
@@ -124,13 +134,10 @@ export const ui = {
     // Document / SEO - par page (title/description utilisés aussi pour OG + Twitter)
     'head.home.title': 'Roxane Foare - Monteuse vidéo · Paris & Angers',
     'head.home.description': 'Roxane Foare - monteuse vidéo freelance à Paris & Angers. Montage film, documentaire, publicité, corporate, live et événementiel.',
-    'head.home.keywords': 'monteuse vidéo Paris, montage freelance France, montage film, montage documentaire, montage publicité, post-production Paris, monteuse vidéo Angers, montage Paris',
     'head.portfolio.title': 'Portfolio - Roxane Foare, Monteuse vidéo',
     'head.portfolio.description': 'Sélection de projets montés par Roxane Foare : longs métrages, documentaires, publicités, corporate, live et événementiel.',
-    'head.portfolio.keywords': 'portfolio montage vidéo, showreel monteuse, montage documentaire, montage publicité, montage corporate, montage Paris',
     'head.about.title': 'À propos - Roxane Foare, Monteuse vidéo',
     'head.about.description': "Roxane Foare, monteuse vidéo freelance à Paris & Angers, plus de 10 ans d'expérience en film, documentaire, publicité et corporate.",
-    'head.about.keywords': 'monteuse vidéo Paris expérience, logiciels montage Premiere DaVinci Avid, parcours monteuse',
 
     // A11y
     'a11y.skip': 'Aller au contenu',
@@ -158,6 +165,18 @@ export const ui = {
     'work.filterAria': 'Filtrer les projets par catégorie',
     'work.watch': 'Voir',
     'work.watchAria': 'Regarder',
+
+    // Distinctions (JSON-LD `award`) - reprises de la bio, section About
+    'award.cyprus':
+      'Prix du meilleur montage, Festival international du film de Chypre - En mille morceaux',
+    'award.athens':
+      "Prix du meilleur montage, Festival international du film d'Athènes - En mille morceaux",
+
+    // Page 404
+    'notfound.title': 'Page introuvable - Roxane Foare',
+    'notfound.description': "Cette page n'existe pas. Parcourez le portfolio ou prenez contact.",
+    'notfound.heading': "Cette page n'existe pas",
+    'notfound.text': "Le lien est peut-être périmé, ou l'adresse mal saisie. Voici où aller.",
 
     // Pages projet (/portfolio/[slug])
     'project.back': 'Tous les projets',
@@ -214,6 +233,9 @@ export const ui = {
     // Footer
     'footer.rights': 'Tous droits réservés',
     'footer.creditPrefix': 'Site conçu par',
+    'footer.legal': 'Mentions légales',
+    'footer.privacy': 'Confidentialité',
+    'footer.legalAria': 'Pages légales',
 
     // Lightbox
     'lb.dialog': 'Lecteur vidéo',

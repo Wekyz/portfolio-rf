@@ -9,29 +9,23 @@ import { projectRoutes } from '../lib/slug.js';
 const SITE = 'https://roxane-foare.com';
 
 // path : segment commun aux deux langues ('' pour l'accueil).
-const FIXED_PAGES = [
-  { path: '', priority: '1.0' },
-  { path: '/portfolio', priority: '0.9' },
-  { path: '/about', priority: '0.8' },
-];
+//
+// Ni `changefreq` ni `priority` : Google a confirmé en 2023 ne plus les lire,
+// et Bing l'avait annoncé avant. C'était deux valeurs à arbitrer sans qu'aucun
+// moteur ne s'en serve.
+const FIXED_PAGES = ['', '/portfolio', '/about', '/legal', '/privacy'];
 
 export function GET() {
   const lastmod = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-  // Les pages projet passent après les pages fixes et en priorité plus basse :
-  // elles sont nombreuses et alimentent le portfolio, qui reste la porte
-  // d'entrée du référencement.
   const PAGES = [
     ...FIXED_PAGES,
     ...projectRoutes(
       /** @type {import('../lib/types').Project[]} */ (data.videos || data)
-    ).map(({ slug }) => ({
-      path: `/portfolio/${slug}`,
-      priority: '0.7',
-    })),
+    ).map(({ slug }) => `/portfolio/${slug}`),
   ];
 
-  const urls = PAGES.flatMap(({ path, priority }) => {
+  const urls = PAGES.flatMap((path) => {
     const enLoc = `${SITE}${path || '/'}`;
     const frLoc = `${SITE}/fr${path}`;
     const alternates = `
@@ -39,15 +33,10 @@ export function GET() {
     <xhtml:link rel="alternate" hreflang="fr" href="${frLoc}" />
     <xhtml:link rel="alternate" hreflang="x-default" href="${enLoc}" />`;
 
-    return [
-      { loc: enLoc, priority },
-      { loc: frLoc, priority: (Number(priority) - 0.1).toFixed(1) },
-    ].map(
-      (p) => `  <url>
-    <loc>${p.loc}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>${p.priority}</priority>${alternates}
+    return [enLoc, frLoc].map(
+      (loc) => `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${lastmod}</lastmod>${alternates}
   </url>`
     );
   }).join('\n');

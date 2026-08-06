@@ -96,6 +96,15 @@ npm test         # tests fumée (node:test), ex. /api/contact
 └─ astro.config.mjs
 ```
 
+### Pages légales
+
+`src/data/legal.js` porte les données d'identité (adresse, courriel, SIRET),
+saisies **une seule fois** pour les quatre pages (mentions légales et
+confidentialité, deux langues). Tant qu'un champ vaut `null`, il s'affiche
+« [à compléter] » sur le site et le build imprime un avertissement.
+
+Le contenu rédactionnel est dans `src/i18n/legal.js`, séparé de `strings.js`.
+
 ### Cache
 
 `vercel.json` ne peut pas porter de commentaires (le schéma Vercel refuse toute

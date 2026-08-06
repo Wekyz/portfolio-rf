@@ -1,0 +1,49 @@
+---
+/**
+ * Rendu générique d'une page légale (mentions légales, confidentialité), à
+ * partir du contenu déclaré dans i18n/legal.js.
+ *
+ * Le build imprime un avertissement tant que les données d'identité de
+ * src/data/legal.js ne sont pas renseignées : une page légale incomplète est
+ * pire qu'inutile.
+ */
+import { legalPages } from '../i18n/legal.js';
+import { missingLegalFields } from '../data/legal.js';
+
+interface Props {
+  lang?: 'en' | 'fr';
+  doc: 'legal' | 'privacy';
+}
+
+const { lang = 'en', doc } = Astro.props;
+const content = legalPages[lang][doc];
+
+const missing = missingLegalFields();
+if (missing.length > 0) {
+  console.warn(
+    `\n  ⚠  PAGES LÉGALES INCOMPLÈTES - champs manquants : ${missing.join(', ')}` +
+      `\n     Renseignez-les dans src/data/legal.js avant toute mise en ligne.\n`
+  );
+}
+---
+<article class="legal">
+  <h1 class="legal-heading">{content.heading}</h1>
+  <p class="legal-intro">{content.intro}</p>
+
+  {content.sections.map((section) => (
+    <section class="legal-section">
+      <h2>{section.title}</h2>
+      {section.facts && (
+        <dl class="legal-facts">
+          {section.facts.map((f) => (
+            <div class="legal-fact">
+              <dt>{f.term}</dt>
+              <dd>{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {section.paragraphs?.map((p) => <p>{p}</p>)}
+    </section>
+  ))}
+</article>

@@ -3,10 +3,15 @@ import { useTranslations } from '../i18n/strings.js';
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
+const base = lang === 'fr' ? '/fr' : '';
 ---
 <footer>
   <div class="footer-name">Roxane Foare</div>
   <div class="footer-copy">&copy; {year} - {t('footer.rights')}</div>
+  <nav class="footer-legal" aria-label={t('footer.legalAria')}>
+    <a href={`${base}/legal`}>{t('footer.legal')}</a>
+    <a href={`${base}/privacy`}>{t('footer.privacy')}</a>
+  </nav>
   <div class="footer-copy footer-credit">
     {t('footer.creditPrefix')} <a href="https://evrox.fr" target="_blank" rel="noopener noreferrer">Evrox</a>
   </div>

@@ -1,0 +1,9 @@
+---
+import Base from '../../layouts/Base.astro';
+import LegalPage from '../../components/LegalPage.astro';
+import { legalPages } from '../../i18n/legal.js';
+const c = legalPages.fr.privacy;
+---
+<Base lang="fr" page="privacy" title={`${c.heading} - Roxane Foare`} description={c.intro}>
+  <LegalPage lang="fr" doc="privacy" />
+</Base>
