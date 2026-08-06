@@ -177,6 +177,33 @@ async function ensureVariants(dir) {
   return { made, kept };
 }
 
+/**
+ * Icône d'écran d'accueil iOS, 180x180, rendue depuis favicon.svg.
+ *
+ * L'attribut `apple-touch-icon` annonçait 180x180 mais pointait vers un
+ * favicon de 64x64 : iOS agrandissait une image quatre fois trop petite.
+ *
+ * Fond opaque volontaire : une icône transparente est composée sur du noir
+ * par iOS. La marge évite que le monogramme touche les coins arrondis que le
+ * système applique par-dessus.
+ */
+async function ensureAppleIcon() {
+  const out = join(ROOT, 'public', 'apple-touch-icon.png');
+  if (await exists(out)) return false;
+  const svg = await readFile(join(ROOT, 'public', 'favicon.svg'));
+  const glyphe = await sharp(svg, { density: 600 })
+    .resize(148, 148, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+  await sharp({
+    create: { width: 180, height: 180, channels: 4, background: { r: 250, g: 250, b: 248, alpha: 1 } },
+  })
+    .composite([{ input: glyphe, gravity: 'center' }])
+    .png({ compressionLevel: 9 })
+    .toFile(out);
+  return true;
+}
+
 async function ensureBrandVariants(dir) {
   let files;
   try {
@@ -334,6 +361,8 @@ async function main() {
   await writeFile(LOCAL_CACHE_FILE, JSON.stringify(local, null, 2) + '\n');
   const nCand = Object.values(local).reduce((a, e) => a + e.candidates.length, 0);
   console.log(`[srcset] ${Object.keys(local).length} image(s) locale(s), ${nCand} candidat(s) mesuré(s).`);
+
+  if (await ensureAppleIcon()) console.log('[icone] apple-touch-icon.png (180x180) régénérée.');
 
   const bl = await ensureBrandVariants(BRANDS_DIR);
   console.log(`[logos] ${bl.made} variante(s) générée(s), ${bl.kept} déjà présente(s).`);

@@ -227,7 +227,12 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+  {/* Fichier dédié : `favicon.png` ne fait que 64x64 alors que l'attribut en
+      annonçait 180. Toute personne ajoutant le site à son écran d'accueil iOS
+      obtenait une icône agrandie et floue. Généré depuis favicon.svg au build,
+      sur fond opaque - iOS compose une icône transparente sur du noir. */}
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
 
   <!-- Open Graph -->
   <meta property="og:title" content={pageTitle} />

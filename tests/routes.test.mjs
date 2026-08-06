@@ -140,3 +140,33 @@ test('engines.node, .nvmrc et la CI déclarent la même version majeure', () => 
   // La CI lit .nvmrc : c'est ce lien qu'on vérifie, pas une valeur en dur.
   assert.match(ci, /node-version-file:\s*\.nvmrc/);
 });
+
+// ── Icônes : la taille annoncée doit être la taille réelle ──────────────────
+
+test('l’icône iOS fait bien les 180x180 qu’elle annonce', { skip }, async () => {
+  // L'attribut annonçait 180x180 en pointant vers un favicon de 64x64 : iOS
+  // agrandissait une image quatre fois trop petite sur l'écran d'accueil.
+  // Rien ne signale ce genre d'écart, d'où ce contrôle.
+  const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+  const balise = html.match(/<link rel="apple-touch-icon"[^>]*>/)[0];
+  const annoncee = balise.match(/sizes="(\d+)x(\d+)"/);
+  const href = balise.match(/href="([^"]+)"/)[1];
+
+  const { default: sharp } = await import('sharp');
+  const meta = await sharp(join(DIST, href.replace(/^\//, ''))).metadata();
+  assert.equal(meta.width, Number(annoncee[1]), `${href} : largeur réelle ≠ attribut sizes`);
+  assert.equal(meta.height, Number(annoncee[2]), `${href} : hauteur réelle ≠ attribut sizes`);
+  // iOS compose une icône transparente sur du noir : le fond doit être opaque.
+  assert.equal(meta.channels, 4);
+});
+
+test('le manifeste est un JSON valide et pointe vers des fichiers existants', { skip }, () => {
+  const manifest = JSON.parse(readFileSync(join(DIST, 'manifest.webmanifest'), 'utf8'));
+  assert.ok(manifest.name && manifest.short_name);
+  for (const icon of manifest.icons) {
+    assert.ok(
+      existsSync(join(DIST, icon.src.replace(/^\//, ''))),
+      `icône déclarée mais absente du build : ${icon.src}`
+    );
+  }
+});

@@ -925,7 +925,18 @@ footer {
      600 px, l'adresse de l'hébergeur passant sur quatre lignes. */
   .legal-fact { grid-template-columns: 1fr; gap: 4px; }
   #about, #contact { grid-template-columns: 1fr; gap: 48px; }
-  .work-item { grid-column: span 12 !important; }
+  /* Deux colonnes entre 600 et 900 px - tablettes et grands téléphones en
+     paysage. Le pattern éditorial 8/4 n'a plus de sens à cette largeur, mais
+     la colonne unique imposait un défilement de 36 vignettes en 16/10, soit
+     deux fois plus long que nécessaire. En dessous de 600 px, une seule
+     colonne reste la bonne réponse (voir la règle 600 px plus bas). */
+  .work-item { grid-column: span 6 !important; }
+  /* Un projet en pleine largeur le reste : c'est le seul cas où la monteuse
+     a explicitement demandé de la place. */
+  .work-item[data-full-width='true'] { grid-column: span 12 !important; }
+  /* Le portrait garde son ratio 2/3 mais perd son centrage sur 4 colonnes :
+     à cette largeur il occupe simplement une des deux cases. */
+  .work-item[data-portrait='true'] { grid-column: span 6 !important; }
   /* Une seule colonne : trois vignettes liées côte à côte tomberaient sous
      les 140 px de large exigés pour rester exploitables. */
   .project-related ul { grid-template-columns: 1fr; }
@@ -975,6 +986,14 @@ footer {
   footer {
     flex-direction: column; gap: 10px; text-align: center;
   }
+}
+
+/* Téléphones en portrait : la grille repasse en colonne unique. Deux
+   vignettes côte à côte y deviendraient trop petites pour qu'on distingue
+   quoi que ce soit d'un plan. */
+@media (max-width: 600px) {
+  .work-item,
+  .work-item[data-portrait='true'] { grid-column: span 12 !important; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */
