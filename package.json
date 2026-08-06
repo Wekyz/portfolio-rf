@@ -27,6 +27,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@eslint/js": "^10.0.1",
+    "@sveltia/cms": "^0.167.3",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
     "eslint-plugin-astro": "^1.7.0",

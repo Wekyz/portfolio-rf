@@ -159,6 +159,9 @@ Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
 **`REDEPLOY_TOKEN`**. Rate limiting du formulaire et du bouton de
 redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
 `UPSTASH_REDIS_REST_TOKEN` (intégration Vercel Marketplace Upstash).
+Signature du jeton anti-bot du formulaire (recommandé) : `FORM_SECRET` - à
+défaut, la clé se dérive de `RESEND_API_KEY`, de toute façon nécessaire pour
+que le formulaire fonctionne (voir `api/_lib/form-token.js`).
 
 > **`REDEPLOY_TOKEN` est obligatoire pour que le bouton de redéploiement
 > fonctionne.** Sans elle, `/api/redeploy` refuse tout (503) : l'endpoint
@@ -167,6 +170,19 @@ redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
 > communiquer à la monteuse - elle la saisit une fois par onglet sur
 > `/admin/redeploy.html`. Elle n'est jamais écrite dans la page, qui est
 > publique.
+
+### Mise à jour du CMS (Sveltia)
+
+Sveltia est chargé depuis unpkg à une version épinglée, avec une empreinte SRI.
+Dependabot ne voyant pas une balise `<script>`, le paquet est **aussi déclaré
+en `devDependency`** à la version réellement chargée : il est donc surveillé
+comme n'importe quelle dépendance.
+
+`tests/cms-version.test.mjs` fait échouer la CI tant que
+`public/admin/index.html` n'a pas suivi une montée de version - version **et**
+empreinte, recalculée depuis le paquet npm (vérifié identique octet pour octet
+au fichier servi par unpkg). La montée reste donc un geste conscient, à faire
+avec le CMS testé.
 
 ## Édition du contenu (monteuse)
 

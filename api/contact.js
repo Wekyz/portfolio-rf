@@ -24,6 +24,15 @@
  */
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { verifyToken } from './_lib/form-token.js';
+
+/**
+ * Neutralise les retours à la ligne. Le sujet d'un email est un en-tête :
+ * un CR ou un LF dans un nom permettrait d'en injecter d'autres (Bcc, etc.).
+ * Resend n'est pas forcément vulnérable, mais assainir la donnée avant de la
+ * placer dans un en-tête ne dépend pas de la robustesse du prestataire.
+ */
+const headerSafe = (s) => s.replace(/[\r\n]+/g, ' ').trim();
 
 let ratelimit = null;
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -63,8 +72,32 @@ export default async function handler(req, res) {
   // Honeypot rempli => bot. On répond OK sans rien envoyer.
   if (honeypot) return res.status(200).json({ ok: true });
 
+  // Longueurs maximales. Il n'y en avait aucune : un prénom de 100 000
+  // caractères partait tel quel dans le sujet de l'email.
+  const TOO_LONG = [
+    firstName.length > 100,
+    lastName.length > 100,
+    email.length > 254, // RFC 5321
+    message.length > 5000,
+  ].some(Boolean);
+  if (TOO_LONG) {
+    return res.status(413).json({ error: 'Un des champs dépasse la longueur autorisée.' });
+  }
+
   if (!firstName || !lastName || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return res.status(400).json({ error: 'Champs requis manquants ou email invalide.' });
+  }
+
+  // Délai anti-bot vérifié côté serveur : le contrôle des 3 secondes vivait
+  // uniquement dans app.js, invisible pour un script qui poste directement.
+  // `disabled` (aucune clé de signature configurée) laisse passer plutôt que
+  // de bloquer un formulaire par ailleurs fonctionnel.
+  const tokenState = verifyToken(body.formToken);
+  if (tokenState === 'too-fast') {
+    return res.status(429).json({ error: 'Envoi trop rapide, réessayez dans quelques secondes.' });
+  }
+  if (tokenState === 'missing' || tokenState === 'invalid' || tokenState === 'expired') {
+    return res.status(400).json({ error: 'Session de formulaire expirée, rechargez la page.' });
   }
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -85,7 +118,7 @@ export default async function handler(req, res) {
         from,
         to: [to],
         reply_to: email,
-        subject: `Nouveau message - ${firstName} ${lastName}`,
+        subject: headerSafe(`Nouveau message - ${firstName} ${lastName}`),
         text: `De : ${firstName} ${lastName} <${email}>\n\n${message || '(aucun message)'}`,
       }),
     });

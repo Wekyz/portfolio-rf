@@ -1,5 +1,10 @@
 name: CI
 
+# Le GITHUB_TOKEN héritait des permissions par défaut du dépôt. La CI ne fait
+# que lire le code, construire et tester : elle n'a besoin de rien d'autre.
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]

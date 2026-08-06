@@ -270,6 +270,32 @@ import { applySpans } from '../lib/spans.js';
   // ── Contact form (POST /api/contact -> Resend, honeypot + délai anti-bot) ─
   // Présent sur les pages Portfolio et About - indépendant de la grille.
   if (contactForm) {
+    // Jeton horodaté signé par le serveur (voir api/_lib/form-token.js). Le
+    // délai anti-bot est désormais vérifié côté serveur, qui ne peut pas se
+    // fier à une horloge cliente. Il est demandé à la première interaction
+    // avec le formulaire, pas au chargement : inutile d'invoquer une fonction
+    // pour un visiteur qui ne remplira rien, ni pour un robot d'indexation.
+    let formToken = null;
+    let tokenAt = 0;
+    let tokenRequest = null;
+
+    function ensureToken() {
+      if (formToken) return Promise.resolve(formToken);
+      if (tokenRequest) return tokenRequest;
+      tokenRequest = fetch('/api/form-token')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          formToken = data && data.token;
+          tokenAt = Date.now();
+          return formToken;
+        })
+        .catch(() => null)
+        .finally(() => { tokenRequest = null; });
+      return tokenRequest;
+    }
+
+    contactForm.addEventListener('focusin', ensureToken, { once: true });
+
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -291,14 +317,21 @@ import { applySpans } from '../lib/spans.js';
       // qui postent directement sur l'API, et ça pénalisait l'humain le plus
       // motivé : celui qui arrive avec son texte déjà prêt. Le contrôle reste
       // actif, le visiteur voit simplement « Envoi… » un instant de plus.
-      const wait = Math.max(0, 3000 - (Date.now() - formLoadTime));
-
-      new Promise((resolve) => setTimeout(resolve, wait))
+      //
+      // Le décompte part du jeton et non du chargement de la page : c'est son
+      // horodatage que le serveur vérifie. `ensureToken` couvre aussi le cas
+      // où la première demande a échoué (réseau), en réessayant à l'envoi.
+      ensureToken()
+        .then(() => {
+          const from = tokenAt || formLoadTime;
+          const wait = Math.max(0, 3000 - (Date.now() - from));
+          return new Promise((resolve) => setTimeout(resolve, wait));
+        })
         .then(() =>
           fetch('/api/contact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({ ...payload, formToken }),
           })
         )
         .then((res) => {
