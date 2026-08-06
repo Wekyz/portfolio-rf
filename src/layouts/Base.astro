@@ -29,6 +29,7 @@ const {
   keywords,
   ogImage,
   videoObject,
+  breadcrumb,
 } = Astro.props;
 const t = useTranslations(lang);
 
@@ -82,7 +83,8 @@ const listLd = {
 };
 
 // La page projet fournit son propre VideoObject ; sinon on retombe sur
-// l'ItemList du portfolio. Les autres pages n'ont ni l'un ni l'autre.
+// l'ItemList du portfolio. Les autres pages n'ont ni l'un ni l'autre. Le fil
+// d'Ariane, lui, ne concerne que les pages projet (seules à être imbriquées).
 const secondaryLd = videoObject ?? (listLd.itemListElement.length > 0 ? listLd : null);
 
 // Identité de Roxane (Person) : présente sur les 3 pages, chacune est un
@@ -129,14 +131,13 @@ const jsonLd = {
 function sha256(content: string): `sha256-${string}` {
   return `sha256-${createHash('sha256').update(content, 'utf8').digest('base64')}`;
 }
-const personJsonLd = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
-const secondaryJsonLd = secondaryLd
-  ? JSON.stringify(secondaryLd).replace(/</g, '\\u003c')
-  : null;
-Astro.csp?.insertScriptHash(sha256(personJsonLd));
-if (secondaryJsonLd) {
-  Astro.csp?.insertScriptHash(sha256(secondaryJsonLd));
-}
+// Person (partout), puis selon la page : ItemList du portfolio ou VideoObject
+// du projet, et le fil d'Ariane des pages projet. Chaque bloc a son propre
+// hash CSP.
+const ldBlocks = [jsonLd, secondaryLd, breadcrumb]
+  .filter(Boolean)
+  .map((block) => JSON.stringify(block).replace(/</g, '\\u003c'));
+ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
 ---
 <!DOCTYPE html>
 <html lang={lang}>
@@ -212,10 +213,9 @@ if (secondaryJsonLd) {
   <script defer is:inline src="/_vercel/insights/script.js"></script>
 
   <!-- JSON-LD structured data (contenu + hash CSP calculés ci-dessus) -->
-  <script is:inline type="application/ld+json" set:html={personJsonLd} />
-  {secondaryJsonLd && (
-    <script is:inline type="application/ld+json" set:html={secondaryJsonLd} />
-  )}
+  {ldBlocks.map((block) => (
+    <script is:inline type="application/ld+json" set:html={block} />
+  ))}
 </head>
 <body>
   <a href="#main" class="skip-link">{t('a11y.skip')}</a>

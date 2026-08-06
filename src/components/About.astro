@@ -57,7 +57,7 @@ const BRANDS = [
 ---
 <section id="about">
   <div class="about-left">
-    <h2 class="section-title">{t('about.title')}</h2>
+    <h1 class="section-title">{t('about.title')}</h1>
     <div class="about-intro">
       {introParagraphs.map((p: string) => <p set:html={p} />)}
     </div>
@@ -73,7 +73,7 @@ const BRANDS = [
 
     <!-- PRODUCTIONS -->
     <div class="credits-block">
-      <h3 class="credits-heading">{t('about.productions')}</h3>
+      <h2 class="credits-heading">{t('about.productions')}</h2>
       <ul class="prod-list">
         <li>Atelier B</li><li>B&amp;A</li><li>Bandits</li>
         <li>Big Bang prod</li><li>Blacklemon</li><li>Bricolo Factory</li>
@@ -86,7 +86,7 @@ const BRANDS = [
 
     <!-- BRANDS (bandeau défilant de logos) -->
     <div class="credits-block">
-      <h3 class="credits-heading">{t('about.brands')}</h3>
+      <h2 class="credits-heading">{t('about.brands')}</h2>
       <div class="brand-marquee">
         <div class="brand-marquee-track">
           <!-- Deux groupes identiques, translateX(-50%) en boucle : avec un

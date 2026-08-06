@@ -32,6 +32,7 @@ export const ui = {
 
     // Nav
     'nav.sub': 'Video Editor',
+    'nav.home': 'Home',
     'nav.work': 'Portfolio',
     'nav.about': 'About',
     'nav.contact': 'Contact',
@@ -54,8 +55,10 @@ export const ui = {
 
     // Pages projet (/portfolio/[slug])
     'project.back': 'All projects',
+    'project.breadcrumb': 'Breadcrumb',
     'project.production': 'Production',
     'project.year': 'Year',
+    'project.duration': 'Duration',
     'project.category': 'Category',
     'project.watchFull': 'Watch the full film',
     'project.related': 'More in this category',
@@ -135,6 +138,7 @@ export const ui = {
 
     // Nav
     'nav.sub': 'Monteuse vidéo',
+    'nav.home': 'Accueil',
     'nav.work': 'Projets',
     'nav.about': 'À propos',
     'nav.contact': 'Contact',
@@ -157,8 +161,10 @@ export const ui = {
 
     // Pages projet (/portfolio/[slug])
     'project.back': 'Tous les projets',
+    'project.breadcrumb': "Fil d'Ariane",
     'project.production': 'Production',
     'project.year': 'Année',
+    'project.duration': 'Durée',
     'project.category': 'Catégorie',
     'project.watchFull': 'Voir le film complet',
     'project.related': 'Dans la même catégorie',

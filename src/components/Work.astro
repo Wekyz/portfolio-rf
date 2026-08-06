@@ -45,7 +45,7 @@ const gridEntries = projects.map((p, i) => {
 ---
 <section id="work">
   <div class="section-header">
-    <h2 class="section-title">{t('work.title')}</h2>
+    <h1 class="section-title">{t('work.title')}</h1>
     <span class="section-location">{t('work.location')}</span>
   </div>
 
@@ -78,7 +78,7 @@ const gridEntries = projects.map((p, i) => {
         {isNewCat && (
           <div class="cat-divider" data-cat={p.cat}>
             <span class="cat-divider-line" aria-hidden="true"></span>
-            <h3 class="cat-divider-title">{t(`cat.${p.cat}`)}</h3>
+            <h2 class="cat-divider-title">{t(`cat.${p.cat}`)}</h2>
             <span class="cat-divider-line" aria-hidden="true"></span>
           </div>
         )}

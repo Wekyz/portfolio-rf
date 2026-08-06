@@ -9,8 +9,8 @@
  * réduire sans revoir le VideoObject de lib/project-page.js.
  */
 import { useTranslations } from '../i18n/strings.js';
-import { resolveThumb } from '../lib/thumb.js';
-import { embedUrl } from '../lib/project-page.js';
+import { resolveThumb, getDuration } from '../lib/thumb.js';
+import { embedUrl, formatDuration } from '../lib/project-page.js';
 import type { Project } from '../lib/types';
 
 interface Props {
@@ -23,14 +23,27 @@ const { project: p, related = [], lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const langBase = lang === 'fr' ? '/fr' : '';
 
+// La durée était déjà résolue au build pour le JSON-LD sans jamais être
+// montrée. Même remarque que l'année dans la grille : c'est une information
+// que cherchent les productions.
+const duration = formatDuration(getDuration(p));
+
 const facts: { label: string; value: string }[] = [];
 if (p.credit) facts.push({ label: t('project.production'), value: p.credit });
 if (p.year) facts.push({ label: t('project.year'), value: p.year });
+if (duration) facts.push({ label: t('project.duration'), value: duration });
 facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
 ---
 <article class="project">
-  <nav class="project-back" aria-label={t('project.back')}>
-    <a href={`${langBase}/portfolio`}>&larr; {t('project.back')}</a>
+  <!-- Fil d'Ariane : sert à la fois de navigation retour et de source au
+       BreadcrumbList JSON-LD (voir lib/project-page.js), que Google utilise
+       pour afficher un chemin lisible à la place de l'URL brute. -->
+  <nav class="project-crumbs" aria-label={t('project.breadcrumb')}>
+    <ol>
+      <li><a href={langBase || '/'}>{t('nav.home')}</a></li>
+      <li><a href={`${langBase}/portfolio`}>{t('nav.work')}</a></li>
+      <li aria-current="page">{p.title}</li>
+    </ol>
   </nav>
 
   <header class="project-head">

@@ -89,7 +89,10 @@ const sizes = responsive
         </div>
         <div class="work-info">
           <div class="work-title">{p.title}</div>
-          <div class="work-meta"><span class="work-prod">{prod}</span></div>
+          <div class="work-meta">
+            <span class="work-prod">{prod}</span>
+            {p.year && <span class="work-year">{p.year}</span>}
+          </div>
           {p.externalLink && <span class="work-badge">{t('work.watch')} &rarr;</span>}
         </div>
       </div>
@@ -118,7 +121,10 @@ const sizes = responsive
         </div>
         <div class="work-info">
           <div class="work-title">{p.title}</div>
-          <div class="work-meta"><span class="work-prod">{prod}</span></div>
+          <div class="work-meta">
+            <span class="work-prod">{prod}</span>
+            {p.year && <span class="work-year">{p.year}</span>}
+          </div>
         </div>
       </div>
     </div>

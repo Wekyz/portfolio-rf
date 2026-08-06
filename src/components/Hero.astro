@@ -34,7 +34,10 @@ const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&bac
   </div>
 
   <div class="hero-content">
-    <p class="hero-tagline">{t('hero.tagline')}</p>
+    <!-- H1 de l'accueil : la tagline porte déjà les mots-clés utiles
+         (monteuse vidéo, Paris, Angers, types de montage), là où le logo ne
+         répétait que le nom de domaine. -->
+    <h1 class="hero-tagline">{t('hero.tagline')}</h1>
     <div class="hero-cta">
       <a href={`${base}/portfolio`} class="hero-cta-btn hero-cta-primary">
         {t('hero.ctaPortfolio')}

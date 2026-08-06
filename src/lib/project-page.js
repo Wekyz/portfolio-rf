@@ -29,6 +29,45 @@ export function embedUrl(p) {
   return `https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`;
 }
 
+/**
+ * Durée ISO 8601 -> forme affichable ("PT1M23S" -> "1:23").
+ *
+ * Le format à deux-points est celui de tous les lecteurs vidéo et ne demande
+ * aucune traduction, contrairement à un « 1 min 23 s » qu'il faudrait décliner
+ * par langue. Les minutes et secondes sont complétées à deux chiffres dès
+ * qu'une unité supérieure existe, sinon « 1:5 » se lirait comme 1 min 5.
+ */
+export function formatDuration(iso) {
+  if (!iso) return null;
+  const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
+  if (!m) return null;
+  const [h, min, s] = [m[1], m[2], m[3]].map((v) => Number(v || 0));
+  if (!h && !min && !s) return null;
+  const pad = (n) => String(n).padStart(2, '0');
+  return h ? `${h}:${pad(min)}:${pad(s)}` : `${min}:${pad(s)}`;
+}
+
+/**
+ * Fil d'Ariane d'une page projet. Google s'en sert pour remplacer l'URL brute
+ * par un chemin lisible dans les résultats de recherche.
+ *
+ * Le dernier maillon ne porte volontairement pas d'`item` : c'est la page
+ * courante, et la documentation Google demande de ne pas l'auto-référencer.
+ */
+export function buildBreadcrumb(project, lang) {
+  const t = useTranslations(lang);
+  const base = lang === 'fr' ? '/fr' : '';
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t('nav.home'), item: `${SITE}${base || '/'}` },
+      { '@type': 'ListItem', position: 2, name: t('nav.work'), item: `${SITE}${base}/portfolio` },
+      { '@type': 'ListItem', position: 3, name: project.title },
+    ],
+  };
+}
+
 export function buildProjectMeta(project, slug, lang) {
   const t = useTranslations(lang);
   const p = project;

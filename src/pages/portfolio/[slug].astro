@@ -10,7 +10,7 @@ import ProjectDetail from '../../components/ProjectDetail.astro';
 import Contact from '../../components/Contact.astro';
 import data from '../../data/videos.json';
 import { projectRoutes } from '../../lib/slug.js';
-import { buildProjectMeta, relatedProjects } from '../../lib/project-page.js';
+import { buildProjectMeta, relatedProjects, buildBreadcrumb } from '../../lib/project-page.js';
 import type { Project } from '../../lib/types';
 
 export function getStaticPaths() {
@@ -24,7 +24,7 @@ export function getStaticPaths() {
 const { project, slug, related } = Astro.props;
 const meta = buildProjectMeta(project, slug, 'en');
 ---
-<Base lang="en" page="project" {...meta}>
+<Base lang="en" page="project" {...meta} breadcrumb={buildBreadcrumb(project, 'en')}>
   <ProjectDetail project={project} related={related} lang="en" />
   <Contact lang="en" />
 </Base>

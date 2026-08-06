@@ -18,12 +18,17 @@ const currentPath = path ?? (page === 'home' ? '' : `/${page}`);
 const otherHref = lang === 'fr' ? currentPath || '/' : `/fr${currentPath}`;
 ---
 <nav class:list={[page === 'home' && 'nav-flush']}>
-  <h1 class="nav-logo-h1">
+  <!-- Le logo n'est PAS un H1 : il est identique sur toutes les pages, alors
+       que le H1 doit annoncer le contenu propre à chacune. L'identité de
+       Roxane est déjà portée par le <title>, le domaine et le JSON-LD Person.
+       Chaque page pose son propre H1 (tagline, Portfolio, À propos, titre du
+       projet). -->
+  <div class="nav-logo-wrap">
     <a href={homeHref} class="nav-logo">
       Roxane Foare
       <span class="nav-logo-sub">{t('nav.sub')}</span>
     </a>
-  </h1>
+  </div>
   <button type="button" class="nav-burger" id="navBurger" aria-expanded="false" aria-controls="navLinks" aria-label={t('nav.menuAria')}>
     <span></span><span></span><span></span>
   </button>

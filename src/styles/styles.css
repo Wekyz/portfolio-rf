@@ -129,7 +129,7 @@ nav {
    séparateur superflu au-dessus de la vidéo. */
 nav.nav-flush { border-bottom-color: transparent; }
 /* Wrapper sémantique : le H1 ne doit pas modifier l'apparence du logo. */
-.nav-logo-h1 { margin: 0; font-size: inherit; font-weight: inherit; line-height: 1; }
+.nav-logo-wrap { margin: 0; font-size: inherit; font-weight: inherit; line-height: 1; }
 .nav-logo {
   font-family: var(--font-dala);
   font-size: 20px; font-weight: 400; letter-spacing: .02em;
@@ -336,6 +336,12 @@ nav.nav-flush { border-bottom-color: transparent; }
 .work-prod {
   font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
 }
+/* L'année était saisie dans le CMS pour chacun des 36 projets et n'apparaissait
+   nulle part. Elle prend sa place dans le `gap` déjà prévu par .work-meta,
+   en retrait de la production pour rester secondaire. */
+.work-year {
+  font-size: 10px; letter-spacing: .1em; color: rgba(255, 255, 255, .62);
+}
 .work-badge {
   display: inline-block; margin-top: 10px;
   padding: 5px 14px; border: 1px solid rgba(255, 255, 255, .5);
@@ -383,9 +389,14 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* ── PAGE PROJET (/portfolio/[slug]) ──────────────────────── */
 .project { padding: 40px 56px 104px; max-width: 1180px; margin: 0 auto; }
 
-.project-back { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
-.project-back a { color: var(--gray-mid); text-decoration: none; }
-.project-back a:hover { color: var(--black); }
+.project-crumbs { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.project-crumbs ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; }
+.project-crumbs li + li::before {
+  content: '/'; color: var(--gray-light); margin: 0 10px;
+}
+.project-crumbs a { color: var(--gray-mid); text-decoration: none; }
+.project-crumbs a:hover { color: var(--black); }
+.project-crumbs [aria-current='page'] { color: var(--black); }
 
 .project-head { margin: 24px 0 22px; }
 .project-cat {
