@@ -49,7 +49,25 @@ import { applySpans } from '../lib/spans.js';
 
   // ── Retour en haut (Portfolio / About) ────────────────────────
   if (backToTop) {
-    const toggle = () => backToTop.classList.toggle('visible', window.scrollY > 600);
+    // Le bouton est fixé à 24 px du bas et de la droite : arrivé en bas de
+    // page il recouvrait le crédit du pied de page. On l'efface dès que le
+    // pied de page entre dans le champ - à ce moment-là le haut de page est
+    // de toute façon à un coup de molette, le bouton n'a plus d'utilité.
+    let footerVisible = false;
+    const toggle = () =>
+      backToTop.classList.toggle('visible', window.scrollY > 600 && !footerVisible);
+
+    const footer = document.querySelector('footer');
+    if (footer && 'IntersectionObserver' in window) {
+      new IntersectionObserver(
+        ([entry]) => {
+          footerVisible = entry.isIntersecting;
+          toggle();
+        },
+        { rootMargin: '0px 0px -24px 0px' }
+      ).observe(footer);
+    }
+
     toggle();
     window.addEventListener('scroll', toggle, { passive: true });
     backToTop.addEventListener('click', () => {

@@ -60,6 +60,13 @@
   --t-slow:  .4s;
 }
 
+/* Le site est volontairement clair. Sans cette déclaration, un système en
+   thème sombre rend les contrôles natifs en sombre - le <select> des filtres
+   sur mobile, les champs du formulaire - c'est-à-dire exactement les éléments
+   les plus fonctionnels de la page. Un vrai thème sombre serait un autre
+   chantier. */
+:root { color-scheme: light; }
+
 html { scroll-behavior: smooth; }
 body {
   background: var(--white);
@@ -75,6 +82,9 @@ body {
   outline: 2px solid var(--black);
   outline-offset: 3px;
 }
+/* Sur le fond sombre de la lightbox, un contour noir est invisible :
+   l'utilisateur au clavier perdait toute trace de sa position. */
+.lightbox :focus-visible { outline-color: var(--white); }
 
 /* ── A11Y : lien d'évitement ──────────────────────────────── */
 .skip-link {
@@ -204,7 +214,12 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .hero-tagline {
   font-family: var(--font-hennessy);
-  font-size: clamp(11px, 1.1vw, 14px); white-space: nowrap;
+  /* Plus de `white-space: nowrap`. Le texte tient aujourd'hui avec 187 px de
+     marge au plus serré (mesuré), le débordement n'était donc pas imminent -
+     mais il vient de strings.js et une retouche éditoriale un peu longue
+     l'aurait fait sortir du cadre au lieu de passer à la ligne. `balance`
+     répartit les lignes proprement si le cas se présente. */
+  font-size: clamp(11px, 1.1vw, 14px); text-wrap: balance;
   font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
   color: var(--gray-dark); margin-bottom: 56px;
 }
@@ -314,9 +329,16 @@ nav.nav-flush { border-bottom-color: transparent; }
   transition: transform var(--t-slow) ease;
 }
 
+/* Un dégradé discret et le titre sont visibles en permanence : sur desktop
+   l'information n'apparaissait qu'au survol, si bien qu'un visiteur parcourant
+   la grille à la molette ne lisait aucun titre. C'est exactement ce que les
+   appareils tactiles affichaient déjà (voir @media (hover: none) plus bas),
+   étendu à tout le monde. Aucune incidence sur la hauteur de la grille : rien
+   n'est ajouté, seule l'opacité change. Le survol reste plus riche - fond
+   plein, production, année. */
 .work-overlay {
   position: absolute; inset: 0;
-  background: rgba(14, 14, 12, 0);
+  background: linear-gradient(to top, rgba(14, 14, 12, .62), rgba(14, 14, 12, 0) 45%);
   display: flex; align-items: flex-end; padding: 28px;
   transition: background var(--t-slow);
   pointer-events: none;
@@ -324,12 +346,22 @@ nav.nav-flush { border-bottom-color: transparent; }
 .work-thumb-wrap:hover .work-overlay,
 .work-thumb-wrap:focus-visible .work-overlay { background: rgba(14, 14, 12, .74); }
 
-.work-info { transform: translateY(12px); opacity: 0; transition: all .35s; }
-.work-thumb-wrap:hover .work-info,
-.work-thumb-wrap:focus-visible .work-info { transform: translateY(0); opacity: 1; }
+/* Le titre reste lisible sans survol ; seuls la production, l'année et le
+   libellé « photo » se révèlent au survol. */
+.work-info { transform: none; opacity: 1; }
+.work-meta,
+.work-badge { opacity: 0; transform: translateY(6px); transition: opacity var(--t-mid), transform var(--t-mid); }
+.work-thumb-wrap:hover .work-meta,
+.work-thumb-wrap:hover .work-badge,
+.work-thumb-wrap:focus-visible .work-meta,
+.work-thumb-wrap:focus-visible .work-badge { opacity: 1; transform: none; }
 
 .work-title {
   font-family: var(--font-hennessy);
+  /* Le titre étant désormais visible en permanence, il se retrouve parfois
+     sur une zone claire de l'image (parquet, mur blanc) où le dégradé seul ne
+     suffit pas. L'ombre garantit la lisibilité sans assombrir la photo. */
+  text-shadow: 0 1px 12px rgba(14, 14, 12, .55);
   font-size: 21px; font-weight: 400;
   color: var(--white); letter-spacing: -.01em; line-height: 1.25;
 }
@@ -370,11 +402,14 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* Sur écran tactile, le survol n'existe pas : on affiche en permanence un
    dégradé + le titre, sinon les visiteurs mobiles ne voient jamais le nom des
    projets (taper ouvre directement la vidéo). */
+/* Sans survol possible, tout est montré d'emblée : le dégradé est renforcé et
+   la production apparaît elle aussi, puisqu'aucun geste ne la révélera. */
 @media (hover: none) {
   .work-overlay {
     background: linear-gradient(to top, rgba(14, 14, 12, .72), rgba(14, 14, 12, 0) 60%);
   }
-  .work-info { transform: none; opacity: 1; }
+  .work-meta,
+  .work-badge { opacity: 1; transform: none; }
 }
 
 /* ── NON CLIQUABLE (ex. Live en photo) ───────────────────────
@@ -738,8 +773,12 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .form-group input:focus,
 .form-group textarea:focus { border-bottom-color: var(--black); }
+/* --gray-light sur le fond du site ne donnait que 1,18:1 (mesuré) : les
+   exemples « Marie », « marie@studio.com » étaient invisibles pour une bonne
+   part des visiteurs, très en dessous du minimum WCAG de 4,5:1.
+   --gray-mid atteint 4,91:1. */
 .form-group input::placeholder,
-.form-group textarea::placeholder { color: var(--gray-light); }
+.form-group textarea::placeholder { color: var(--gray-mid); }
 
 /* honeypot - masqué visuellement mais pas avec display:none (mieux contre les bots) */
 .hp-field {
@@ -881,7 +920,7 @@ footer {
   .hero-content { margin-top: 40px; }
   /* Le texte tenait sur une ligne en desktop (taille réduite) : sur mobile
      on revient à une taille confortable, avec retour à la ligne normal. */
-  .hero-tagline { font-size: clamp(16px, 4.5vw, 20px); white-space: normal; }
+  .hero-tagline { font-size: clamp(16px, 4.5vw, 20px); }
 
   /* Menu burger : la liste devient un tiroir déroulant sous la nav. */
   .nav-burger { display: flex; }
