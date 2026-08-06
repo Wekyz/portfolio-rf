@@ -761,8 +761,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   display: flex; align-items: center; gap: 12px;
   font-family: var(--font-hennessy); font-size: 15px;
   color: var(--black); text-decoration: none;
-  transition: gap var(--t-fast); cursor: pointer;
-  background: none; border: none; padding: 0;
+  transition: gap var(--t-fast);
 }
 .contact-link:hover { gap: 20px; }
 .contact-link-arrow {

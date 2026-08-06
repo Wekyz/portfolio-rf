@@ -257,7 +257,7 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <meta name="geo.region" content="FR-IDF" />
   <meta name="geo.placename" content="Paris, France" />
 
-  <!-- Préchargement des polices critiques (toutes auto-hébergées) -->
+  {/* Préchargement des polices critiques (toutes auto-hébergées) */}
   <link rel="preload" as="font" type="font/woff2" href="/HennessySerif1765.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DalaFloda-Roman.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DMSans-latin.woff2" crossorigin />
@@ -267,7 +267,7 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <link rel="preconnect" href="https://i.vimeocdn.com" />
   <link rel="preconnect" href="https://player.vimeo.com" />
 
-  <!-- Préchargement de l'image LCP (1ʳᵉ vignette, page Portfolio uniquement) -->
+  {/* Préchargement de l'image LCP (1ʳᵉ vignette, page Portfolio uniquement) */}
   {firstThumb && (
     <link
       rel="preload"
@@ -279,10 +279,10 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
     />
   )}
 
-  <!-- Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) -->
+  {/* Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) */}
   <script defer is:inline src="/_vercel/insights/script.js"></script>
 
-  <!-- JSON-LD structured data (contenu + hash CSP calculés ci-dessus) -->
+  {/* JSON-LD structured data (contenu + hash CSP calculés ci-dessus) */}
   {ldBlocks.map((block) => (
     <script is:inline type="application/ld+json" set:html={block} />
   ))}

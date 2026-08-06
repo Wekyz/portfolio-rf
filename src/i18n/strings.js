@@ -66,7 +66,6 @@ export const ui = {
     'notfound.text': 'The link may be outdated, or the address mistyped. Here is where to go next.',
 
     // Pages projet (/portfolio/[slug])
-    'project.back': 'All projects',
     'project.breadcrumb': 'Breadcrumb',
     'project.production': 'Production',
     'project.year': 'Year',
@@ -200,7 +199,6 @@ export const ui = {
     'notfound.text': "Le lien est peut-être périmé, ou l'adresse mal saisie. Voici où aller.",
 
     // Pages projet (/portfolio/[slug])
-    'project.back': 'Tous les projets',
     'project.breadcrumb': "Fil d'Ariane",
     'project.production': 'Production',
     'project.year': 'Année',

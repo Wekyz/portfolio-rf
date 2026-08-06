@@ -68,6 +68,18 @@ function host(fr) {
   ];
 }
 
+/**
+ * L'annotation est nécessaire : sans elle, TypeScript infère de chaque section
+ * son type littéral exact, et l'union qui en résulte n'a ni `facts` ni
+ * `paragraphs` en commun - LegalPage.astro ne pouvait plus lire ni l'un ni
+ * l'autre.
+ *
+ * @typedef {{ term: string, value: string }} LegalFact
+ * @typedef {{ title: string, facts?: LegalFact[], paragraphs?: string[] }} LegalSection
+ * @typedef {{ heading: string, intro: string, sections: LegalSection[] }} LegalPage
+ *
+ * @type {Record<'fr' | 'en', Record<'legal' | 'privacy', LegalPage>>}
+ */
 export const legalPages = {
   fr: {
     legal: {

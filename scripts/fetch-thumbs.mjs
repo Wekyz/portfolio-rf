@@ -41,6 +41,10 @@ const CACHE_FILE = join(ROOT, 'src', 'data', 'vimeo-thumbs.json');
 const LOCAL_CACHE_FILE = join(ROOT, 'src', 'data', 'local-images.json');
 const BRANDS_CACHE_FILE = join(ROOT, 'src', 'data', 'brands.json');
 const LIVE_DIR = join(ROOT, 'public', 'live');
+// Sources des logos (160 px) hors de public/ : elles ne sont jamais servies -
+// seules les densités -64/-96 le sont - et les laisser là revenait à déployer
+// 545 Ko que personne ne demande jamais. `public/` veut dire « publié ».
+const BRANDS_SRC_DIR = join(ROOT, 'assets', 'brands-src');
 const BRANDS_DIR = join(ROOT, 'public', 'brands');
 
 // Variantes responsive générées pour les images posées à la main (public/live/).
@@ -152,17 +156,34 @@ async function ensureVariants(dir) {
   }
   let made = 0;
   let kept = 0;
+  let skipped = 0;
   for (const name of files) {
     if (!name.endsWith('.webp') || VARIANT_RE.test(name)) continue;
     let src = null;
+    let srcWidth = null;
     for (const { suffix, width, quality } of VARIANTS) {
       const variant = join(dir, name.replace(/\.webp$/, `${suffix}.webp`));
+
+      // `withoutEnlargement` produisait une copie de l'original quand celui-ci
+      // était déjà plus étroit que la cible : trois fichiers de 800x450 pour
+      // live3, dont deux que personne ne demandait. Le correctif P-03 les
+      // avait écartés du srcset ; ils continuaient d'être générés et
+      // déployés. On ne les fabrique plus du tout - la base sert alors de
+      // plus grand palier, ce qu'elle est réellement.
+      if (srcWidth === null) {
+        if (!src) src = await readFile(join(dir, name));
+        srcWidth = (await sharp(src).metadata()).width ?? 0;
+      }
+      if (srcWidth <= width) {
+        skipped++;
+        continue;
+      }
+
       if (await exists(variant)) {
         kept++;
         continue;
       }
       try {
-        if (!src) src = await readFile(join(dir, name));
         const out = await sharp(src)
           .resize({ width, withoutEnlargement: true })
           .webp({ quality })
@@ -174,7 +195,7 @@ async function ensureVariants(dir) {
       }
     }
   }
-  return { made, kept };
+  return { made, kept, skipped };
 }
 
 /**
@@ -204,26 +225,28 @@ async function ensureAppleIcon() {
   return true;
 }
 
-async function ensureBrandVariants(dir) {
+/** Lit les sources dans `srcDir`, écrit les densités servies dans `outDir`. */
+async function ensureBrandVariants(srcDir, outDir) {
   let files;
   try {
-    files = await readdir(dir);
+    files = await readdir(srcDir);
   } catch {
     return { made: 0, kept: 0 };
   }
+  await mkdir(outDir, { recursive: true });
   let made = 0;
   let kept = 0;
   for (const name of files) {
     if (!name.endsWith('.webp') || BRAND_VARIANT_RE.test(name)) continue;
     let src = null;
     for (const { suffix, height, quality } of BRAND_VARIANTS) {
-      const variant = join(dir, name.replace(/\.webp$/, `${suffix}.webp`));
+      const variant = join(outDir, name.replace(/\.webp$/, `${suffix}.webp`));
       if (await exists(variant)) {
         kept++;
         continue;
       }
       try {
-        if (!src) src = await readFile(join(dir, name));
+        if (!src) src = await readFile(join(srcDir, name));
         const out = await sharp(src)
           .resize({ height, withoutEnlargement: true })
           .webp({ quality })
@@ -354,7 +377,7 @@ async function main() {
   }
 
   const vl = await ensureVariants(LIVE_DIR);
-  console.log(`[variants] ${vl.made} générée(s), ${vl.kept} déjà présente(s).`);
+  console.log(`[variants] ${vl.made} générée(s), ${vl.kept} déjà présente(s), ${vl.skipped} inutile(s) évitée(s).`);
 
   // Largeurs réelles des images locales -> descripteurs srcset exacts.
   const local = await measureCandidates(LIVE_DIR, '/live/');
@@ -364,21 +387,19 @@ async function main() {
 
   if (await ensureAppleIcon()) console.log('[icone] apple-touch-icon.png (180x180) régénérée.');
 
-  const bl = await ensureBrandVariants(BRANDS_DIR);
+  const bl = await ensureBrandVariants(BRANDS_SRC_DIR, BRANDS_DIR);
   console.log(`[logos] ${bl.made} variante(s) générée(s), ${bl.kept} déjà présente(s).`);
 
   // Dimensions du fichier 64 px : servent d'attributs width/height (donc de
   // ratio) sur les <img> du bandeau, pour éviter tout saut de mise en page.
+  // Lues directement dans public/brands/, qui ne contient plus que les deux
+  // densités servies depuis que les sources ont été sorties de public/.
   const brands = {};
-  for (const [name, info] of Object.entries(await measureCandidates(BRANDS_DIR, '/brands/'))) {
-    const slug = name.replace('/brands/', '').replace(/\.webp$/, '');
-    if (BRAND_VARIANT_RE.test(`${slug}.webp`)) continue;
-    try {
-      const meta = await sharp(await readFile(join(BRANDS_DIR, `${slug}-64.webp`))).metadata();
-      brands[slug] = { width: meta.width, height: meta.height };
-    } catch {
-      brands[slug] = { width: info.width, height: info.height };
-    }
+  for (const file of await readdir(BRANDS_DIR)) {
+    if (!file.endsWith('-64.webp')) continue;
+    const slug = file.replace('-64.webp', '');
+    const meta = await sharp(await readFile(join(BRANDS_DIR, file))).metadata();
+    brands[slug] = { width: meta.width, height: meta.height };
   }
   await writeFile(BRANDS_CACHE_FILE, JSON.stringify(brands, null, 2) + '\n');
   console.log(`[logos] ${Object.keys(brands).length} dimension(s) enregistrée(s).`);
