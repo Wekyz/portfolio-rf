@@ -107,11 +107,3 @@ test('accessibilité : bandeau de logos mis en pause', async ({ page }) => {
   await expect(bouton).toHaveAttribute('aria-pressed', 'true');
   await analyse(page, 'bandeau de logos en pause');
 });
-
-test('accessibilité : FAQ dépliée', async ({ page }) => {
-  await page.goto('/fr/about');
-  const items = page.locator('.faq-item');
-  const n = await items.count();
-  for (let i = 0; i < n; i++) await items.nth(i).locator('summary').click();
-  await analyse(page, 'toutes les questions de la FAQ ouvertes');
-});

@@ -1,6 +1,6 @@
 /**
  * llms-full.txt - version longue de la fiche d'identité : biographie intégrale,
- * FAQ dans les deux langues, productions et marques nommées.
+ * productions et marques nommées.
  *
  * Séparé de llms.txt, qui doit rester court et scannable. Ici on donne la
  * matière brute : un moteur de réponse ne peut recommander que ce qu'il peut
@@ -9,7 +9,6 @@
 import data from '../data/videos.json';
 import { projectRoutes } from '../lib/slug.js';
 import { ui } from '../i18n/strings.js';
-import { faq } from '../i18n/faq.js';
 import { LEGAL } from '../data/legal.js';
 
 const SITE = 'https://roxane-foare.com';
@@ -72,14 +71,6 @@ Waffle Factory, Yves Rocher.
 ## All projects (${projects.length})
 
 ${projectLines.join('\n')}
-
-## FAQ (English)
-
-${faq.en.map((f) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')}
-
-## FAQ (français)
-
-${faq.fr.map((f) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')}
 
 ## Legal
 

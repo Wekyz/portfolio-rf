@@ -15,7 +15,6 @@ const introParagraphs = t('about.introParagraphs');
 // mise en page pendant le chargement.
 import brandSizes from '../data/brands.json';
 import videos from '../data/videos.json';
-import Faq from './Faq.astro';
 
 const projectCount = (videos.videos || videos).length;
 const summary =
@@ -164,7 +163,5 @@ const BRANDS = [
         </div>
       </div>
     </div>
-
-    <Faq lang={lang} />
   </div>
 </section>

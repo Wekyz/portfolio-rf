@@ -101,7 +101,6 @@ export const ui = {
     'about.awards': 'Awards',
     'about.brandsPause': 'Pause the scrolling logos',
     'about.brandsPlay': 'Resume the scrolling logos',
-    'faq.title': 'Frequently asked questions',
 
     // Contact
     'contact.title': 'Contact',
@@ -234,7 +233,6 @@ export const ui = {
     'about.awards': 'Distinctions',
     'about.brandsPause': 'Mettre en pause le défilement des logos',
     'about.brandsPlay': 'Relancer le défilement des logos',
-    'faq.title': 'Questions fréquentes',
 
     // Contact
     'contact.title': 'Contact',

@@ -124,11 +124,6 @@ affirmait que les miniatures étaient auto-hébergées, ce qui était devenu fau
 la génération supprime cette classe d'erreur. Ne pas les recréer dans
 `public/`, la route l'emporterait ou entrerait en conflit.
 
-La **FAQ** vit dans `src/i18n/faq.js` et alimente à la fois l'accordéon de la
-page À propos, le schéma `FAQPage` et les deux fichiers `llms`. Plusieurs
-réponses sont des hypothèses de rédaction, signalées `[à confirmer]` dans le
-fichier.
-
 ### Pages légales
 
 `src/data/legal.js` porte les données d'identité (adresse, courriel, SIRET),

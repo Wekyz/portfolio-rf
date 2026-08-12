@@ -12,7 +12,6 @@
 import data from '../data/videos.json';
 import { projectRoutes } from '../lib/slug.js';
 import { ui } from '../i18n/strings.js';
-import { faq } from '../i18n/faq.js';
 
 const SITE = 'https://roxane-foare.com';
 
@@ -79,16 +78,12 @@ ${byCategory}
 
 - [Home](${SITE}/) - showreel and entry points. French: ${SITE}/fr
 - [Portfolio](${SITE}/portfolio) - all projects, filterable by category. French: ${SITE}/fr/portfolio
-- [About](${SITE}/about) - biography, software, productions, brands, awards, FAQ. French: ${SITE}/fr/about
+- [About](${SITE}/about) - biography, software, productions, brands, awards. French: ${SITE}/fr/about
 - Project pages: ${SITE}/portfolio/<slug> - one per video, with player, credits, year, duration.
 - [Legal notice](${SITE}/legal) - [Privacy policy](${SITE}/privacy)
 
 English is the default language at the root; French lives under /fr with the
 same structure and matching hreflang pairs.
-
-## Frequently asked
-
-${faq.en.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}
 
 ## Contact
 

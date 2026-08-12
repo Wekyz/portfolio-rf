@@ -29,7 +29,6 @@ const {
   ogImage,
   videoObject,
   breadcrumb,
-  faq,
   noindex = false,
 } = Astro.props;
 
@@ -192,7 +191,7 @@ const pageLd = noindex
       isPartOf: { '@type': 'WebSite', name: 'Roxane Foare', url: `${SITE}/` },
     };
 
-const ldBlocks = [jsonLd, pageLd, serviceLd, secondaryLd, breadcrumb, faq]
+const ldBlocks = [jsonLd, pageLd, serviceLd, secondaryLd, breadcrumb]
   .filter(Boolean)
   .map((block) => JSON.stringify(block).replace(/</g, '\\u003c'));
 ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
