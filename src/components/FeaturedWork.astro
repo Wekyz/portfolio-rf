@@ -6,12 +6,15 @@
  * en avant sur l'accueil » (champ `featured`). La monteuse peut donc changer
  * la vitrine quand elle veut, sans intervention technique.
  *
- * Deux garde-fous :
- *  - seuls les projets disposant d'une page (donc d'une vidéo Vimeo) sont
- *    retenus : mettre en avant une vignette qui ne mène nulle part irait
- *    contre le but de la section ;
- *  - si aucun projet n'est coché, on retombe sur les trois premiers de la
- *    liste. L'accueil montre ainsi toujours du travail, plutôt qu'un blanc.
+ * La section n'existe QUE s'il y a une sélection : tant qu'aucun projet n'est
+ * coché, l'accueil se limite au showreel. Il y avait auparavant un repli sur
+ * les trois premiers de la liste, pour ne jamais montrer un blanc - mais il
+ * affichait une vitrine que personne n'avait choisie, indiscernable d'une
+ * sélection voulue. Mieux vaut pas de section qu'une section arbitraire.
+ *
+ * Seuls les projets disposant d'une page (donc d'une vidéo Vimeo) sont
+ * retenus : mettre en avant une vignette qui ne mène nulle part irait contre
+ * le but de la section.
  */
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
@@ -31,9 +34,7 @@ const LIMIT = 3;
 const projects = (data.videos || data) as Project[];
 const slugMap = buildSlugMap(projects);
 
-const withPage = projects.filter((p) => slugMap.has(p));
-const chosen = withPage.filter((p) => p.featured);
-const featured = (chosen.length > 0 ? chosen : withPage).slice(0, LIMIT);
+const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, LIMIT);
 ---
 {featured.length > 0 && (
   <section class="featured">

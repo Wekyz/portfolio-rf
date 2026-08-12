@@ -98,7 +98,7 @@ collections:
                 widget: boolean
                 default: false
                 required: false
-                hint: "Les projets cochés apparaissent sur la page d'accueil, dans l'ordre de cette liste (3 maximum). Si aucun n'est coché, les 3 premiers projets sont affichés."
+                hint: "Les projets cochés apparaissent sur la page d'accueil, dans l'ordre de cette liste (3 maximum). Si aucun n'est coché, la page d'accueil n'affiche pas cette section du tout."
 
               - name: externalLink
                 label: "Lien externe"

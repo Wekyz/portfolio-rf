@@ -112,9 +112,10 @@ Deux champs par projet changent le site sans intervention technique :
   la version courte générée, pour ne pas être tronquée par Google.
 - **Mettre en avant sur l'accueil** (`featured`) : les projets cochés
   apparaissent sur l'accueil, dans l'ordre de la liste, 3 au maximum. Seuls les
-  projets ayant une page (donc une vidéo Vimeo) sont retenus. Si aucun n'est
-  coché, les 3 premiers de la liste s'affichent, pour que l'accueil ne soit
-  jamais vide.
+  projets ayant une page (donc une vidéo Vimeo) sont retenus. **Tant qu'aucun
+  n'est coché, la section n'apparaît pas** : l'accueil se limite au showreel.
+  Un repli sur les 3 premiers existait, il montrait une vitrine que personne
+  n'avait choisie sans qu'on puisse la distinguer d'une sélection voulue.
 
 ### Fichiers pour les moteurs de réponse
 
