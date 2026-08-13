@@ -18,8 +18,11 @@
  * vidéo privée) dans le CMS - la miniature suit automatiquement, sans fichier
  * à produire ni à committer.
  *
- * Les vidéos avec un champ `thumb` rempli (override manuel, ex. affiche de
- * film ou image live) ne sont pas concernées : ce champ reste prioritaire.
+ * Un champ `thumb` rempli (override manuel, ex. affiche de film) reste
+ * prioritaire pour l'image, mais n'empêche pas l'appel : la réponse oEmbed
+ * porte aussi la date de publication et la durée, que rien d'autre ne fournit.
+ * Les avoir écartées avec la miniature faisait retomber la page projet sur une
+ * date de repli et privait le sitemap vidéo de sa durée, sans rien signaler.
  *
  * Lancé automatiquement avant `dev` et `build` (voir package.json). Résolu à
  * chaque run (simples appels JSON, pas de traitement d'image) pour rester
@@ -340,7 +343,7 @@ async function main() {
   let failed = 0;
 
   for (const v of videos) {
-    if (!v.id || v.thumb) continue; // pas d'ID Vimeo, ou override manuel -> rien à faire
+    if (!v.id) continue; // pas d'ID Vimeo (photo de plateau) -> rien à résoudre
     try {
       cache[v.id] = await resolveThumbInfo(v.id, v.hash);
       resolved++;
@@ -366,7 +369,7 @@ async function main() {
   // autre chose - Vimeo qui durcit sa restriction de domaine, une clé
   // révoquée, un changement d'API. Sans ce garde-fou, le build passait quand
   // même et le site partait avec des miniatures manquantes.
-  const attendus = videos.filter((v) => v.id && !v.thumb).length;
+  const attendus = videos.filter((v) => v.id).length;
   if (attendus > 0 && resolved === 0) {
     console.error(
       `\n[thumbs] ERREUR : aucune des ${attendus} miniatures n'a pu être résolue.\n` +
