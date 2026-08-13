@@ -378,6 +378,18 @@ import { applySpans } from '../lib/spans.js';
           if (formStatus) formStatus.textContent = FORM_LABELS.error;
         })
         .finally(() => {
+          // Un jeton Turnstile ne vaut qu'un envoi : Cloudflare refuse le second
+          // appel (`timeout-or-duplicate`). Or le champ caché survit à
+          // `form.reset()` et le widget reste résolu à l'écran : sans ce
+          // réarmement, un visiteur qui écrit un deuxième message sans recharger
+          // la page repostait le jeton mort et se heurtait à un refus qu'aucun
+          // élément de l'interface n'expliquait. Un formulaire posté nativement
+          // repart d'un widget neuf ; ici l'envoi passe par fetch(), donc c'est
+          // à nous de le faire. Vaut aussi après un échec : le jeton a été
+          // consommé ou refusé dans les deux cas.
+          try {
+            window.turnstile?.reset();
+          } catch { /* widget pas encore rendu : le prochain envoi l'attendra */ }
           setTimeout(() => {
             btn.innerHTML = originalHTML;
             btn.classList.remove('is-success', 'is-error');

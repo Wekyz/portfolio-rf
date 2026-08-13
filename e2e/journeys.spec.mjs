@@ -133,6 +133,63 @@ test('le formulaire de contact annonce son envoi et transmet le jeton', async ({
   });
 });
 
+test('un second message repart avec un jeton captcha neuf', async ({ page }) => {
+  // Le widget Turnstile n'est rendu qu'en présence de PUBLIC_TURNSTILE_SITE_KEY,
+  // absente du build de test : on le simule. Ce qui est vérifié ici n'est pas
+  // Cloudflare mais notre code - qu'il réarme bien le widget après un envoi,
+  // sans quoi le deuxième message part avec un jeton déjà consommé.
+  const jetons = [];
+  await page.route('**/api/form-token', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ token: '1700000000000.signature' }),
+    })
+  );
+  await page.route('**/api/contact', (route) => {
+    jetons.push(JSON.parse(route.request().postData() || '{}')['cf-turnstile-response']);
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+  });
+
+  await page.goto('/fr/contact');
+  // Le corps de `evaluate` s'exécute dans la page : on passe par le formulaire
+  // reçu en paramètre plutôt que par `document`/`window`, absents du contexte
+  // Node dans lequel ESLint lit ce fichier.
+  await page.locator('.contact-form').evaluate((form) => {
+    const doc = form.ownerDocument;
+    const boite = doc.createElement('div');
+    boite.className = 'cf-turnstile';
+    const champ = doc.createElement('input');
+    champ.type = 'hidden';
+    champ.name = 'cf-turnstile-response';
+    champ.value = 'jeton-1';
+    boite.appendChild(champ);
+    form.appendChild(boite);
+    let n = 1;
+    doc.defaultView.turnstile = { reset: () => { champ.value = `jeton-${++n}`; } };
+  });
+
+  const bouton = page.locator('.form-submit');
+  const remplir = async () => {
+    await page.fill('#first-name', 'Marie');
+    await page.fill('#last-name', 'Dupont');
+    await page.fill('#email', 'marie@studio.com');
+    await page.fill('#message', 'Bonjour, un projet à discuter.');
+  };
+
+  await remplir();
+  await bouton.click();
+  await expect(bouton).toContainText(/Envoyé/i, { timeout: 15_000 });
+
+  // Le bouton se réactive au bout de 4 s ; le formulaire a été vidé entre-temps.
+  await expect(bouton).toBeEnabled({ timeout: 15_000 });
+  await remplir();
+  await bouton.click();
+  await expect(bouton).toContainText(/Envoyé/i, { timeout: 15_000 });
+
+  expect(jetons).toEqual(['jeton-1', 'jeton-2']);
+});
+
 test('la bascule de langue conserve la page courante', async ({ page }, testInfo) => {
   const ouvrirMenu = async () => {
     if (testInfo.project.name === 'mobile') await page.locator('#navBurger').click();
