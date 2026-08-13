@@ -49,8 +49,6 @@ export function GET() {
     .filter(Boolean)
     .join('\n\n');
 
-  const withPage = routes.length;
-
   const body = `# Roxane Foare
 
 > Freelance video editor based in Paris and Angers, France. More than ten years
@@ -66,7 +64,6 @@ and Blackmagic ATEM.
 - Profession: video editor (monteuse vidéo), freelance, sole trader.
 - Based in Paris and Angers, France; available elsewhere.
 - Languages: French, English.
-- ${projects.length} referenced projects, ${withPage} of them with a dedicated page.
 - Awards: ${t('award.cyprus')}; ${t('award.athens')}.
 - IMDb: https://www.imdb.com/fr/name/nm8663077/
 

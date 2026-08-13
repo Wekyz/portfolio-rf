@@ -68,7 +68,7 @@ JP Morgan, Lacoste, L'Oréal, Louboutin, MAIF, Meetic, Messika, OL,
 Paris Games Week, PSG, Ricard, Sanofi, Siemens, Société Générale, Square Enix,
 Waffle Factory, Yves Rocher.
 
-## All projects (${projects.length})
+## All projects
 
 ${projectLines.join('\n')}
 
