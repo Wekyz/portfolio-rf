@@ -313,6 +313,9 @@ nav.nav-flush { border-bottom-color: transparent; }
 .work-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; }
 .work-item { position: relative; overflow: hidden; grid-column: span 6; }
 .work-item[data-portrait="true"] { grid-column: 5 / span 4; }
+/* Vignette « affiche » : 6 colonnes centrées. Contrairement aux autres, son
+   cadre n'impose aucun ratio - voir la règle .work-thumb-wrap plus bas. */
+.work-item[data-poster="true"] { grid-column: 4 / span 6; }
 /* Placement du pattern 8/4 (posé via classe - cf. src/lib/spans.js - et non
    en style inline, pour rester compatible avec la CSP sans 'unsafe-inline'). */
 .work-item.g-1-12 { grid-column: 1 / span 12; }
@@ -330,6 +333,14 @@ nav.nav-flush { border-bottom-color: transparent; }
   text-decoration: none;
 }
 .work-item[data-portrait="true"] .work-thumb-wrap { aspect-ratio: 2/3; }
+/* Une image composée (triptyque de photogrammes, affiche) ne tombe ni sur le
+   16/10 ni sur le 2/3 : lui imposer l'un des deux la ferait rogner de moitié.
+   Ici le cadre disparaît et c'est l'image qui donne la hauteur. Son ratio n'a
+   donc pas à être écrit ici - il vient des attributs width/height de la
+   balise, mesurés au build (WorkItem.astro), ce qui réserve la bonne place
+   avant chargement sans style inline, que la CSP du site interdit. */
+.work-item[data-poster="true"] .work-thumb-wrap { aspect-ratio: auto; }
+.work-item[data-poster="true"] .work-thumb { height: auto; }
 .work-thumb {
   width: 100%; height: 100%; object-fit: cover; display: block;
   transition: transform var(--t-slow) ease;
@@ -915,6 +926,11 @@ footer {
   /* Le portrait garde son ratio 2/3 mais perd son centrage sur 4 colonnes :
      à cette largeur il occupe simplement une des deux cases. */
   .work-item[data-portrait='true'] { grid-column: span 6 !important; }
+  /* L'affiche s'élargit à 8 colonnes centrées : sur deux colonnes elle
+     descendrait sous les 300 px de large, où un triptyque n'est plus lisible.
+     Elle reste plus étroite que la pleine largeur, dont la hauteur exploserait
+     à ce ratio. */
+  .work-item[data-poster='true'] { grid-column: 3 / span 8 !important; }
   /* Une seule colonne : trois vignettes liées côte à côte tomberaient sous
      les 140 px de large exigés pour rester exploitables. */
   .project-related ul { grid-template-columns: 1fr; }
@@ -971,7 +987,8 @@ footer {
    quoi que ce soit d'un plan. */
 @media (max-width: 600px) {
   .work-item,
-  .work-item[data-portrait='true'] { grid-column: span 12 !important; }
+  .work-item[data-portrait='true'],
+  .work-item[data-poster='true'] { grid-column: span 12 !important; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */

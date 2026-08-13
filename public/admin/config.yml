@@ -87,6 +87,13 @@ collections:
                 required: false
                 hint: "Affiche la vidéo sur toute la largeur (Feature Film)"
 
+              - name: poster
+                label: "Vignette affiche"
+                widget: boolean
+                default: false
+                required: false
+                hint: "Pour une image qui n'est ni au format 16/10 ni au format portrait (affiche, montage de plusieurs photogrammes) : la vignette est centrée sur une demi-largeur et l'image est montrée en entier, sans recadrage. Suppose une Miniature renseignée ci-dessus. Ne pas cocher en même temps que Pleine largeur."
+
               - name: description
                 label: "Présentation du projet"
                 widget: text

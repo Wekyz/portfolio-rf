@@ -48,4 +48,12 @@ export interface Project {
    * le champ n'est pas ajouté au CMS.
    */
   portrait?: boolean;
+  /**
+   * Vignette « affiche » : 6 colonnes centrées, et surtout un cadre qui épouse
+   * le ratio de l'image au lieu de la recadrer. Prévu pour les images composées
+   * (triptyque de photogrammes, affiche de film) dont le format ne tombe ni sur
+   * le 16/10 de la grille ni sur le 2/3 du portrait. Suppose une image locale
+   * (`thumb`) : ses dimensions sont mesurées au build.
+   */
+  poster?: boolean;
 }

@@ -28,10 +28,16 @@ const fetchpriority = priority ? 'high' : undefined;
 const external = !p.id && p.externalLink;
 const interactive = !p.noClick && href;
 const prod = p.credit || t(`cat.${p.cat}`) || p.cat;
-const imgWidth = p.portrait ? 600 : 1280;
-const imgHeight = p.portrait ? 900 : 800;
 
-const { src: thumbSrc, srcset: thumbSrcset, responsive } = resolveThumb(p);
+const { src: thumbSrc, srcset: thumbSrcset, responsive, width, height } = resolveThumb(p);
+
+// Les deux cadres fixes de la grille (16/10 et 2/3) recadrent l'image : les
+// dimensions déclarées ne servent qu'à en donner le ratio. La vignette
+// « affiche », elle, n'a pas de cadre - c'est l'image qui fait la hauteur -,
+// donc ce sont ses vraies dimensions qu'il faut annoncer, sous peine de
+// réserver la mauvaise place et de faire sauter la grille au chargement.
+const imgWidth = p.poster ? (width ?? 1280) : p.portrait ? 600 : 1280;
+const imgHeight = p.poster ? (height ?? 1280) : p.portrait ? 900 : 800;
 const spanN = placement?.span ?? 6;
 const sizes = responsive
   ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw`
@@ -46,6 +52,7 @@ const sizes = responsive
   data-external={p.externalLink || ''}
   data-full-width={p.fullWidth ? 'true' : undefined}
   data-portrait={p.portrait ? 'true' : undefined}
+  data-poster={p.poster ? 'true' : undefined}
 >
   {interactive ? (
     <a

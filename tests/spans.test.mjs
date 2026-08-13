@@ -64,6 +64,17 @@ test('un item portrait vaut 4 colonnes sans perturber le cycle', () => {
   assert.equal(classes([{ cat: 'pub', portrait: true }])[0], GRID_CLASSES.portrait);
 });
 
+test('une affiche vaut 6 colonnes et réamorce le pattern comme un pleine largeur', () => {
+  const items = [...many('film', 2), { cat: 'film', poster: true }, ...many('film', 3)];
+  assert.deepEqual(widths(items), [8, 4, 6, 8, 4, 4]);
+  // Aucune classe dynamique : le placement vient de [data-poster] en CSS.
+  assert.equal(classes(items)[2], GRID_CLASSES.poster);
+  // Le cycle repart de son premier palier (8), comme après un pleine largeur.
+  // L'affiche laisse 3 colonnes libres de chaque côté, où un span 8 ne rentre
+  // pas : CSS Grid le renvoie à la ligne suivante, en colonne 1.
+  assert.equal(classes(items)[3], GRID_CLASSES.span8);
+});
+
 test('la catégorie live occupe toujours 6 colonnes, sans classe dynamique', () => {
   const items = many('live', 4);
   assert.deepEqual(widths(items), [6, 6, 6, 6]);
@@ -99,9 +110,7 @@ test('le rendu des 36 projets réels est figé', () => {
     readFileSync(new URL('../src/data/videos.json', import.meta.url), 'utf8')
   );
   const projects = data.videos || data;
-  const placements = computeSpans(
-    projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
-  );
+  const placements = computeSpans(projects);
   const empreinte = createHash('sha256')
     .update(placements.map((p) => `${p.cls || '-'}:${p.span}`).join('|'))
     .digest('hex')
@@ -110,7 +119,7 @@ test('le rendu des 36 projets réels est figé', () => {
   assert.equal(placements.length, projects.length);
   assert.equal(
     empreinte,
-    '9a15cefe16518041',
+    '1ee31a91c24ca14a',
     'la disposition de la grille a changé. Si c’est voulu (nouveau projet, ' +
       'catégorie réordonnée, pattern modifié), remplacer cette empreinte ; ' +
       'sinon, c’est une régression de computeSpans.'

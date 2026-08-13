@@ -1,4 +1,22 @@
 {
+  "/live/en-mille-morceaux.webp": {
+    "width": 1280,
+    "height": 1419,
+    "candidates": [
+      {
+        "src": "/live/en-mille-morceaux-640.webp",
+        "width": 640
+      },
+      {
+        "src": "/live/en-mille-morceaux-960.webp",
+        "width": 960
+      },
+      {
+        "src": "/live/en-mille-morceaux.webp",
+        "width": 1280
+      }
+    ]
+  },
   "/live/live1.webp": {
     "width": 1400,
     "height": 1000,

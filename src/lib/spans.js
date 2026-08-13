@@ -21,6 +21,7 @@ const SPANS = [8, 4, 4, 8];
 export const GRID_CLASSES = {
   full: 'g-1-12', // fullWidth : 1 / span 12
   portrait: null, // déjà géré par [data-portrait="true"] en CSS
+  poster: null, // déjà géré par [data-poster="true"] en CSS
   live: null, // déjà géré par la règle .work-item par défaut (span 6)
   start8: 'g-start8', // 1 / span 8 (1er item d'une nouvelle catégorie)
   span8: 'g-8', // span 8
@@ -32,7 +33,7 @@ export const ALL_GRID_CLASSES = [GRID_CLASSES.full, GRID_CLASSES.start8, GRID_CL
 
 /**
  * Calcule le placement de chaque item d'une liste ordonnée.
- * @param {{cat:string, fullWidth?:boolean, portrait?:boolean}[]} items
+ * @param {{cat:string, fullWidth?:boolean, portrait?:boolean, poster?:boolean}[]} items
  * @returns {{cls: string|null, span: number}[]} classe CSS (ou null si déjà
  *   couverte par un sélecteur d'attribut statique) + largeur en colonnes
  *   (utilisée pour calculer `sizes` sur les images responsive).
@@ -46,6 +47,14 @@ export function computeSpans(items) {
       patternIndex = 0;
       lastCat = item.cat;
       return { cls: GRID_CLASSES.full, span: 12 };
+    }
+    // Affiche : 6 colonnes centrées, donc une rangée à elle seule. Comme le
+    // pleine largeur, elle réamorce le pattern - sans quoi l'item suivant
+    // viendrait se loger dans les colonnes restées libres à sa droite.
+    if (item.poster) {
+      patternIndex = 0;
+      lastCat = item.cat;
+      return { cls: GRID_CLASSES.poster, span: 6 };
     }
     // Portrait : ne touche ni patternIndex ni lastCat (le pattern continue
     // comme si l'item portrait n'était pas là - comportement d'origine).
@@ -79,6 +88,7 @@ export function applySpans(elements) {
     cat: el.dataset.cat,
     fullWidth: el.dataset.fullWidth === 'true',
     portrait: el.dataset.portrait === 'true',
+    poster: el.dataset.poster === 'true',
   }));
   const placements = computeSpans(descriptors);
   elements.forEach((el, i) => {

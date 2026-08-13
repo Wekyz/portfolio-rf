@@ -60,9 +60,7 @@ const isPortfolio = page === 'portfolio';
 
 // - Préchargement de l'image LCP (1ʳᵉ vignette) : seulement pertinent sur la
 //   page Portfolio, où la grille est le 1er contenu visuel de la page. -
-const spans = isPortfolio
-  ? computeSpans(projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait })))
-  : [];
+const spans = isPortfolio ? computeSpans(projects) : [];
 const first = isPortfolio ? projects[0] : null;
 const firstThumbResolved = first ? resolveThumb(first) : null;
 const firstThumb = firstThumbResolved?.src ?? null;

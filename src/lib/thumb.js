@@ -64,6 +64,11 @@ export function resolveThumb(p, { vimeo = vimeoThumbs, local = localImages } = {
       const largest = entry.candidates[entry.candidates.length - 1];
       return {
         src: largest.src,
+        // Dimensions réelles, mesurées au build : elles permettent à un cadre
+        // qui épouse l'image (vignette « affiche ») de réserver sa hauteur
+        // avant chargement, sans style inline - que la CSP interdit.
+        width: entry.width,
+        height: entry.height,
         // Une seule taille disponible : pas de srcset, il n'y aurait rien à
         // arbitrer et le descripteur ne ferait que du bruit.
         srcset:

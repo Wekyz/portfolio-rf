@@ -25,9 +25,11 @@ const hrefFor = (p: Project) => {
 
 // Pré-calcul des grid-column au build (même résultat que l'ancien applySpans
 // au chargement, mais sans flash ni recalcul JS au premier rendu).
-const spans = computeSpans(
-  projects.map((p) => ({ cat: p.cat, fullWidth: p.fullWidth, portrait: p.portrait }))
-);
+// Les projets sont passés tels quels : la projection champ par champ qu'il y
+// avait ici était recopiée sur trois appels, et en avoir oublié un (`poster`)
+// suffisait à placer la vignette au mauvais endroit sans rien casser
+// d'observable ailleurs.
+const spans = computeSpans(projects);
 
 const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
 const ALL_FILTERS = ['all', ...FILTERS];
