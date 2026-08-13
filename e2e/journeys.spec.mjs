@@ -37,10 +37,6 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
     await expect(el).toHaveAttribute('data-cat', 'doc');
   }
 
-  // Le compteur affiché doit correspondre à ce qui est réellement montré.
-  const libelle = await page.locator('.filter-btn[data-filter="doc"] .lbl-out').textContent();
-  expect(libelle).toContain('(3)');
-
   // Retour à « tous ».
   if (testInfo.project.name === 'mobile') {
     await page.selectOption('#filterSelect', 'all');

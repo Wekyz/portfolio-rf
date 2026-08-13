@@ -32,12 +32,7 @@ const spans = computeSpans(
 const FILTERS = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
 const ALL_FILTERS = ['all', ...FILTERS];
 
-// Compteur par catégorie : « Documentaire (3) » annonce la profondeur du
-// portfolio dans chaque domaine et évite un filtre qui déçoit. Calculé, donc
-// toujours juste après une modification depuis le CMS.
-const counts: Record<string, number> = { all: projects.length };
-for (const cat of FILTERS) counts[cat] = projects.filter((p) => p.cat === cat).length;
-const label = (value: string) => `${t(`cat.${value}`)} (${counts[value]})`;
+const label = (value: string) => t(`cat.${value}`);
 
 // Un séparateur de section (titre centré) en tête de chaque catégorie -
 // l'ordre de videos.json est déjà groupé par catégorie (même ordre que
