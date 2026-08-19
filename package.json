@@ -24,20 +24,20 @@
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
-    "astro": "^7.2.0"
+    "astro": "^7.2.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@axe-core/playwright": "^4.12.1",
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
-    "@sveltia/cms": "^0.167.5",
-    "@types/node": "^26.1.2",
-    "eslint": "^10.8.0",
+    "@sveltia/cms": "^0.191.1",
+    "@types/node": "^26.2.0",
+    "eslint": "^10.8.1",
     "eslint-plugin-astro": "^1.7.0",
-    "globals": "^17.9.0",
+    "globals": "^17.11.0",
     "sharp": "^0.35.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.67.0"
   }
 }
