@@ -75,8 +75,20 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         <path d="M0 5H14M10 1L14 5L10 9" stroke="white" stroke-width="1.2"/>
       </svg>
     </button>
+    {/* Le détail de l'erreur, visible. `formStatus` reste la version annoncée
+         aux lecteurs d'écran ; les deux portent le même texte. */}
+    <p class="form-error" id="formError" hidden></p>
     <p class="visually-hidden" id="formStatus" role="status" aria-live="polite"></p>
   </form>
+
+  {/* Confirmation persistante. Elle prend la place du formulaire à l'envoi
+       réussi ; le bouton le ramène pour qui veut écrire une seconde fois -
+       cas réel, et celui que le réarmement du captcha rend possible. */}
+  <div class="form-done" id="formDone" tabindex="-1" hidden>
+    <p>{t('contact.sent')}</p>
+    <p class="form-done-sub">{t('contact.sentSub')}</p>
+    <button type="button" id="formAgain">{t('contact.again')}</button>
+  </div>
 
   {/* Le script Turnstile n'est plus posé ici. Il partait avec la page, donc
        sur les 68 pages qui portent ce formulaire, dont les 62 fiches projet -

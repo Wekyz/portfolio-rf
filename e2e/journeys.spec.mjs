@@ -133,12 +133,21 @@ test('le formulaire de contact annonce son envoi et transmet le jeton', async ({
   await expect(bouton).toContainText(/Envoi/i);
   await expect(bouton).toBeDisabled();
 
-  await expect(bouton).toContainText(/Envoyé/i, { timeout: 15_000 });
+  // La confirmation prend la place du formulaire et y reste : le libellé du
+  // bouton s'effaçait au bout de quatre secondes, quelqu'un qui détournait le
+  // regard ne savait pas si son message était parti.
+  await expect(page.locator('#formDone')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.contact-form')).toBeHidden();
+  await expect(page.locator('#formDone')).toContainText(/Message envoyé/i);
   expect(recu).toMatchObject({
     'first-name': 'Marie',
     email: 'marie@studio.com',
     formToken: '1700000000000.signature',
   });
+
+  // Et elle reste en place : plus d'effacement au bout de quatre secondes.
+  await page.waitForTimeout(5000);
+  await expect(page.locator('#formDone')).toBeVisible();
 });
 
 test('un second message repart avec un jeton captcha neuf', async ({ page }) => {
@@ -187,13 +196,15 @@ test('un second message repart avec un jeton captcha neuf', async ({ page }) => 
 
   await remplir();
   await bouton.click();
-  await expect(bouton).toContainText(/Envoyé/i, { timeout: 15_000 });
+  await expect(page.locator('#formDone')).toBeVisible({ timeout: 15_000 });
 
-  // Le bouton se réactive au bout de 4 s ; le formulaire a été vidé entre-temps.
+  // Le retour au formulaire passe par le bouton de la confirmation.
+  await page.locator('#formAgain').click();
+  await expect(page.locator('.contact-form')).toBeVisible();
   await expect(bouton).toBeEnabled({ timeout: 15_000 });
   await remplir();
   await bouton.click();
-  await expect(bouton).toContainText(/Envoyé/i, { timeout: 15_000 });
+  await expect(page.locator('#formDone')).toBeVisible({ timeout: 15_000 });
 
   expect(jetons).toEqual(['jeton-1', 'jeton-2']);
 });
@@ -228,4 +239,94 @@ test('une URL inexistante affiche la page 404 du site', async ({ page }) => {
   await page.goto('/404.html');
   await expect(page.locator('h1')).toBeVisible();
   await expect(page.locator('.notfound-links a')).toHaveCount(3);
+});
+
+test('un refus du serveur est expliqué, pas résumé à « Erreur »', async ({ page }) => {
+  // Le client jetait la réponse et affichait « Erreur - réessayez » pour cinq
+  // causes distinctes. Le serveur nomme la cause par un `code` stable ; le
+  // client le traduit, ses messages étant en français et le site bilingue.
+  await page.route('**/api/form-token', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ token: '1700000000000.signature' }),
+    })
+  );
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({
+      status: 400,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'invalid-fields', error: 'peu importe, le client traduit' }),
+    })
+  );
+
+  await page.goto('/fr/contact');
+  await page.fill('#first-name', 'Marie');
+  await page.fill('#last-name', 'Dupont');
+  await page.fill('#email', 'marie@studio.com');
+  await page.locator('.form-submit').click();
+
+  const erreur = page.locator('#formError');
+  await expect(erreur).toBeVisible({ timeout: 15_000 });
+  await expect(erreur).toContainText(/champs obligatoires/i);
+  // Le formulaire reste là, avec la saisie : on ne perd pas ce qui a été écrit.
+  await expect(page.locator('.contact-form')).toBeVisible();
+  await expect(page.locator('#first-name')).toHaveValue('Marie');
+});
+
+test('la version anglaise affiche le refus en anglais', async ({ page }) => {
+  await page.route('**/api/form-token', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"token":"1700000000000.sig"}' })
+  );
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({
+      status: 429,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'rate-limit', error: 'Trop de tentatives, réessayez plus tard.' }),
+    })
+  );
+  await page.goto('/contact');
+  await page.fill('#first-name', 'Marie');
+  await page.fill('#last-name', 'Dupont');
+  await page.fill('#email', 'marie@studio.com');
+  await page.locator('.form-submit').click();
+  const erreur = page.locator('#formError');
+  await expect(erreur).toBeVisible({ timeout: 15_000 });
+  // Surtout pas le texte français renvoyé par le serveur.
+  await expect(erreur).toContainText(/Too many attempts/i);
+});
+
+test('le filtre de catégorie vit dans l’URL', async ({ page }, testInfo) => {
+  // Le filtre n'existait que dans le JS : ni partageable, ni retrouvable par
+  // le bouton Retour, et une page projet ne pouvait pas ramener à sa catégorie.
+  //
+  // Les deux commandes doivent produire le même effet : sous 900 px, les
+  // boutons cèdent la place à un menu déroulant (voir la media query).
+  const mobile = testInfo.project.name === 'mobile';
+  const choisir = (v) =>
+    mobile ? page.selectOption('#filterSelect', v) : page.locator(`.filter-btn[data-filter="${v}"]`).click();
+
+  await page.goto('/fr/portfolio');
+  await choisir('doc');
+  await expect(page).toHaveURL(/\?cat=doc$/);
+
+  // Rechargée telle quelle, la page revient sur le même filtre - y compris le
+  // menu déroulant, qui doit rester synchronisé avec les boutons.
+  await page.reload();
+  await expect(page.locator('.filter-btn[data-filter="doc"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#filterSelect')).toHaveValue('doc');
+  const visibles = page.locator('.work-item:not(.hidden)');
+  await expect(visibles.first()).toHaveAttribute('data-cat', 'doc');
+
+  // Revenir à « toutes » retire le paramètre plutôt que d'écrire ?cat=all.
+  await choisir('all');
+  await expect(page).not.toHaveURL(/cat=/);
+});
+
+test('un ?cat= inconnu retombe sur « toutes » sans effacer l’URL', async ({ page }) => {
+  await page.goto('/fr/portfolio?cat=nimportequoi');
+  await expect(page.locator('.filter-btn[data-filter="all"]')).toHaveAttribute('aria-pressed', 'true');
+  // L'URL n'est pas réécrite : un paramètre erroné qui disparaît tout seul est
+  // plus déroutant qu'un filtre qui ne s'applique pas.
+  await expect(page).toHaveURL(/cat=nimportequoi/);
 });

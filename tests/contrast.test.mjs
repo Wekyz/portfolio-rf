@@ -75,6 +75,13 @@ test("1.4.3 : la variante texte de l'accent atteint 4,5:1", () => {
   assert.ok(r >= 4.5, `--accent-text sur --white : ${r.toFixed(2)}:1, minimum 4,5:1`);
 });
 
+test("1.4.3 : le rouge des messages d'erreur atteint 4,5:1", () => {
+  // Un message d'erreur est précisément ce qu'il ne faut pas rendre difficile
+  // à lire : c'est le seul texte du formulaire qui explique quoi corriger.
+  const r = ratio(token('error-text'), BLANC);
+  assert.ok(r >= 4.5, `--error-text sur --white : ${r.toFixed(2)}:1, minimum 4,5:1`);
+});
+
 test('--gray-light reste réservé aux filets décoratifs', () => {
   // Il ne tient pas 3:1 et n'a pas à le tenir : bas de navigation, séparateurs
   // de section. Ce test fige l'intention - s'il devient conforme un jour, la

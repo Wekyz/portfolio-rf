@@ -63,6 +63,9 @@
      le fond crème ; `--accent` reste tel quel là où il est décoratif ou posé
      sur fond sombre. Trouvé par axe, pas par la relecture manuelle. */
   --accent-text: #856e47;
+  /* Rouge des messages d'erreur du formulaire. Vérifié par
+     tests/contrast.test.mjs au même titre que les autres. */
+  --error-text: #a3311c;
 
   --font-hennessy: 'HennessySerif1765', Georgia, serif;
   --font-dala:     'DalaFloda', Georgia, serif;
@@ -721,6 +724,14 @@ nav.nav-flush { border-bottom-color: transparent; }
 
 /* ── ABOUT ────────────────────────────────────────────────── */
 #about { padding: 120px 56px; border-top: 1px solid var(--gray-light); }
+/* La seule page de texte suivi du site n'avait aucune gouttière : mesuré à
+   147 caractères par ligne en 1440 px et 221 en 1920 px, pour une plage
+   confortable de 45 à 75 (WCAG 1.4.8 fixe 80 en AAA). Toutes les autres
+   colonnes sont bornées - .hero-content 900, .legal 780, .project 1180 -
+   celle-ci avait été oubliée. 680 px place la bio autour de 79 caractères par
+   ligne (mesuré), sous les 80 que WCAG 1.4.8 retient en AAA. Sans effet sous
+   900 px, où la marge latérale fait déjà le travail. */
+.about-left { max-width: 680px; margin-inline: auto; }
 .about-intro {
   font-family: var(--font-hennessy);
   font-size: 16px; color: var(--black); line-height: 1.9; text-align: center;
@@ -834,6 +845,30 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 
 .contact-form { display: flex; flex-direction: column; gap: 20px; }
+/* Même piège que `.showreel-controls` : `display: flex` d'une feuille
+   d'auteur l'emporte sur le `[hidden] { display: none }` du navigateur. Sans
+   cette règle, le formulaire resterait visible sous le message de
+   confirmation. */
+.contact-form[hidden] { display: none; }
+
+/* Confirmation d'envoi. Elle remplace le formulaire au lieu de s'effacer au
+   bout de quatre secondes : quelqu'un qui détourne le regard pendant l'envoi
+   ne savait pas si son message était parti, et le renvoyait - ou pas. */
+/* Message d'erreur détaillé, sous le bouton. */
+.form-error { font-size: 13.5px; line-height: 1.5; color: var(--error-text); }
+.form-error[hidden] { display: none; }
+
+.form-done { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.form-done[hidden] { display: none; }
+.form-done p { font-family: var(--font-hennessy); font-size: 18px; line-height: 1.5; }
+.form-done .form-done-sub { font-family: var(--font-body); font-size: 14px; color: var(--gray-dark); }
+.form-done button {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--black);
+  border-bottom: 1px solid var(--border-ui);
+}
+.form-done button:hover { border-bottom-color: var(--black); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label {
@@ -981,7 +1016,8 @@ footer {
   /* Terme au-dessus de la valeur : deux colonnes deviennent illisibles sous
      600 px, l'adresse de l'hébergeur passant sur quatre lignes. */
   .legal-fact { grid-template-columns: 1fr; gap: 4px; }
-  #about, #contact { grid-template-columns: 1fr; gap: 48px; }
+  /* `#about` n'est pas une grille : la déclaration ne s'y appliquait pas. */
+  #contact { grid-template-columns: 1fr; gap: 48px; }
   /* Deux colonnes entre 600 et 900 px - tablettes et grands téléphones en
      paysage. Le pattern éditorial 8/4 n'a plus de sens à cette largeur, mais
      la colonne unique imposait un défilement de 36 vignettes en 16/10, soit

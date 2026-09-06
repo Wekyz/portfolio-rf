@@ -94,6 +94,13 @@ collections:
                 required: false
                 hint: "Pour une image qui n'est ni au format 16/10 ni au format portrait (affiche, montage de plusieurs photogrammes) : la vignette est centrée sur une demi-largeur et l'image est montrée en entier, sans recadrage. Suppose une Miniature renseignée ci-dessus. Ne pas cocher en même temps que Pleine largeur."
 
+              - name: portrait
+                label: "Vignette portrait"
+                widget: boolean
+                default: false
+                required: false
+                hint: "Vignette verticale (format 2/3) sur un tiers de largeur, pour une image tournée en portrait. Ne pas cocher en même temps que Pleine largeur ou Vignette affiche."
+
               - name: awards
                 label: "Distinctions"
                 widget: list

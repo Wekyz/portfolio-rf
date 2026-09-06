@@ -24,6 +24,34 @@ import { applySpans } from '../lib/spans.js';
     fr: { sending: 'Envoi…', sent: 'Envoyé ✓', error: 'Erreur - réessayez' },
   }[lang];
 
+  // Le serveur distingue cinq causes de refus et rédige un message précis pour
+  // chacune ; le client les jetait toutes et affichait « Erreur - réessayez ».
+  // Quelqu'un dont l'adresse comporte une faute de frappe réessayait donc à
+  // l'identique. Les messages du serveur sont en français : on traduit son
+  // `code`, stable, plutôt que d'afficher son texte sur la version anglaise.
+  const FORM_ERRORS = {
+    en: {
+      'rate-limit': 'Too many attempts. Please try again in a few minutes.',
+      'too-long': 'One of the fields is too long.',
+      'invalid-fields': 'Please check the required fields and your email address.',
+      'too-fast': 'Sent a little too fast - please try again in a moment.',
+      'bad-token': 'This form has expired. Please reload the page.',
+      captcha: 'The anti-robot check failed. Please try again.',
+      unavailable: 'The email service is unavailable. Please try again later.',
+      'send-failed': 'The message could not be sent. Please try again in a moment.',
+    },
+    fr: {
+      'rate-limit': 'Trop de tentatives. Réessayez dans quelques minutes.',
+      'too-long': "L'un des champs est trop long.",
+      'invalid-fields': 'Vérifiez les champs obligatoires et votre adresse e-mail.',
+      'too-fast': 'Envoi un peu trop rapide - réessayez dans un instant.',
+      'bad-token': 'Ce formulaire a expiré. Rechargez la page.',
+      captcha: 'La vérification anti-robot a échoué. Réessayez.',
+      unavailable: "Le service d'envoi est indisponible. Réessayez plus tard.",
+      'send-failed': "Le message n'a pas pu être envoyé. Réessayez dans un instant.",
+    },
+  }[lang];
+
   // ── Menu burger (mobile) - présent sur les 3 pages ────────────
   if (navBurger && navLinks) {
     const closeMenu = () => {
@@ -373,7 +401,23 @@ import { applySpans } from '../lib/spans.js';
     const select = document.getElementById('filterSelect');
     const dividers = document.querySelectorAll('.cat-divider');
 
-    function applyFilter(f) {
+    /**
+     * Le filtre n'existait que dans le JS : `/portfolio` n'acceptait aucun
+     * paramètre, un filtre choisi n'était donc ni partageable, ni retrouvable
+     * par le bouton Retour, et une page projet ne pouvait pas ramener vers sa
+     * catégorie. `replaceState` plutôt que `pushState` : empiler une entrée
+     * d'historique par clic obligerait à appuyer sept fois sur Retour pour
+     * quitter la page.
+     */
+    function syncUrl(f) {
+      const url = new URL(window.location.href);
+      if (f === 'all') url.searchParams.delete('cat');
+      else url.searchParams.set('cat', f);
+      window.history.replaceState(null, '', url);
+    }
+
+    function applyFilter(f, { url = true } = {}) {
+      if (url) syncUrl(f);
       buttons.forEach((b) => {
         const isActive = b.dataset.filter === f;
         b.classList.toggle('active', isActive);
@@ -395,7 +439,12 @@ import { applySpans } from '../lib/spans.js';
       }
     }
 
-    applyFilter('all');
+    // Filtre initial : celui de l'URL s'il désigne une catégorie connue, sinon
+    // « all ». On ne réécrit pas l'URL au chargement (`url: false`), sinon un
+    // `?cat=` erroné disparaîtrait sans que le visiteur comprenne pourquoi.
+    const voulu = new URLSearchParams(window.location.search).get('cat');
+    const connu = voulu && [...buttons].some((b) => b.dataset.filter === voulu);
+    applyFilter(connu ? voulu : 'all', { url: false });
     buttons.forEach((btn) => {
       btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
     });
@@ -412,6 +461,19 @@ import { applySpans } from '../lib/spans.js';
     // fier à une horloge cliente. Il est demandé à la première interaction
     // avec le formulaire, pas au chargement : inutile d'invoquer une fonction
     // pour un visiteur qui ne remplira rien, ni pour un robot d'indexation.
+    const formDone = document.getElementById('formDone');
+    const formAgain = document.getElementById('formAgain');
+    const formError = document.getElementById('formError');
+
+    if (formAgain && formDone) {
+      formAgain.addEventListener('click', () => {
+        formDone.hidden = true;
+        contactForm.hidden = false;
+        const premier = contactForm.querySelector('#first-name');
+        if (premier) premier.focus();
+      });
+    }
+
     let formToken = null;
     let tokenAt = 0;
     let tokenRequest = null;
@@ -504,6 +566,7 @@ import { applySpans } from '../lib/spans.js';
       btn.innerHTML = FORM_LABELS.sending;
       btn.disabled = true;
       btn.classList.remove('is-success', 'is-error');
+      if (formError) formError.hidden = true;
       // Le libellé du bouton est visuel uniquement (innerHTML) : cette région
       // aria-live annonce le même statut aux lecteurs d'écran.
       if (formStatus) formStatus.textContent = FORM_LABELS.sending;
@@ -538,17 +601,37 @@ import { applySpans } from '../lib/spans.js';
             }),
           })
         )
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          btn.innerHTML = FORM_LABELS.sent;
-          btn.classList.add('is-success');
-          if (formStatus) formStatus.textContent = FORM_LABELS.sent;
+        .then(async (res) => {
+          if (!res.ok) {
+            // Le serveur nomme la cause : on la lit avant de lever.
+            const data = await res.json().catch(() => null);
+            const err = new Error(`HTTP ${res.status}`);
+            err.code = data && data.code;
+            throw err;
+          }
           form.reset();
+          // Confirmation persistante à la place du formulaire, plutôt qu'un
+          // libellé de bouton effacé au bout de quatre secondes.
+          if (formDone) {
+            form.hidden = true;
+            formDone.hidden = false;
+            // Le focus suit, sinon un utilisateur au clavier ou de lecteur
+            // d'écran reste posé sur un bouton qui vient de disparaître.
+            formDone.focus();
+          }
+          if (formStatus) formStatus.textContent = FORM_LABELS.sent;
         })
-        .catch(() => {
+        .catch((err) => {
+          const message = (err && FORM_ERRORS[err.code]) || FORM_LABELS.error;
           btn.innerHTML = FORM_LABELS.error;
           btn.classList.add('is-error');
-          if (formStatus) formStatus.textContent = FORM_LABELS.error;
+          // Le détail va dans la région annoncée ET sous le formulaire : le
+          // bouton est trop étroit pour « Vérifiez les champs obligatoires ».
+          if (formStatus) formStatus.textContent = message;
+          if (formError) {
+            formError.textContent = message;
+            formError.hidden = false;
+          }
         })
         .finally(() => {
           // Un jeton Turnstile ne vaut qu'un envoi : Cloudflare refuse le second
@@ -564,6 +647,8 @@ import { applySpans } from '../lib/spans.js';
             window.turnstile?.reset();
           } catch { /* widget pas encore rendu : le prochain envoi l'attendra */ }
           setTimeout(() => {
+            // Rien à rétablir si la confirmation a pris la place du formulaire.
+            if (formDone && !formDone.hidden) return;
             btn.innerHTML = originalHTML;
             btn.classList.remove('is-success', 'is-error');
             btn.disabled = false;

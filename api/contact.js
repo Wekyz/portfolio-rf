@@ -11,6 +11,12 @@
  *
  * Le `from` doit appartenir à un domaine vérifié dans Resend (SPF/DKIM).
  *
+ * Chaque refus porte un `code` stable en plus de son message. Le message est
+ * en français ; le site, lui, est bilingue - le client ne peut donc pas
+ * l'afficher tel quel, il traduit le code (voir FORM_ERRORS dans app.js).
+ * Jusqu'ici il jetait la réponse et affichait « Erreur - réessayez » pour cinq
+ * causes distinctes, dont « votre adresse e-mail est invalide ».
+ *
  * Rate limiting (anti-spam) : 5 envois / 10 min par IP, via Upstash Redis
  * (@upstash/ratelimit). Nécessite une base Redis Upstash :
  *   - soit via l'intégration Vercel Marketplace "Upstash" (Storage → Browse
@@ -46,7 +52,7 @@ export default async function handler(req, res) {
     const { success } = await ratelimit.limit(clientIp(req));
     if (!success) {
       countRejection('rate-limit');
-      return res.status(429).json({ error: 'Trop de tentatives, réessayez plus tard.' });
+      return res.status(429).json({ code: 'rate-limit', error: 'Trop de tentatives, réessayez plus tard.' });
     }
   }
 
@@ -78,12 +84,12 @@ export default async function handler(req, res) {
   ].some(Boolean);
   if (TOO_LONG) {
     countRejection('too-long');
-    return res.status(413).json({ error: 'Un des champs dépasse la longueur autorisée.' });
+    return res.status(413).json({ code: 'too-long', error: 'Un des champs dépasse la longueur autorisée.' });
   }
 
   if (!firstName || !lastName || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     countRejection('invalid-fields');
-    return res.status(400).json({ error: 'Champs requis manquants ou email invalide.' });
+    return res.status(400).json({ code: 'invalid-fields', error: 'Champs requis manquants ou email invalide.' });
   }
 
   // Délai anti-bot vérifié côté serveur : le contrôle des 3 secondes vivait
@@ -93,11 +99,11 @@ export default async function handler(req, res) {
   const tokenState = verifyToken(body.formToken);
   if (tokenState === 'too-fast') {
     countRejection('too-fast');
-    return res.status(429).json({ error: 'Envoi trop rapide, réessayez dans quelques secondes.' });
+    return res.status(429).json({ code: 'too-fast', error: 'Envoi trop rapide, réessayez dans quelques secondes.' });
   }
   if (tokenState === 'missing' || tokenState === 'invalid' || tokenState === 'expired') {
     countRejection('bad-token');
-    return res.status(400).json({ error: 'Session de formulaire expirée, rechargez la page.' });
+    return res.status(400).json({ code: 'bad-token', error: 'Session de formulaire expirée, rechargez la page.' });
   }
 
   // Captcha : inactif tant que TURNSTILE_SECRET_KEY n'est pas définie. Une
@@ -108,7 +114,7 @@ export default async function handler(req, res) {
   const captcha = await verifyTurnstile(body['cf-turnstile-response'], clientIp(req));
   if (captcha === 'missing' || captcha === 'invalid') {
     countRejection(`captcha-${captcha}`);
-    return res.status(400).json({ error: 'Vérification anti-robot échouée, réessayez.' });
+    return res.status(400).json({ code: 'captcha', error: 'Vérification anti-robot échouée, réessayez.' });
   }
   // `unreachable` laisse passer, et c'est le bon arbitrage - mais rien ne le
   // signalait : une indisponibilité prolongée de Cloudflare aurait désactivé
@@ -126,7 +132,7 @@ export default async function handler(req, res) {
     // supprimée ou expirée. Rien ne cassait au build, donc rien ne prévenait.
     reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
     stashFailedMessage({ firstName, lastName, email, message });
-    return res.status(500).json({ error: 'Service email non configuré.' });
+    return res.status(500).json({ code: 'unavailable', error: 'Service email non configuré.' });
   }
 
   try {
@@ -149,13 +155,13 @@ export default async function handler(req, res) {
       // code HTTP que personne ne lisait.
       reportError('resend-http', `HTTP ${r.status}`);
       stashFailedMessage({ firstName, lastName, email, message });
-      return res.status(502).json({ error: 'Envoi impossible.' });
+      return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
     }
     countSent();
     return res.status(200).json({ ok: true });
   } catch (err) {
     reportError('resend-network', err?.message || 'fetch échoué');
     stashFailedMessage({ firstName, lastName, email, message });
-    return res.status(502).json({ error: 'Envoi impossible.' });
+    return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
   }
 }
