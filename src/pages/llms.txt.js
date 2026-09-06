@@ -42,7 +42,11 @@ export function GET() {
         const bits = [p.credit, p.year].filter(Boolean).join(', ');
         const slug = bySlug.get(p);
         const label = slug ? `[${p.title}](${SITE}/portfolio/${slug})` : p.title;
-        return `- ${label}${bits ? ` - ${bits}` : ''}`;
+        // Les distinctions sont le fait le plus citable d'un projet qui en
+        // porte : elles vivaient dans le champ crédit et n'apparaissaient
+        // donc ici que noyées dans une chaîne de 124 caractères.
+        const prix = p.awards?.length ? ` - ${p.awards.join('; ')}` : '';
+        return `- ${label}${bits ? ` - ${bits}` : ''}${prix}`;
       });
       return `### ${CATEGORY_LABELS[cat]}\n\n${lines.join('\n')}`;
     })
@@ -76,7 +80,8 @@ ${byCategory}
 - [Home](${SITE}/) - showreel and entry points. French: ${SITE}/fr
 - [Portfolio](${SITE}/portfolio) - all projects, filterable by category. French: ${SITE}/fr/portfolio
 - [About](${SITE}/about) - biography, software, productions, brands, awards. French: ${SITE}/fr/about
-- Project pages: ${SITE}/portfolio/<slug> - one per video, with player, credits, year, duration.
+- [Contact](${SITE}/contact) - contact form, working area, languages. French: ${SITE}/fr/contact
+- Project pages: ${SITE}/portfolio/<slug> - one per video, with player, credits, year, duration and awards where applicable.
 - [Legal notice](${SITE}/legal) - [Privacy policy](${SITE}/privacy)
 
 English is the default language at the root; French lives under /fr with the
@@ -84,9 +89,10 @@ same structure and matching hreflang pairs.
 
 ## Contact
 
-Contact form at ${SITE}/portfolio#contact and ${SITE}/about#contact. The email
-address is served through a redirect at /api/email rather than exposed in the
-HTML, and is also published in the legal notice.
+The contact page is ${SITE}/contact (French: ${SITE}/fr/contact). The same
+form also sits at the bottom of the portfolio, about and project pages. The
+email address is served through a redirect at /api/email rather than exposed
+in the HTML, and is also published in the legal notice.
 
 ## Notes for automated agents
 

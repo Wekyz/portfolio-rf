@@ -10,6 +10,8 @@ import data from '../data/videos.json';
 import { projectRoutes } from '../lib/slug.js';
 import { ui } from '../i18n/strings.js';
 import { LEGAL } from '../data/legal.js';
+import { getDuration } from '../lib/thumb.js';
+import { formatDuration } from '../lib/project-page.js';
 
 const SITE = 'https://roxane-foare.com';
 
@@ -23,10 +25,13 @@ export function GET() {
 
   const projectLines = projects.map((p) => {
     const slug = bySlug.get(p);
+    const duree = formatDuration(getDuration(p));
     const facts = [
       p.credit && `production: ${p.credit}`,
       p.year && `year: ${p.year}`,
       `category: ${p.cat}`,
+      duree && `duration: ${duree}`,
+      p.awards?.length && `awards: ${p.awards.join('; ')}`,
       slug && `page: ${SITE}/portfolio/${slug}`,
     ].filter(Boolean);
     return `- ${p.title}\n  ${facts.join(' | ')}`;

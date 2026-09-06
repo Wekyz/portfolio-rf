@@ -10,6 +10,7 @@ import { computeSpans } from '../lib/spans.js';
 import { resolveThumb } from '../lib/thumb.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { useTranslations } from '../i18n/strings.js';
+import { PERSON_ID, WEBSITE_ID, SERVICE_ID, personRef, pageIds } from '../lib/schema-ids.js';
 import type { Project } from '../lib/types';
 
 // `page` détermine le head (title/description/canonical/JSON-LD) et le
@@ -29,14 +30,21 @@ const {
   ogImage,
   videoObject,
   breadcrumb,
+  dateModified,
   noindex = false,
 } = Astro.props;
 
-// Signal de fraîcheur : les moteurs de réponse pondèrent fortement la date de
-// mise à jour quand ils arbitrent entre plusieurs sources, et le site n'en
-// exposait aucune. La date du build fait foi - chaque publication depuis le
-// CMS en déclenche un, elle reflète donc bien la dernière modification.
+// Signal de fraîcheur. Les pages projet apportent leur propre date, tenue par
+// scripts/fetch-thumbs.mjs à partir du contenu réel de chaque fiche : tant
+// qu'un projet ne change pas, sa date ne change pas, quel que soit le nombre
+// de builds.
+//
+// Les pages fixes retombent sur la date du build, faute de mieux : leur
+// contenu vit dans les sources, et un dépôt cloné n'a pas d'horodatage
+// exploitable. Elles sont 13 sur 75, et ce sont celles qui bougent le moins -
+// la dilution du signal venait des 62 autres.
 const buildDate = new Date().toISOString().slice(0, 10);
+const modified = dateModified ?? buildDate;
 const t = useTranslations(lang);
 
 const SITE = 'https://roxane-foare.com';
@@ -111,9 +119,14 @@ const SERVICES = [
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
+  '@id': PERSON_ID,
   name: 'Roxane Foare',
   jobTitle: t('head.jobTitle'),
-  url: canonical,
+  // URL fixe, et non celle de la page courante : toutes les pages déclarent
+  // le même `@id`, elles ne peuvent pas lui attribuer des `url` différentes
+  // sans se contredire. C'est la page qui pointe vers la personne, pas
+  // l'inverse (voir `about` sur la WebPage plus bas).
+  url: `${SITE}/`,
   image: `${SITE}/og-image.jpg`,
   // `sameAs` se limite à IMDb : c'est le seul profil public existant. Pas de
   // LinkedIn, pas de Vimeo public, pas de réseau social - déclarer des URL
@@ -141,11 +154,12 @@ const serviceLd =
     ? {
         '@context': 'https://schema.org',
         '@type': 'ProfessionalService',
+        '@id': SERVICE_ID,
         name: 'Roxane Foare',
         description: pageDescription,
         url: `${SITE}${langBase || '/'}`,
         image: `${SITE}/og-image.jpg`,
-        provider: { '@type': 'Person', name: 'Roxane Foare' },
+        provider: personRef(),
         serviceType: SERVICES,
         areaServed: [
           { '@type': 'City', name: 'Paris' },
@@ -178,17 +192,26 @@ function sha256(content: string): `sha256-${string}` {
 // Person (partout), puis selon la page : ItemList du portfolio ou VideoObject
 // du projet, et le fil d'Ariane des pages projet. Chaque bloc a son propre
 // hash CSP.
+const ids = pageIds(canonical);
+// Sur une page projet, la WebPage désigne la vidéo comme son sujet principal
+// et son fil d'Ariane : les deux blocs existent déjà sur la page, il ne
+// manquait que le lien entre eux.
+const isProject = page === 'project';
 const pageLd = noindex
   ? null
   : {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
+      '@id': ids.webPage,
       url: canonical,
       name: pageTitle,
       description: pageDescription,
       inLanguage: lang,
-      dateModified: buildDate,
-      isPartOf: { '@type': 'WebSite', name: 'Roxane Foare', url: `${SITE}/` },
+      dateModified: modified,
+      isPartOf: { '@type': 'WebSite', '@id': WEBSITE_ID, name: 'Roxane Foare', url: `${SITE}/` },
+      about: personRef(),
+      ...(isProject ? { mainEntity: { '@id': ids.video } } : {}),
+      ...(breadcrumb?.['@id'] ? { breadcrumb: { '@id': breadcrumb['@id'] } } : {}),
     };
 
 const ldBlocks = [jsonLd, pageLd, serviceLd, secondaryLd, breadcrumb]

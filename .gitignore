@@ -6,7 +6,8 @@ dist/
 playwright-report/
 test-results/
 
-# Les caches de src/data/ (vimeo-thumbs, local-images, brands) sont générés par
+# Les caches de src/data/ (vimeo-thumbs, local-images, brands, content-dates)
+# sont générés par
 # scripts/fetch-thumbs.mjs mais VERSIONNÉS, volontairement, pour deux raisons :
 #
 #  1. `npm run check` s'exécute avant `npm run build` en CI, donc avant que
@@ -15,6 +16,11 @@ test-results/
 #  2. En cas d'indisponibilité de l'API Vimeo pendant un build, le script
 #     retombe sur le contenu précédent. Sans fichier versionné, ce repli n'a
 #     rien sur quoi retomber et le site partirait sans aucune miniature.
+#
+#  3. `content-dates.json` n'a de sens QUE versionné : il retient la date à
+#     laquelle le contenu de chaque projet a changé. Régénéré à chaque build,
+#     mais un build Vercel ne peut rien réécrire dans le dépôt - c'est le
+#     fichier commité qui fait foi en production.
 #
 # Contrepartie assumée : une rotation d'URL côté CDN Vimeo produira un diff.
 

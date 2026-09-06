@@ -24,7 +24,7 @@ export function getStaticPaths() {
 const { project, slug, related } = Astro.props;
 const meta = buildProjectMeta(project, slug, 'en');
 ---
-<Base lang="en" page="project" {...meta} breadcrumb={buildBreadcrumb(project, 'en')}>
+<Base lang="en" page="project" {...meta} breadcrumb={buildBreadcrumb(project, 'en', slug)}>
   <ProjectDetail project={project} related={related} lang="en" />
   <Contact lang="en" />
 </Base>

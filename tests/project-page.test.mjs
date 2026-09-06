@@ -14,6 +14,8 @@ import {
   buildProjectMeta,
 } from '../src/lib/project-page.js';
 import { catGender } from '../src/i18n/strings.js';
+import { PERSON_ID } from '../src/lib/schema-ids.js';
+import { projectRoutes } from '../src/lib/slug.js';
 import videos from '../src/data/videos.json' with { type: 'json' };
 
 test('formatDuration rend le format des lecteurs vidéo', () => {
@@ -164,4 +166,60 @@ test('aucune description de projet ne dépasse 160 caractères', () => {
     [],
     'descriptions trop longues - alléger le champ Crédit, pas le gabarit :\n' + trop.join('\n')
   );
+});
+
+/* ── Graphe JSON-LD : les blocs se référencent (GEO-04) ──────────────── */
+
+test('le VideoObject porte un @id local et référence la Person globale', () => {
+  const { videoObject } = buildProjectMeta({ cat: 'pub', title: 'Hanro' }, 'hanro', 'fr');
+  assert.equal(videoObject['@id'], 'https://roxane-foare.com/fr/portfolio/hanro#video');
+  assert.equal(videoObject.editor['@id'], PERSON_ID);
+  // La référence reste lisible seule : un consommateur qui ne lirait que ce
+  // bloc doit encore savoir de qui il s'agit.
+  assert.equal(videoObject.editor['@type'], 'Person');
+  assert.equal(videoObject.editor.name, 'Roxane Foare');
+});
+
+test("l'@id de la Person ne dépend pas de la page qui l'émet", () => {
+  const en = buildProjectMeta({ cat: 'pub', title: 'Hanro' }, 'hanro', 'en');
+  const fr = buildProjectMeta({ cat: 'pub', title: 'Hanro' }, 'hanro', 'fr');
+  assert.equal(en.videoObject.editor['@id'], fr.videoObject.editor['@id']);
+  // Les @id locaux, eux, doivent différer : ce sont deux pages distinctes.
+  assert.notEqual(en.videoObject['@id'], fr.videoObject['@id']);
+});
+
+test("le fil d'Ariane porte un @id quand le slug est fourni, aucun sinon", () => {
+  const avec = buildBreadcrumb({ title: 'Hanro' }, 'fr', 'hanro');
+  assert.equal(avec['@id'], 'https://roxane-foare.com/fr/portfolio/hanro#breadcrumb');
+  const sans = buildBreadcrumb({ title: 'Hanro' }, 'fr');
+  assert.equal(sans['@id'], undefined, 'reste valide, simplement non adressable');
+});
+
+/* ── dateModified tenu par le contenu (GEO-03) ──────────────────────── */
+
+test('chaque page projet porte une date de modification issue du registre', () => {
+  const projets = /** @type {any[]} */ (videos.videos || videos);
+  const routes = projectRoutes(projets);
+  const sans = [];
+  for (const { project, slug } of routes) {
+    const { dateModified } = buildProjectMeta(project, slug, 'en');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateModified || '')) sans.push(slug);
+  }
+  assert.deepEqual(
+    sans,
+    [],
+    'projets absents de content-dates.json - relancer `npm run thumbs` et committer le fichier :\n' +
+      sans.join('\n')
+  );
+});
+
+test('les dates de modification ne sont pas toutes identiques', () => {
+  // Le défaut corrigé : `dateModified` valait la date du build partout, donc
+  // republier pour une virgule faisait passer tout le site pour modifié le
+  // même jour. Un signal uniformément neuf est un signal qu'on ignore.
+  const projets = /** @type {any[]} */ (videos.videos || videos);
+  const dates = new Set(
+    projectRoutes(projets).map(({ project, slug }) => buildProjectMeta(project, slug, 'en').dateModified)
+  );
+  assert.ok(dates.size > 1, `une seule date pour toutes les pages projet : ${[...dates]}`);
 });

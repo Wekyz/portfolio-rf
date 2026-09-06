@@ -36,6 +36,8 @@ import { constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
+import { createHash } from 'node:crypto';
+import { buildSlugMap } from '../src/lib/slug.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -43,6 +45,7 @@ const DATA = join(ROOT, 'src', 'data', 'videos.json');
 const CACHE_FILE = join(ROOT, 'src', 'data', 'vimeo-thumbs.json');
 const LOCAL_CACHE_FILE = join(ROOT, 'src', 'data', 'local-images.json');
 const BRANDS_CACHE_FILE = join(ROOT, 'src', 'data', 'brands.json');
+const DATES_FILE = join(ROOT, 'src', 'data', 'content-dates.json');
 const LIVE_DIR = join(ROOT, 'public', 'live');
 // Sources des logos (160 px) hors de public/ : elles ne sont jamais servies -
 // seules les densités -64/-96 le sont - et les laisser là revenait à déployer
@@ -324,6 +327,70 @@ async function measureCandidates(dir, urlPrefix) {
   return out;
 }
 
+/**
+ * Date de dernière modification réelle de chaque page projet.
+ *
+ * `dateModified` valait la date du build sur les 75 pages : republier après
+ * avoir corrigé une virgule sur une page faisait passer les 74 autres pour
+ * modifiées le même jour. Or les moteurs de réponse pondèrent fortement ce
+ * signal quand ils arbitrent entre plusieurs sources - et un signal
+ * uniformément neuf est un signal qu'on apprend à ignorer.
+ *
+ * Le registre associe à chaque projet l'empreinte de son contenu et la date à
+ * laquelle cette empreinte est apparue. Tant que le contenu ne bouge pas, la
+ * date ne bouge pas, quel que soit le nombre de builds.
+ *
+ * Pas de `git log` : Vercel clone sans garantie sur la profondeur de
+ * l'historique, un build ne peut donc pas s'y fier. Le registre est versionné
+ * comme les autres caches de src/data (voir .gitignore).
+ *
+ * Amorçage : un projet vu pour la première fois prend la date d'upload de sa
+ * vidéo Vimeo, à défaut la date du jour. C'est une estimation, et elle se
+ * trompe dans le sens prudent - mieux vaut sous-estimer la fraîcheur que
+ * déclarer 62 pages modifiées aujourd'hui.
+ *
+ * LIMITE CONNUE : un build Vercel ne peut rien réécrire dans le dépôt. Après
+ * une modification via le CMS, le projet touché portera la date du jour à
+ * chaque build tant que ce fichier n'aura pas été régénéré et commité depuis
+ * un poste. Les autres projets, eux, gardent leur date exacte - c'est
+ * l'essentiel du bénéfice.
+ */
+async function updateContentDates(videos, vimeoCache) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  let previous = {};
+  if (await exists(DATES_FILE)) {
+    try {
+      previous = JSON.parse(await readFile(DATES_FILE, 'utf8'));
+    } catch {
+      previous = {};
+    }
+  }
+
+  const dates = {};
+  let nouveaux = 0;
+  let changes = 0;
+  for (const [project, slug] of buildSlugMap(videos)) {
+    // Toute la fiche est prise en compte : le titre et le crédit s'affichent,
+    // mais `poster` ou `fullWidth` changent la page tout autant.
+    const hash = createHash('sha256').update(JSON.stringify(project)).digest('hex').slice(0, 12);
+    const avant = previous[slug];
+    if (!avant) {
+      const upload = vimeoCache[project.id]?.uploadDate;
+      dates[slug] = { hash, date: upload ? upload.slice(0, 10) : today };
+      nouveaux++;
+    } else if (avant.hash !== hash) {
+      dates[slug] = { hash, date: today };
+      changes++;
+    } else {
+      dates[slug] = avant;
+    }
+  }
+
+  await writeFile(DATES_FILE, JSON.stringify(dates, null, 2) + '\n');
+  return { total: Object.keys(dates).length, nouveaux, changes };
+}
+
 async function main() {
   const raw = JSON.parse(await readFile(DATA, 'utf8'));
   const videos = raw.videos || raw;
@@ -362,6 +429,13 @@ async function main() {
 
   await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2) + '\n');
   console.log(`[thumbs] ${resolved} vidéo(s) résolue(s), ${failed} échec(s).`);
+
+  // Après l'écriture du cache Vimeo : l'amorçage d'un projet inconnu lit sa
+  // date d'upload, qui vient d'y être résolue.
+  const d = await updateContentDates(videos, cache);
+  console.log(
+    `[dates] ${d.total} page(s) projet, ${d.nouveaux} amorcée(s), ${d.changes} modifiée(s) aujourd'hui.`
+  );
   await summarize(`Miniatures Vimeo : **${resolved}** résolue(s), **${failed}** échec(s).`);
 
   // Échec TOTAL : plus aucune miniature ne se résout. Le repli sur le cache

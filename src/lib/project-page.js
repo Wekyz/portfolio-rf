@@ -15,6 +15,8 @@
  */
 import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
 import { useTranslations, catGender } from '../i18n/strings.js';
+import { personRef, pageIds } from './schema-ids.js';
+import contentDates from '../data/content-dates.json' with { type: 'json' };
 
 const SITE = 'https://roxane-foare.com';
 
@@ -54,12 +56,16 @@ export function formatDuration(iso) {
  * Le dernier maillon ne porte volontairement pas d'`item` : c'est la page
  * courante, et la documentation Google demande de ne pas l'auto-référencer.
  */
-export function buildBreadcrumb(project, lang) {
+export function buildBreadcrumb(project, lang, slug) {
   const t = useTranslations(lang);
   const base = lang === 'fr' ? '/fr' : '';
+  // `slug` est facultatif : sans lui le fil d'Ariane reste valide, il n'est
+  // simplement pas adressable depuis la WebPage de la page.
+  const id = slug ? pageIds(`${SITE}${base}/portfolio/${slug}`).breadcrumb : undefined;
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    ...(id ? { '@id': id } : {}),
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: t('nav.home'), item: `${SITE}${base || '/'}` },
       { '@type': 'ListItem', position: 2, name: t('nav.work'), item: `${SITE}${base}/portfolio` },
@@ -95,6 +101,7 @@ export function buildProjectMeta(project, slug, lang) {
   const videoObject = {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
+    '@id': pageIds(canonical).video,
     name: p.title,
     description: richDescription,
     thumbnailUrl: absThumb(p),
@@ -106,7 +113,7 @@ export function buildProjectMeta(project, slug, lang) {
     embedUrl: embedUrl(p),
     url: canonical,
     inLanguage: lang,
-    editor: { '@type': 'Person', name: 'Roxane Foare', url: `${SITE}${lang === 'fr' ? '/fr' : '/'}` },
+    editor: personRef(),
     genre: catLabel,
     // Les distinctions vivaient dans le champ `credit`, mélangées à la
     // réalisation : elles n'étaient donc déclarées nulle part comme telles,
@@ -120,6 +127,11 @@ export function buildProjectMeta(project, slug, lang) {
     description,
     ogImage: absThumb(p),
     videoObject,
+    // Date de dernière modification réelle du contenu de ce projet, tenue par
+    // scripts/fetch-thumbs.mjs (voir `updateContentDates`). Sans elle,
+    // `dateModified` valait la date du build sur les 75 pages : republier pour
+    // une virgule faisait passer tout le site pour modifié le même jour.
+    dateModified: contentDates[slug]?.date,
   };
 }
 
