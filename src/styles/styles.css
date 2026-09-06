@@ -48,6 +48,14 @@
   --gray-light: #e8e8e4;
   --gray-mid:   #6e6e68;          /* ~4.9:1 sur --white : WCAG AA (petit texte) */
   --gray-dark:  #5a5a54;
+  /* Contour des COMMANDES (champs de formulaire, boutons ronds, piste du
+     curseur du showreel). `--gray-light` n'y donnait que 1,18:1 sur le fond du
+     site, alors que WCAG 1.4.11 exige 3:1 pour ce qui permet d'identifier un
+     composant d'interface et son état : la limite d'un champ de saisie en est
+     l'exemple type. Mesuré à 3,22:1, même famille de gris chaud.
+     `--gray-light` reste la bonne valeur pour les FILETS décoratifs (bas de
+     nav, séparateurs de section), que le critère ne vise pas. */
+  --border-ui:  #8e8c86;
   --accent:     #c8b89a;
   /* L'accent ne tient pas le contraste sur fond clair : 1,86:1, très loin des
      4,5:1 exigés pour du petit texte. Même teinte et même saturation (38°,
@@ -121,7 +129,7 @@ body {
 .media-toggle {
   width: 32px; height: 32px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid var(--gray-light); border-radius: 50%;
+  background: none; border: 1px solid var(--border-ui); border-radius: 50%;
   color: var(--gray-mid); cursor: pointer;
   transition: border-color var(--t-fast) ease, color var(--t-fast) ease;
 }
@@ -261,10 +269,10 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* Les pseudo-éléments de curseur natif ne se regroupent pas dans un même
    sélecteur : un moteur qui n'en connaît qu'un jetterait toute la règle. */
 .showreel-seek::-webkit-slider-runnable-track {
-  height: 2px; background: var(--gray-light); border-radius: 2px;
+  height: 2px; background: var(--border-ui); border-radius: 2px;
 }
 .showreel-seek::-moz-range-track {
-  height: 2px; background: var(--gray-light); border-radius: 2px;
+  height: 2px; background: var(--border-ui); border-radius: 2px;
 }
 .showreel-seek::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
@@ -831,7 +839,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .form-group input,
 .form-group textarea {
-  background: none; border: none; border-bottom: 1px solid var(--gray-light);
+  background: none; border: none; border-bottom: 1px solid var(--border-ui);
   padding: 12px 0; font-family: var(--font-body); font-size: 15px; font-weight: 300;
   color: var(--black); outline: none; transition: border-color var(--t-fast); resize: none;
 }
@@ -936,7 +944,7 @@ footer {
   flex-shrink: 0; order: -1;
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid rgba(255, 255, 255, .28); border-radius: 50%;
+  background: none; border: 1px solid rgba(255, 255, 255, .38); border-radius: 50%;
   color: var(--white); font-size: 15px; cursor: pointer;
   transition: border-color var(--t-fast) ease, background var(--t-fast) ease;
 }
