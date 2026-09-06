@@ -31,37 +31,23 @@
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir api/contact.js) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
  */
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { checkAdminToken } from './_lib/secret.js';
 import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
 
 const ratelimit = createLimiter('redeploy', 3, '10 m');
-
-/**
- * Comparaison à temps constant. Les deux valeurs sont hachées d'abord :
- * `timingSafeEqual` exige des tampons de même longueur, et comparer les
- * longueurs brutes divulguerait déjà celle du secret.
- */
-function sameSecret(a, b) {
-  const ha = createHash('sha256').update(String(a), 'utf8').digest();
-  const hb = createHash('sha256').update(String(b), 'utf8').digest();
-  return timingSafeEqual(ha, hb);
-}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const expected = process.env.REDEPLOY_TOKEN;
-  if (!expected) {
+  // Contrôle du secret partagé, factorisé dans _lib/secret.js depuis que
+  // /api/status s'appuie sur le même.
+  const auth = checkAdminToken(req);
+  if (auth === 'unconfigured') {
     return res.status(503).json({ error: 'Redéploiement désactivé (REDEPLOY_TOKEN non configuré).' });
   }
-
-  // En-tête personnalisé plutôt que corps de requête : un formulaire d'un
-  // autre site ne peut pas en poser un sans passer par un contrôle CORS
-  // préalable, ce qui écarte au passage la falsification de requête.
-  const provided = req.headers['x-redeploy-token'];
-  if (!provided || !sameSecret(provided, expected)) {
+  if (auth === 'denied') {
     countRejection('redeploy-bad-token');
     return res.status(401).json({ error: 'Phrase secrète invalide.' });
   }

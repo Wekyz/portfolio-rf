@@ -16,7 +16,12 @@ const limiterEnabled = Boolean(
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
 );
 
-const redis = limiterEnabled ? Redis.fromEnv() : null;
+/**
+ * Client Upstash partagé, exporté pour les compteurs d'observation
+ * (voir _lib/observe.js). `null` tant que les variables ne sont pas définies :
+ * tout ce qui l'utilise doit donc vérifier avant d'écrire.
+ */
+export const redis = limiterEnabled ? Redis.fromEnv() : null;
 
 /**
  * @param {string} prefix  espace de noms Upstash

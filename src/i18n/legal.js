@@ -147,6 +147,11 @@ export const legalPages = {
           title: 'Durée de conservation',
           paragraphs: [
             `Les messages reçus sont conservés ${LEGAL.retentionYears} ans à compter du dernier échange, puis supprimés.`,
+            // Ajouté avec la mise sous surveillance du formulaire : sans cette
+            // copie, un message perdu par une panne du service d'envoi l'était
+            // définitivement, sans que personne ne l'apprenne. Elle ne concerne
+            // QUE les envois en échec - un envoi réussi n'est pas dupliqué.
+            "En cas de défaillance technique du service d'envoi, le message est mis de côté sur un serveur européen (Upstash) pour qu'il ne soit pas perdu, et automatiquement supprimé au bout de 90 jours. Les messages transmis normalement ne font l'objet d'aucune copie de ce type.",
           ],
         },
         {
@@ -226,6 +231,7 @@ export const legalPages = {
           title: 'Retention period',
           paragraphs: [
             `Messages received are kept for ${LEGAL.retentionYears} years from the last exchange, then deleted.`,
+            'If the sending service fails, the message is set aside on a European server (Upstash) so that it is not lost, and automatically deleted after 90 days. Messages delivered normally are never copied this way.',
           ],
         },
         {

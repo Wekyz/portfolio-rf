@@ -25,6 +25,7 @@
 import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
 import { verifyToken } from './_lib/form-token.js';
 import { verifyTurnstile } from './_lib/turnstile.js';
+import { reportError, countSent, stashFailedMessage } from './_lib/observe.js';
 
 /**
  * Neutralise les retours à la ligne. Le sujet d'un email est un en-tête :
@@ -109,11 +110,22 @@ export default async function handler(req, res) {
     countRejection(`captcha-${captcha}`);
     return res.status(400).json({ error: 'Vérification anti-robot échouée, réessayez.' });
   }
+  // `unreachable` laisse passer, et c'est le bon arbitrage - mais rien ne le
+  // signalait : une indisponibilité prolongée de Cloudflare aurait désactivé
+  // le captcha en silence, sans que personne ne puisse le constater.
+  if (captcha === 'unreachable') {
+    countRejection('captcha-unreachable');
+    reportError('turnstile-unreachable', 'envoi accepté sans vérification');
+  }
 
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_EMAIL;
   const from = process.env.RESEND_FROM || 'Portfolio <noreply@roxane-foare.com>';
   if (!apiKey || !to) {
+    // Panne silencieuse la plus probable : une variable d'environnement
+    // supprimée ou expirée. Rien ne cassait au build, donc rien ne prévenait.
+    reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
+    stashFailedMessage({ firstName, lastName, email, message });
     return res.status(500).json({ error: 'Service email non configuré.' });
   }
 
@@ -133,10 +145,17 @@ export default async function handler(req, res) {
       }),
     });
     if (!r.ok) {
+      // Quota atteint, clé révoquée, domaine dévérifié : Resend le dit par un
+      // code HTTP que personne ne lisait.
+      reportError('resend-http', `HTTP ${r.status}`);
+      stashFailedMessage({ firstName, lastName, email, message });
       return res.status(502).json({ error: 'Envoi impossible.' });
     }
+    countSent();
     return res.status(200).json({ ok: true });
-  } catch {
+  } catch (err) {
+    reportError('resend-network', err?.message || 'fetch échoué');
+    stashFailedMessage({ firstName, lastName, email, message });
     return res.status(502).json({ error: 'Envoi impossible.' });
   }
 }

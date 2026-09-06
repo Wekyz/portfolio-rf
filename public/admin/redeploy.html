@@ -38,6 +38,16 @@
     #status { margin-top: 16px; font-size: 13px; min-height: 18px; }
     #status.ok { color: #7fbf7f; }
     #status.err { color: #e08080; }
+    .panel { margin-top: 28px; padding-top: 24px; border-top: 1px solid #2e2e29; text-align: left; }
+    .panel h2 { font-size: 13px; font-weight: 600; margin: 0 0 12px; letter-spacing: .04em; text-transform: uppercase; color: #a8a89f; }
+    .panel dl { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 0 0 16px; font-size: 13px; }
+    .panel dt { color: #a8a89f; }
+    .panel dd { margin: 0; font-variant-numeric: tabular-nums; }
+    .panel .none { color: #6e6e68; font-size: 13px; margin: 0 0 16px; }
+    .panel .alert { color: #e08080; }
+    .panel ul { list-style: none; padding: 0; margin: 0 0 16px; font-size: 12px; }
+    .panel li { padding: 6px 0; border-top: 1px solid #22221e; line-height: 1.5; }
+    .panel time { color: #6e6e68; }
     a.back { display: inline-block; margin-top: 24px; font-size: 12px; color: #6e6e68; text-decoration: none; }
     a.back:hover { color: #a8a89f; }
   </style>
@@ -54,6 +64,16 @@
     <input id="token" type="password" autocomplete="current-password" placeholder="••••••••••••" />
     <button id="btn" type="button">Lancer un redéploiement</button>
     <p id="status" role="status" aria-live="polite"></p>
+
+    <!-- Les compteurs antispam tournaient dans Upstash sans qu'aucun endroit
+         ne permette de les lire, et les incidents d'envoi n'existaient nulle
+         part. Même phrase secrète que le bouton ci-dessus : elle est déjà
+         saisie, en redemander une autre n'aurait servi à rien. -->
+    <div class="panel" id="panel" hidden>
+      <h2>Ce mois-ci</h2>
+      <div id="panelBody"></div>
+    </div>
+
     <a class="back" href="/admin/">&larr; Retour au CMS</a>
   </div>
 
@@ -109,6 +129,72 @@
 
     btn.addEventListener('click', run);
     token.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+
+    // ── État du mois : envois, rejets, incidents ────────────────────────
+    const panel = document.getElementById('panel');
+    const panelBody = document.getElementById('panelBody');
+    const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const quand = (iso) => new Date(iso).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+
+    const LIBELLES = {
+      'rate-limit': 'Trop d’envois depuis une même adresse',
+      honeypot: 'Robots piégés (champ caché)',
+      'too-long': 'Champ trop long',
+      'invalid-fields': 'Champ manquant ou e-mail invalide',
+      'too-fast': 'Envoi trop rapide',
+      'bad-token': 'Session de formulaire expirée',
+      'captcha-missing': 'Captcha absent',
+      'captcha-invalid': 'Captcha refusé',
+      'captcha-unreachable': 'Cloudflare injoignable (envoi laissé passer)',
+      'redeploy-bad-token': 'Redéploiement : phrase incorrecte',
+      'redeploy-rate-limit': 'Redéploiement : trop de tentatives',
+    };
+
+    function rendre(d) {
+      if (!d.upstash) {
+        panelBody.innerHTML = '<p class="none">' + esc(d.note) + '</p>';
+        panel.hidden = false;
+        return;
+      }
+      let html = '<dl><dt>Messages envoyés</dt><dd>' + d.sent + '</dd>';
+      const motifs = Object.entries(d.rejections);
+      for (const [k, n] of motifs) html += '<dt>' + esc(LIBELLES[k] || k) + '</dt><dd>' + n + '</dd>';
+      html += '</dl>';
+      if (!motifs.length) html += '<p class="none">Aucun envoi rejeté ce mois-ci.</p>';
+
+      html += '<h2>Incidents d’envoi</h2>';
+      if (!d.errors.length) {
+        html += '<p class="none">Aucun. Le formulaire fonctionne.</p>';
+      } else {
+        html += '<ul>' + d.errors.map((e) =>
+          '<li class="alert">' + esc(e.kind) + (e.detail ? ' – ' + esc(e.detail) : '') +
+          '<br><time>' + esc(quand(e.at)) + '</time></li>').join('') + '</ul>';
+      }
+
+      // Un message n'est mis de côté que si son envoi a échoué : ce sont
+      // exactement ceux que la boîte n'a jamais reçus.
+      if (d.failedMessages.length) {
+        html += '<h2>Messages non reçus (à recontacter)</h2><ul>' +
+          d.failedMessages.map((m) =>
+            '<li class="alert"><strong>' + esc(m.name) + '</strong> – ' + esc(m.email) +
+            '<br>' + esc(m.message).slice(0, 300) +
+            '<br><time>' + esc(quand(m.at)) + '</time></li>').join('') + '</ul>';
+      }
+      panelBody.innerHTML = html;
+      panel.hidden = false;
+    }
+
+    function charger(value) {
+      if (!value) return;
+      fetch('/api/status', { headers: { 'X-Redeploy-Token': value } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (d) rendre(d); })
+        .catch(() => {});
+    }
+
+    // Au chargement si la phrase est déjà en session, et à chaque saisie valide.
+    if (saved) charger(saved);
+    token.addEventListener('change', () => charger(token.value.trim()));
   </script>
 </body>
 </html>
