@@ -112,6 +112,24 @@ body {
   border: 0;
 }
 
+/* ── BOUTON PAUSE / LECTURE (factorisé showreel + bandeau) ── */
+/* Deux contenus de la page démarrent seuls et tournent en boucle : le
+   showreel de l'accueil et le bandeau de logos d'À propos. WCAG 2.2.2 exige
+   pour chacun un moyen d'arrêt, donc exactement le même bouton - autant
+   n'en décrire qu'un. L'icône annonce l'action à venir, pas l'état courant :
+   « pause » tant que ça bouge, « lecture » une fois arrêté. */
+.media-toggle {
+  width: 32px; height: 32px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--gray-light); border-radius: 50%;
+  color: var(--gray-mid); cursor: pointer;
+  transition: border-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+.media-toggle:hover { border-color: var(--black); color: var(--black); }
+.media-toggle .icon-play { display: none; }
+.media-toggle[aria-pressed='true'] .icon-pause { display: none; }
+.media-toggle[aria-pressed='true'] .icon-play { display: block; }
+
 /* ── ANIMATION SLIDE (factorisée nav + filters) ───────────── */
 .slide-label {
   position: relative;
@@ -215,6 +233,57 @@ nav.nav-flush { border-bottom-color: transparent; }
   border: 0;
   transform: translate(-50%, -50%);
 }
+
+/* Commandes du showreel : bouton d'arrêt + curseur de position.
+   Posées SOUS la vidéo, dans le flux, et non en incrustation révélée au
+   survol : WCAG 2.2.2 demande un mécanisme disponible, et le survol n'existe
+   ni au doigt ni au clavier. En dessous, elles n'ont besoin d'aucun voile de
+   contraste et ne recouvrent aucune image. */
+.showreel-controls {
+  display: flex; align-items: center; gap: 18px;
+  margin-top: 14px;
+}
+/* `display: flex` d'une feuille d'auteur l'emporte sur le `[hidden] { display:
+   none }` de la feuille du navigateur : sans cette règle, les commandes
+   s'affichent malgré l'attribut, donc y compris quand le lecteur ne répond
+   jamais - exactement ce que `hidden` devait empêcher. Même piège, même
+   remède qu'à `.lightbox-bar [hidden]` plus bas. */
+.showreel-controls[hidden] { display: none; }
+.showreel-seek {
+  flex: 1; min-width: 0;
+  -webkit-appearance: none; appearance: none;
+  background: none;
+  /* Piste de 2 px, mais 20 px de hauteur de champ : c'est la cible de clic,
+     et 2 px seraient impossibles à viser. */
+  height: 20px;
+  cursor: pointer;
+}
+/* Les pseudo-éléments de curseur natif ne se regroupent pas dans un même
+   sélecteur : un moteur qui n'en connaît qu'un jetterait toute la règle. */
+.showreel-seek::-webkit-slider-runnable-track {
+  height: 2px; background: var(--gray-light); border-radius: 2px;
+}
+.showreel-seek::-moz-range-track {
+  height: 2px; background: var(--gray-light); border-radius: 2px;
+}
+.showreel-seek::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--black); border: 0;
+  margin-top: -4.5px; /* centre le pouce de 11 px sur une piste de 2 px */
+}
+.showreel-seek::-moz-range-thumb {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--black); border: 0;
+}
+/* Portion parcourue : Firefox l'expose, WebKit et Blink non - il faudrait y
+   repeindre un dégradé depuis le JS à chaque image, donc écrire un style
+   inline, que la CSP du site interdit. La position du pouce suffit à lire
+   l'avancement ; on s'en tient là plutôt que d'ouvrir la CSP pour un fard. */
+.showreel-seek::-moz-range-progress {
+  height: 2px; background: var(--black); border-radius: 2px;
+}
+
 .hero-content {
   max-width: 900px; margin: 56px auto 72px; text-align: center;
 }
@@ -701,19 +770,8 @@ nav.nav-flush { border-bottom-color: transparent; }
 
 /* En-tête du bandeau : titre + bouton d'arrêt (WCAG 2.2.2). */
 .brands-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-.brands-toggle {
-  flex-shrink: 0;
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid var(--gray-light); border-radius: 50%;
-  color: var(--gray-mid); cursor: pointer;
-  transition: border-color var(--t-fast) ease, color var(--t-fast) ease;
-}
-.brands-toggle:hover { border-color: var(--black); color: var(--black); }
-/* L'icône reflète l'action à venir : pause quand ça défile, lecture sinon. */
-.brands-toggle .icon-play { display: none; }
-.brands-toggle[aria-pressed='true'] .icon-pause { display: none; }
-.brands-toggle[aria-pressed='true'] .icon-play { display: block; }
+/* Le bouton lui-même est décrit une seule fois, plus haut : `.media-toggle`,
+   partagé avec les commandes du showreel. */
 /* Un groupe = une itération complète des logos. Le gap interne ET le
    padding-right (même valeur) assurent un espacement uniforme partout,
    y compris à la jointure entre les deux groupes - condition nécessaire

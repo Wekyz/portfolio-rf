@@ -16,6 +16,14 @@ test.beforeEach(async ({ page }) => {
   await page.route('**://player.vimeo.com/**', (route) =>
     route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' })
   );
+  // Turnstile aussi. `app.js` injecte désormais son script à la première
+  // interaction avec le formulaire, donc les parcours qui remplissent des
+  // champs le déclenchent : sans cette route, la suite partirait chercher un
+  // script sur Internet, et le vrai widget écraserait le `window.turnstile`
+  // simulé par le test du réarmement.
+  await page.route('**://challenges.cloudflare.com/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: '' })
+  );
 });
 
 test('filtrer par catégorie ne laisse que les projets concernés', async ({ page }, testInfo) => {

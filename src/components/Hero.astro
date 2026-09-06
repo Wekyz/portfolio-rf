@@ -23,9 +23,10 @@ const base = lang === 'fr' ? '/fr' : '';
 // l'iframe restait atteignable au clavier - le focus pouvait donc atterrir
 // dans un élément annoncé comme une simple image. Retiré : l'iframe porte
 // déjà son propre `title`, qui suffit.
-// `tabindex="-1"` : le showreel tourne en mode `background=1`, sans aucune
-// commande. S'y arrêter à la tabulation ne mène à rien, autant retirer cette
-// étape morte du parcours clavier.
+// `tabindex="-1"` : l'iframe elle-même reste hors du parcours clavier. En mode
+// `background=1` le lecteur Vimeo n'affiche aucune commande, s'y arrêter ne
+// mènerait nulle part - les commandes sont posées à côté, en HTML (voir
+// `.showreel-controls` plus bas), et ce sont elles qui reçoivent le focus.
 const VIMEO_ID = '1211961310';
 const VIMEO_HASH = '33632a8dbb';
 const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&background=1&autoplay=1&loop=1&muted=1`;
@@ -40,6 +41,54 @@ const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&bac
       loading="eager"
       tabindex="-1"
     ></iframe>
+  </div>
+
+  {/* Commandes du showreel. WCAG 2.2.2 : un contenu animé lancé
+       automatiquement, de plus de cinq secondes, présenté à côté d'autres
+       contenus, doit pouvoir être arrêté. Le bandeau de logos de la page À
+       propos a reçu ce bouton ; le showreel, qui occupe toute la largeur et
+       tourne indéfiniment, ne l'avait pas.
+
+       Elles pilotent le lecteur par postMessage (voir app.js) : pas de SDK
+       Vimeo à charger, aucun octet tiers de plus, et l'API répond bien en
+       mode `background=1` (vérifié : pause, play et setCurrentTime).
+
+       `hidden` au départ, retiré par app.js à la première réponse du lecteur.
+       Un bouton de pause qui ne met rien en pause - JS en échec, lecteur
+       injoignable - vaut moins que pas de bouton du tout.
+
+       Le curseur est un `input[type=range]` natif : navigation clavier
+       (flèches, Origine/Fin), rôle et valeur exposés, glisser tactile, le
+       tout sans code. Son `max` devient la durée en secondes dès qu'elle est
+       connue, de sorte qu'une flèche déplace d'une seconde. */}
+  <div class="showreel-controls" id="showreelControls" hidden>
+    <button
+      type="button"
+      class="media-toggle"
+      id="showreelToggle"
+      aria-pressed="false"
+      data-label-pause={t('hero.pause')}
+      data-label-play={t('hero.play')}
+      aria-label={t('hero.pause')}
+    >
+      <svg class="icon-pause" width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
+        <rect x="0" y="0" width="3" height="12" fill="currentColor" />
+        <rect x="7" y="0" width="3" height="12" fill="currentColor" />
+      </svg>
+      <svg class="icon-play" width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
+        <path d="M0 0L10 6L0 12Z" fill="currentColor" />
+      </svg>
+    </button>
+    <input
+      class="showreel-seek"
+      id="showreelSeek"
+      type="range"
+      min="0"
+      max="100"
+      value="0"
+      step="1"
+      aria-label={t('hero.seek')}
+    />
   </div>
 
   <div class="hero-content">

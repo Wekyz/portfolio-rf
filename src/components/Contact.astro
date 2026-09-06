@@ -78,11 +78,10 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     <p class="visually-hidden" id="formStatus" role="status" aria-live="polite"></p>
   </form>
 
-  {turnstileKey && (
-    <script
-      is:inline
-      defer
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-    ></script>
-  )}
+  {/* Le script Turnstile n'est plus posé ici. Il partait avec la page, donc
+       sur les 68 pages qui portent ce formulaire, dont les 62 fiches projet -
+       une requête tierce et l'IP du visiteur pour un formulaire que la
+       plupart ne touchent jamais. `app.js` l'injecte au premier contact avec
+       le formulaire (voir `ensureCaptcha`). Le widget ci-dessus reste rendu au
+       build : c'est lui que le script cherche en arrivant pour s'installer. */}
 </section>

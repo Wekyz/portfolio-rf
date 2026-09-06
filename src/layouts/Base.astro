@@ -291,7 +291,12 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
     <slot />
   </main>
   <Footer lang={lang} />
-  <Lightbox lang={lang} />
+  {/* La modale n'est ouverte que par une vignette de la grille, qui n'existe
+      que sur Portfolio : elle était jusqu'ici livrée sur les 75 pages, soit
+      935 octets de balisage inerte 73 fois de trop - dont un conteneur
+      `role="dialog" aria-modal="true"` sans rien à annoncer. Même condition
+      que BackToTop juste en dessous. */}
+  {isPortfolio && <Lightbox lang={lang} />}
   {page !== 'home' && <BackToTop lang={lang} />}
 
   <script>

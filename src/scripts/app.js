@@ -63,6 +63,143 @@ import { applySpans } from '../lib/spans.js';
     });
   }
 
+  // ── Showreel : arrêt, reprise, déplacement (page d'accueil) ───
+  // Même exigence que le bandeau ci-dessus (WCAG 2.2.2), sur un contenu bien
+  // plus lourd : la vidéo occupe toute la largeur et tourne indéfiniment.
+  //
+  // Le lecteur est un iframe Vimeo en `background=1` : aucune commande native,
+  // et l'iframe est hors origine, donc son DOM est inaccessible. On lui parle
+  // par postMessage, le protocole du lecteur Vimeo - qui répond bien dans ce
+  // mode (vérifié sur la production : `pause`, `play` et `setCurrentTime`
+  // aboutissent, y compris un déplacement pendant la pause). Aucun SDK n'est
+  // chargé : ce sont trois messages JSON, zéro octet tiers de plus.
+  //
+  // À noter, l'événement s'appelle `playProgress` et non `timeupdate` : le
+  // pont postMessage brut n'expose pas les mêmes noms que le SDK. Il porte
+  // `seconds`, `percent` et `duration`, ce qui dispense d'interroger la durée.
+  const showreel = document.querySelector('.showreel-frame');
+  const showreelControls = document.getElementById('showreelControls');
+  if (showreel && showreelControls) {
+    const showreelToggle = document.getElementById('showreelToggle');
+    const seek = document.getElementById('showreelSeek');
+    const VIMEO_ORIGIN = 'https://player.vimeo.com';
+
+    const post = (method, value) => {
+      const payload = value === undefined ? { method } : { method, value };
+      try {
+        showreel.contentWindow.postMessage(JSON.stringify(payload), VIMEO_ORIGIN);
+      } catch {
+        // Iframe pas encore navigable : la souscription est réémise plus bas.
+      }
+    };
+
+    let duration = 0;
+    let ready = false;
+    let subscribeTimer = null;
+    // Fenêtre pendant laquelle les positions renvoyées par le lecteur sont
+    // ignorées : sans elle, un `playProgress` arrivé en plein glissement
+    // repousserait le pouce sous le doigt de l'utilisateur.
+    let holdUntil = 0;
+    let lastSeekSent = 0;
+
+    // Format « 1:23 », celui de tous les lecteurs vidéo : il ne demande
+    // aucune traduction, contrairement à un « 1 min 23 s » (même raisonnement
+    // que formatDuration dans lib/project-page.js).
+    const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+    // Un curseur annonce sa valeur brute (« 37 ») : sans ce texte, un lecteur
+    // d'écran énoncerait un nombre sans unité ni repère.
+    const describe = (seconds) => {
+      if (duration) seek.setAttribute('aria-valuetext', `${fmt(seconds)} / ${fmt(duration)}`);
+    };
+
+    const setPaused = (paused) => {
+      showreelToggle.setAttribute('aria-pressed', String(paused));
+      showreelToggle.setAttribute(
+        'aria-label',
+        showreelToggle.dataset[paused ? 'labelPlay' : 'labelPause']
+      );
+    };
+
+    showreelToggle.addEventListener('click', () => {
+      // On commande, on n'affiche rien : l'état visible suit l'événement
+      // renvoyé par le lecteur, seul à savoir ce qui se passe réellement.
+      post(showreelToggle.getAttribute('aria-pressed') === 'true' ? 'play' : 'pause');
+    });
+
+    const sendSeek = () => {
+      lastSeekSent = Date.now();
+      post('setCurrentTime', Number(seek.value));
+    };
+    seek.addEventListener('input', () => {
+      holdUntil = Date.now() + 600;
+      describe(Number(seek.value));
+      // Un glissement émet un `input` par pixel parcouru. On borne à ~7
+      // messages par seconde ; `change` garantit que le dernier arrive.
+      if (Date.now() - lastSeekSent > 150) sendSeek();
+    });
+    seek.addEventListener('change', sendSeek);
+
+    window.addEventListener('message', (e) => {
+      if (e.origin !== VIMEO_ORIGIN) return;
+      let msg;
+      try {
+        msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+      } catch {
+        return;
+      }
+      if (!msg) return;
+
+      if (!ready) {
+        // Le lecteur répond : les commandes pilotent vraiment quelque chose,
+        // on peut les montrer. Un bouton de pause qui ne met rien en pause
+        // vaudrait moins que pas de bouton.
+        ready = true;
+        showreelControls.hidden = false;
+        if (subscribeTimer) clearInterval(subscribeTimer);
+        // La lecture automatique reste la règle. `prefers-reduced-motion` est
+        // l'exception que ce visiteur-là a posée dans son système ; il garde
+        // le bouton pour relancer quand il veut.
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) post('pause');
+      }
+
+      if (msg.event === 'play') setPaused(false);
+      else if (msg.event === 'pause') setPaused(true);
+      else if (msg.event === 'playProgress' && msg.data) {
+        if (msg.data.duration && msg.data.duration !== duration) {
+          duration = msg.data.duration;
+          // `max` en secondes : une flèche du clavier déplace alors d'une
+          // seconde exactement, là où une échelle en pourcentage aurait rendu
+          // la navigation clavier inutilisable.
+          seek.max = String(Math.round(duration));
+        }
+        if (Date.now() >= holdUntil) {
+          seek.value = String(Math.round(msg.data.seconds));
+          describe(msg.data.seconds);
+        }
+      }
+    });
+
+    // L'iframe peut avoir fini de charger avant ce script comme après, et le
+    // lecteur ne met pas les souscriptions en file d'attente : on s'abonne
+    // tout de suite, encore au `load`, puis on réessaie jusqu'à la première
+    // réponse.
+    const subscribe = () => {
+      post('addEventListener', 'playProgress');
+      post('addEventListener', 'play');
+      post('addEventListener', 'pause');
+    };
+    subscribe();
+    showreel.addEventListener('load', subscribe);
+    subscribeTimer = setInterval(() => {
+      if (ready) clearInterval(subscribeTimer);
+      else subscribe();
+    }, 600);
+    // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister et les
+    // commandes restent cachées, ce qui est la bonne façon d'échouer ici.
+    setTimeout(() => clearInterval(subscribeTimer), 15000);
+  }
+
   // ── Retour en haut (Portfolio / About) ────────────────────────
   if (backToTop) {
     // Le bouton est fixé à 24 px du bas et de la droite : arrivé en bas de
@@ -294,7 +431,38 @@ import { applySpans } from '../lib/spans.js';
       return tokenRequest;
     }
 
-    contactForm.addEventListener('focusin', ensureToken, { once: true });
+    // Turnstile, chargé à la demande lui aussi. Le script partait jusqu'ici
+    // avec la page - donc sur les 62 fiches projet, la page À propos et le
+    // portfolio, soit 68 pages sur 75 : sept requêtes vers Cloudflare, et
+    // l'adresse IP du visiteur, pour un formulaire situé tout en bas que la
+    // plupart ne touchent jamais. Il part maintenant au premier contact avec
+    // le formulaire, exactement là où le jeton est déjà demandé.
+    //
+    // Rien à appeler pour le rendu : le script cherche `.cf-turnstile` au
+    // chargement et s'installe tout seul, quel que soit le moment où il
+    // arrive. `waitForCaptcha` couvre déjà le délai de résolution.
+    //
+    // Effet de bord voulu : la politique de confidentialité affirme que
+    // Cloudflare reçoit l'IP « du formulaire de contact ». C'est désormais
+    // vrai à la lettre - seul quelqu'un qui écrit déclenche le transfert.
+    let captchaRequested = false;
+    function ensureCaptcha() {
+      if (captchaRequested || !contactForm.querySelector('.cf-turnstile')) return;
+      captchaRequested = true;
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      s.async = true;
+      document.head.appendChild(s);
+    }
+
+    contactForm.addEventListener(
+      'focusin',
+      () => {
+        ensureToken();
+        ensureCaptcha();
+      },
+      { once: true }
+    );
 
     /**
      * Attend que Turnstile ait rempli son champ caché, au plus `limit` ms.
@@ -323,6 +491,11 @@ import { applySpans } from '../lib/spans.js';
 
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
+
+      // Filet : un envoi sans qu'aucun champ n'ait jamais reçu le focus est
+      // improbable (les champs sont obligatoires), mais le captcha ne doit
+      // pas manquer pour autant.
+      ensureCaptcha();
 
       const form = e.target;
       const btn = form.querySelector('.form-submit');
