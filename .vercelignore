@@ -1,0 +1,19 @@
+# Fichiers envoyés à Vercel à chaque déploiement sans jamais servir au site.
+#
+# Vercel construit à partir d'une copie du dépôt : tout ce qui n'entre ni dans
+# le build ni dans les fonctions serverless est du transfert et du temps de
+# build pour rien. Le plus lourd est `assets/brands-src/` - 545 Ko de logos en
+# 160 px, sortis de `public/` en août précisément parce qu'ils ne sont jamais
+# servis (seules les densités -64 et -96 le sont).
+#
+# ATTENTION : ces sources restent nécessaires pour REGÉNÉRER les densités.
+# `ensureBrandVariants` ne tourne que si les fichiers existent, et il n'écrit
+# que ce qui manque - or `public/brands/` est versionné, donc rien ne manque en
+# production. Un `public/brands/` vidé exigerait un `npm run thumbs` local.
+assets/
+
+# Tests : ils tournent en CI, pas au déploiement.
+e2e/
+tests/
+playwright.config.mjs
+eslint.config.js

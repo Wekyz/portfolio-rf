@@ -5,6 +5,17 @@ name: CI
 permissions:
   contents: read
 
+# Deux poussées rapprochées sur la même branche lançaient deux exécutions
+# complètes en parallèle, alors que le résultat de la première n'intéresse plus
+# personne. On annule la précédente.
+#
+# `github.ref` et non le SHA : c'est la branche qu'on veut dédoublonner. Le
+# groupe inclut le nom du workflow pour ne pas interférer si un autre est
+# ajouté plus tard.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -17,7 +28,7 @@ on:
 
 jobs:
   quality:
-    name: Lint, types, tests, build
+    name: Lint, types, build, tests
     runs-on: ubuntu-latest
 
     steps:
@@ -43,6 +54,17 @@ jobs:
       - name: Build (astro build, includes thumbs fetch)
         run: npm run build
 
+      # Le job e2e construisait de son côté : deux builds par exécution, donc
+      # 62 appels à l'API oEmbed de Vimeo là où 31 suffisent. On partage le
+      # résultat plutôt que de le refaire.
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+
       # Après le build : les tests de routes et de budget s'appuient sur dist/.
       - name: Test (unitaires, routes, budgets)
         run: npm test
@@ -50,6 +72,10 @@ jobs:
   e2e:
     name: Parcours et accessibilité
     runs-on: ubuntu-latest
+    # Enchaîné plutôt que parallèle : c'est ce qui permet de réutiliser le
+    # build ci-dessus. Effet secondaire souhaitable - inutile d'ouvrir un
+    # navigateur sur du code qui ne compile pas.
+    needs: quality
 
     steps:
       - name: Checkout
@@ -65,16 +91,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # La version de Playwright détermine celle du navigateur : la clé de
+      # cache doit en dépendre, sinon une montée de version servirait un
+      # Chromium périmé.
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
       # Chromium seul : le rendu ne dépend d'aucune API exotique, et installer
-      # les trois moteurs triplerait la durée du job.
+      # les trois moteurs triplerait la durée du job. `--with-deps` réinstalle
+      # les bibliothèques système, que le cache ne couvre pas.
       - name: Install Playwright (chromium)
         run: npx playwright install --with-deps chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
 
-      - name: Build
-        run: npm run build
+      - name: Install system dependencies only
+        run: npx playwright install-deps chromium
+        if: steps.pw-cache.outputs.cache-hit == 'true'
 
-      # Parcours (journeys.spec.mjs) et accessibilité axe-core (a11y.spec.mjs).
-      - name: Run journeys + axe
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # Parcours (journeys.spec.mjs), commandes du showreel (showreel.spec.mjs)
+      # et accessibilité axe-core (a11y.spec.mjs). `astro preview` sert dist/,
+      # récupéré ci-dessus : aucun build ici.
+      - name: Run journeys + showreel + axe
         run: npm run test:e2e
 
       - name: Upload report on failure

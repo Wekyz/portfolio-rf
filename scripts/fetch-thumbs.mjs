@@ -438,19 +438,34 @@ async function main() {
   );
   await summarize(`Miniatures Vimeo : **${resolved}** résolue(s), **${failed}** échec(s).`);
 
-  // Échec TOTAL : plus aucune miniature ne se résout. Le repli sur le cache
-  // précédent couvre les incidents ponctuels, mais un zéro pointé signale
-  // autre chose - Vimeo qui durcit sa restriction de domaine, une clé
-  // révoquée, un changement d'API. Sans ce garde-fou, le build passait quand
-  // même et le site partait avec des miniatures manquantes.
+  // Échec TOTAL : plus aucune miniature ne se résout. Signe d'autre chose
+  // qu'un incident ponctuel - Vimeo qui durcit sa restriction de domaine, une
+  // clé révoquée, un changement d'API.
+  //
+  // Le garde-fou interrompait alors le build. Trop brutal : il rendait tout
+  // déploiement impossible pendant une panne Vimeo, y compris un correctif
+  // urgent sans aucun rapport avec les vignettes - alors que le repli sur le
+  // cache versionné existe précisément pour ça. On ne s'arrête donc que si le
+  // cache ne peut PAS prendre le relais ; sinon on avertit bruyamment et on
+  // continue avec les miniatures du dernier build réussi.
   const attendus = videos.filter((v) => v.id).length;
   if (attendus > 0 && resolved === 0) {
-    console.error(
-      `\n[thumbs] ERREUR : aucune des ${attendus} miniatures n'a pu être résolue.\n` +
-        "         Un échec partiel reste toléré, un échec total ne l'est pas :\n" +
-        '         le site partirait sans vignettes. Build interrompu.\n'
-    );
-    process.exit(1);
+    const secours = videos.filter((v) => v.id && cache[v.id]?.thumbBase).length;
+    if (secours === attendus) {
+      const alerte =
+        `aucune des ${attendus} miniatures n'a pu être résolue auprès de Vimeo. ` +
+        `Le cache versionné les fournit toutes (${secours}/${attendus}), le build ` +
+        'continue avec les valeurs du dernier build réussi. À vérifier si cela se répète : restriction de domaine, clé, API.';
+      console.warn(`\n[thumbs] AVERTISSEMENT : ${alerte}\n`);
+      await summarize(`> [!WARNING]\n> ${alerte}`);
+    } else {
+      console.error(
+        `\n[thumbs] ERREUR : aucune des ${attendus} miniatures n'a pu être résolue,\n` +
+          `         et le cache n'en couvre que ${secours}. Le site partirait sans\n` +
+          '         vignettes. Build interrompu.\n'
+      );
+      process.exit(1);
+    }
   }
 
   const vl = await ensureVariants(LIVE_DIR);
