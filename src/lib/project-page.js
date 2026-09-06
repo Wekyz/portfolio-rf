@@ -14,7 +14,7 @@
  * n'indexait effectivement aucune des 31 vidéos.
  */
 import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
-import { useTranslations } from '../i18n/strings.js';
+import { useTranslations, catGender } from '../i18n/strings.js';
 
 const SITE = 'https://roxane-foare.com';
 
@@ -84,7 +84,12 @@ export function buildProjectMeta(project, slug, lang) {
   const bits = [p.title];
   if (p.credit) bits.push(p.credit);
   const head = bits.join(' - ') + (p.year ? ` (${p.year})` : '');
-  const description = `${head}. ${catLabel} ${t('project.descSuffix')}`;
+  // Le suffixe s'accorde avec la catégorie qui le précède : « Publicité
+  // montée par », « Documentaire monté par ». Voir `catGender` dans
+  // i18n/strings.js. Replier sur le masculin plutôt que de laisser une clé
+  // manquante rendre `undefined` dans une balise meta.
+  const suffix = t(`project.descSuffix.${catGender[p.cat] ?? 'm'}`);
+  const description = `${head}. ${catLabel} ${suffix}`;
   const richDescription = p.description?.trim() || description;
 
   const videoObject = {
@@ -103,6 +108,10 @@ export function buildProjectMeta(project, slug, lang) {
     inLanguage: lang,
     editor: { '@type': 'Person', name: 'Roxane Foare', url: `${SITE}${lang === 'fr' ? '/fr' : '/'}` },
     genre: catLabel,
+    // Les distinctions vivaient dans le champ `credit`, mélangées à la
+    // réalisation : elles n'étaient donc déclarées nulle part comme telles,
+    // et gonflaient la meta description à 245 caractères.
+    award: p.awards?.length ? p.awards : undefined,
   };
 
   return {

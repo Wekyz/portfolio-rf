@@ -94,6 +94,13 @@ collections:
                 required: false
                 hint: "Pour une image qui n'est ni au format 16/10 ni au format portrait (affiche, montage de plusieurs photogrammes) : la vignette est centrée sur une demi-largeur et l'image est montrée en entier, sans recadrage. Suppose une Miniature renseignée ci-dessus. Ne pas cocher en même temps que Pleine largeur."
 
+              - name: awards
+                label: "Distinctions"
+                widget: list
+                required: false
+                field: { name: award, label: "Distinction", widget: string }
+                hint: "Prix ou sélection, un par ligne. Ex. : Best Editing Award - Cyprus International Film Festival. Affiché sur la page du projet et déclaré aux moteurs de recherche. Laisser vide s'il n'y en a pas, et surtout ne pas les écrire dans le champ Crédit."
+
               - name: description
                 label: "Présentation du projet"
                 widget: text

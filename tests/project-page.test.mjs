@@ -6,7 +6,15 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatDuration, buildBreadcrumb, embedUrl, relatedProjects } from '../src/lib/project-page.js';
+import {
+  formatDuration,
+  buildBreadcrumb,
+  embedUrl,
+  relatedProjects,
+  buildProjectMeta,
+} from '../src/lib/project-page.js';
+import { catGender } from '../src/i18n/strings.js';
+import videos from '../src/data/videos.json' with { type: 'json' };
 
 test('formatDuration rend le format des lecteurs vidéo', () => {
   assert.equal(formatDuration('PT1M23S'), '1:23');
@@ -66,4 +74,94 @@ test('relatedProjects reste dans la catégorie et exclut le projet courant', () 
   assert.equal(r.length, 3, 'limite par défaut');
   assert.ok(!r.some((x) => x.project === a), 'le projet courant est exclu');
   assert.ok(r.every((x) => x.project.cat === 'pub'), 'même catégorie uniquement');
+});
+
+/* ── Accord de genre de la description (SEO-02) ──────────────────────────
+   « Publicité » est féminin : les 8 pages projet de cette catégorie
+   affichaient « Publicité monté par Roxane Foare » dans leur meta description
+   et dans le sitemap vidéo, c'est-à-dire dans le texte que Google montre sous
+   le lien. Le suffixe est désormais accordé sur `catGender` (i18n/strings.js).
+
+   Les sept catégories sont couvertes, pas seulement `pub` : une catégorie
+   féminine ajoutée plus tard doit faire échouer ce test tant que son genre
+   n'est pas déclaré. */
+const CATEGORIES = ['pub', 'film', 'doc', 'corpo', 'event', 'teaser', 'live'];
+
+test('la description française accorde le participe avec la catégorie', () => {
+  for (const cat of CATEGORIES) {
+    const { description } = buildProjectMeta({ cat, title: 'T' }, 't', 'fr');
+    const attendu = catGender[cat] === 'f' ? 'montée par' : 'monté par';
+    const interdit = catGender[cat] === 'f' ? 'monté par' : 'montée par';
+    assert.ok(
+      description.includes(attendu),
+      `${cat} (${catGender[cat]}) devrait dire « ${attendu} » : ${description}`
+    );
+    assert.ok(!description.includes(interdit), `${cat} : « ${interdit} » ne doit pas apparaître`);
+  }
+});
+
+test('« Publicité » est bien la catégorie féminine', () => {
+  // Verrouille le cas qui était en défaut, en toutes lettres.
+  const { description } = buildProjectMeta({ cat: 'pub', title: 'Hanro' }, 'hanro', 'fr');
+  assert.match(description, /Publicité montée par Roxane Foare/);
+});
+
+test('chaque catégorie a un genre déclaré', () => {
+  for (const cat of CATEGORIES) {
+    assert.ok(['m', 'f'].includes(catGender[cat]), `catGender.${cat} manquant ou invalide`);
+  }
+  assert.equal(Object.keys(catGender).length, CATEGORIES.length, 'catégorie en trop ou en moins');
+});
+
+test("l'anglais ne s'accorde pas, quelle que soit la catégorie", () => {
+  for (const cat of CATEGORIES) {
+    const { description } = buildProjectMeta({ cat, title: 'T' }, 't', 'en');
+    assert.match(description, /edited by Roxane Foare/);
+  }
+});
+
+/* ── Distinctions (CONT-03) ──────────────────────────────────────────── */
+
+test('les distinctions alimentent le VideoObject et non le crédit', () => {
+  const p = {
+    cat: 'film',
+    title: 'En mille morceaux',
+    credit: 'Director : Véronique Mériadec',
+    year: '2024',
+    awards: ['Best Editing Award - Cyprus International Film Festival'],
+  };
+  const { videoObject, description } = buildProjectMeta(p, 'en-mille-morceaux', 'fr');
+  assert.deepEqual(videoObject.award, p.awards);
+  // Elles ne doivent plus gonfler la description : c'est ce qui la portait à
+  // 245 caractères quand elles vivaient dans le champ crédit.
+  assert.ok(!description.includes('Best Editing Award'));
+});
+
+test('un projet sans distinction ne déclare pas de champ award vide', () => {
+  const { videoObject } = buildProjectMeta({ cat: 'pub', title: 'T' }, 't', 'en');
+  assert.equal(videoObject.award, undefined);
+  const b = buildProjectMeta({ cat: 'pub', title: 'T', awards: [] }, 't', 'en');
+  assert.equal(b.videoObject.award, undefined, 'un tableau vide ne doit rien déclarer');
+});
+
+/* ── Longueur des descriptions (SEO-03) ─────────────────────────────── */
+
+test('aucune description de projet ne dépasse 160 caractères', () => {
+  // Au-delà, Google tronque. Le seuil se mesure sur le TEXTE : dans le HTML,
+  // chaque « & » compte 5 caractères (`&amp;`), ce qui fait paraître les
+  // descriptions plus longues qu'elles ne sont à la lecture.
+  const projets = /** @type {any[]} */ (videos.videos || videos);
+  const trop = [];
+  for (const p of projets) {
+    if (!p.id) continue;
+    for (const lang of ['en', 'fr']) {
+      const { description } = buildProjectMeta(p, 'x', lang);
+      if (description.length > 160) trop.push(`${p.title} (${lang}) : ${description.length}`);
+    }
+  }
+  assert.deepEqual(
+    trop,
+    [],
+    'descriptions trop longues - alléger le champ Crédit, pas le gabarit :\n' + trop.join('\n')
+  );
 });

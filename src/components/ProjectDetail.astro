@@ -36,9 +36,17 @@ const paragraphs = p.description
   ? p.description.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean)
   : [];
 
-const facts: { label: string; value: string }[] = [];
+// `values` (au pluriel) plutôt que `value` quand le fait en compte plusieurs :
+// les distinctions concaténées sur une ligne faisaient 110 caractères et,
+// dans un conteneur en `flex-wrap`, cet élément unique poussait la durée et la
+// catégorie à l'autre bout de la rangée. Une par ligne, la colonne reprend une
+// largeur normale et chaque prix se lit d'un coup d'œil.
+const facts: { label: string; value?: string; values?: string[] }[] = [];
 if (p.credit) facts.push({ label: t('project.production'), value: p.credit });
 if (p.year) facts.push({ label: t('project.year'), value: p.year });
+// Posées juste après l'année : ce sont les faits les plus forts d'un projet
+// qui en porte, et elles étaient jusqu'ici noyées dans le champ crédit.
+if (p.awards?.length) facts.push({ label: t('project.awards'), values: p.awards });
 if (duration) facts.push({ label: t('project.duration'), value: duration });
 facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
 ---
@@ -78,7 +86,13 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
     {facts.map((f) => (
       <div class="project-fact">
         <dt>{f.label}</dt>
-        <dd>{f.value}</dd>
+        <dd>
+          {f.values ? (
+            <ul class="project-fact-list">{f.values.map((v) => <li>{v}</li>)}</ul>
+          ) : (
+            f.value
+          )}
+        </dd>
       </div>
     ))}
   </dl>

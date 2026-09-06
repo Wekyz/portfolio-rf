@@ -568,6 +568,8 @@ nav.nav-flush { border-bottom-color: transparent; }
   color: var(--gray-mid); margin-bottom: 6px;
 }
 .project-fact dd { font-size: 15px; color: var(--black); }
+/* Fait à plusieurs valeurs (les distinctions) : une par ligne. */
+.project-fact-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
 
 .project-cta { margin-top: 32px; }
 .project-cta a {

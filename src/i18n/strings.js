@@ -8,6 +8,26 @@
 
 export const defaultLang = 'en';
 
+/**
+ * Genre grammatical du libellé de catégorie EN FRANÇAIS, pour accorder ce qui
+ * le suit. « Publicité » est féminin : la description des 8 pages projet de
+ * cette catégorie affichait « Publicité monté par Roxane Foare », dans la
+ * balise que Google montre sous le lien et dans le sitemap vidéo.
+ *
+ * Table explicite plutôt qu'un cas particulier sur `pub` : une catégorie
+ * féminine ajoutée plus tard (« Captation », « Fiction ») réintroduirait
+ * sinon la faute sans que rien ne le signale. Le test couvre les sept.
+ */
+export const catGender = {
+  pub: 'f',      // Publicité
+  film: 'm',     // Long métrage
+  doc: 'm',      // Documentaire
+  corpo: 'm',    // Corporate
+  event: 'm',    // Événementiel
+  teaser: 'm',   // Teaser
+  live: 'm',     // Live
+};
+
 export const ui = {
   en: {
     // Document / SEO - communs
@@ -80,8 +100,13 @@ export const ui = {
     'project.watchFull': 'Watch the full film',
     'project.related': 'More in this category',
     'project.playerTitle': 'Video player',
+    'project.awards': 'Awards',
     'project.titleSuffix': 'Roxane Foare, Video Editor',
-    'project.descSuffix': 'edited by Roxane Foare, freelance video editor based in Paris & Angers.',
+    // Deux formes parce que le français accorde le participe avec la
+    // catégorie qui le précède (voir `catGender` en bas de fichier). En
+    // anglais les deux sont identiques : « edited » ne s'accorde pas.
+    'project.descSuffix.m': 'edited by Roxane Foare, freelance video editor based in Paris & Angers.',
+    'project.descSuffix.f': 'edited by Roxane Foare, freelance video editor based in Paris & Angers.',
 
     // Categories (filtres + libelles de vignettes)
     'cat.all': 'All',
@@ -215,8 +240,10 @@ export const ui = {
     'project.watchFull': 'Voir le film complet',
     'project.related': 'Dans la même catégorie',
     'project.playerTitle': 'Lecteur vidéo',
+    'project.awards': 'Distinctions',
     'project.titleSuffix': 'Roxane Foare, Monteuse vidéo',
-    'project.descSuffix': 'monté par Roxane Foare, monteuse vidéo freelance à Paris & Angers.',
+    'project.descSuffix.m': 'monté par Roxane Foare, monteuse vidéo freelance à Paris & Angers.',
+    'project.descSuffix.f': 'montée par Roxane Foare, monteuse vidéo freelance à Paris & Angers.',
 
     // Categories
     'cat.all': 'Tous',

@@ -130,8 +130,10 @@ const jsonLd = {
   knowsLanguage: ['fr', 'en'],
 };
 
-// Le positionnement est explicitement local (geo.region déclaré, deux villes
-// dans l'adresse) sans qu'aucun schéma d'activité ne le porte. Posé sur
+// Le positionnement local ne tient plus qu'à ce schéma : les balises `geo.*`
+// ont été retirées (aucun moteur ne les lit, et elles ne nommaient qu'une des
+// deux villes). C'est donc ici que se déclarent la zone servie et les
+// prestations, avec les deux `PostalAddress` de la Person. Posé sur
 // l'accueil et la page À propos seulement : le répéter sur les 69 pages
 // n'ajouterait rien.
 const serviceLd =
@@ -250,9 +252,12 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <meta name="twitter:description" content={pageDescription} />
   <meta name="twitter:image" content={ogImageUrl} />
 
-  <!-- Géolocalisation -->
-  <meta name="geo.region" content="FR-IDF" />
-  <meta name="geo.placename" content="Paris, France" />
+  {/* Pas de balises `geo.*` : aucun moteur majeur ne les lit, et elles
+       annonçaient l'Île-de-France sur les 75 pages alors que le JSON-LD
+       déclare deux adresses (Paris et Angers) et que le siège légal est en
+       Maine-et-Loire. Le signal local utile est le `ProfessionalService`
+       ci-dessus, avec ses `areaServed`. Même sort que `keywords` et
+       `og:logo`. */}
 
   {/* Préchargement des polices critiques (toutes auto-hébergées) */}
   <link rel="preload" as="font" type="font/woff2" href="/HennessySerif1765.woff2" crossorigin />

@@ -33,6 +33,15 @@ export interface Project {
   externalLink?: string;
   /** Texte de présentation affiché sur la page projet et repris dans le VideoObject. */
   description?: string;
+  /**
+   * Distinctions du projet, une par entrée. Affichées en fait sur la page
+   * projet et reprises en `award` dans le VideoObject.
+   *
+   * Comme `credit`, ce texte est rendu tel quel dans les deux langues : les
+   * noms de festivals sont des noms propres, et c'est déjà la convention du
+   * champ crédit (« Director : … » s'affiche ainsi sur la version française).
+   */
+  awards?: string[];
   /** Mis en avant sur la page d'accueil. */
   featured?: boolean;
   /** Force le segment d'URL de la page projet (défaut : dérivé du titre). */
