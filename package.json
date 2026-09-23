@@ -22,22 +22,22 @@
     "test:a11y": "playwright test a11y"
   },
   "dependencies": {
-    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/ratelimit": "^2.1.0",
     "@upstash/redis": "^1.38.4",
-    "astro": "^7.3.1"
+    "astro": "^7.3.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
-    "@sveltia/cms": "^0.167.5",
-    "@types/node": "^26.4.1",
-    "eslint": "^10.10.0",
-    "eslint-plugin-astro": "^3.1.0",
+    "@sveltia/cms": "^0.217.0",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "eslint-plugin-astro": "^3.2.1",
     "globals": "^17.12.0",
     "sharp": "^0.35.4",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.69.0"
+    "typescript-eslint": "^8.70.0"
   }
 }
