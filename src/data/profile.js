@@ -79,3 +79,32 @@ export const BRANDS = [
   { slug: 'waffle', name: 'Waffle Factory' },
   { slug: 'yves-rocher', name: 'Yves Rocher' },
 ];
+
+/**
+ * Informations pratiques de la page Contact : ce qu'un producteur demande
+ * avant d'écrire, et que les assistants IA reformulent. Depuis le retrait de
+ * la FAQ, rien de tout cela n'était écrit nulle part.
+ *
+ * Chaque valeur vient de Roxane, rien n'est déduit. Une entrée laissée à
+ * `null` n'est affichée ni sur le site ni dans llms-full.txt. Format : une
+ * phrase courte et factuelle par langue, par exemple
+ *   remote: { fr: 'Oui, sur rushes partagés.', en: 'Yes, from shared rushes.' },
+ *
+ * L'ordre des clés est l'ordre d'affichage. Chaque clé a son intitulé dans
+ * src/i18n/strings.js (`contactPage.<clé>`). Après une modification, mettre
+ * à jour la date de '/contact' dans src/lib/page-dates.js.
+ *
+ * @type {Record<'turnaround' | 'remote' | 'deliverables' | 'review' | 'travel', { fr: string, en: string } | null>}
+ */
+export const PRACTICAL = {
+  /** Délais habituels (ours, version finale). */
+  turnaround: null,
+  /** Travail à distance ou sur place. */
+  remote: null,
+  /** Formats livrés (masters, déclinaisons réseaux sociaux, sous-titres...). */
+  deliverables: null,
+  /** Outils de validation (Frame.io, Vimeo review...). */
+  review: null,
+  /** Déplacements (France, étranger, conditions). */
+  travel: null,
+};

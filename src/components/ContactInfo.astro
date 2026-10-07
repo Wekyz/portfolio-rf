@@ -1,10 +1,15 @@
 ---
 /**
- * Bloc pratique de la page /contact : zone d'intervention, langues et canaux
- * directs. Complète le formulaire plutôt qu'il ne le remplace.
+ * Bloc pratique de la page /contact : zone d'intervention, langues, conditions
+ * de travail et canaux directs. Complète le formulaire plutôt qu'il ne le
+ * remplace.
+ *
+ * Les conditions de travail (délais, formats, validation...) viennent de
+ * PRACTICAL dans data/profile.js : seules les entrées renseignées s'affichent.
  */
 import { useTranslations } from '../i18n/strings.js';
 import { CONTACT } from '../data/contact.js';
+import { PRACTICAL } from '../data/profile.js';
 
 interface Props {
   lang?: 'en' | 'fr';
@@ -12,6 +17,9 @@ interface Props {
 
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
+const practical = Object.entries(PRACTICAL).flatMap(([key, value]) =>
+  value ? [{ key, text: value[lang] }] : []
+);
 ---
 <section class="contact-info">
   <dl>
@@ -23,6 +31,12 @@ const t = useTranslations(lang);
       <dt>{t('contactPage.languages')}</dt>
       <dd>{t('contactPage.languagesValue')}</dd>
     </div>
+    {practical.map(({ key, text }) => (
+      <div class="contact-fact">
+        <dt>{t(`contactPage.${key}`)}</dt>
+        <dd>{text}</dd>
+      </div>
+    ))}
     <div>
       <dt>{t('contactPage.elsewhere')}</dt>
       <dd>

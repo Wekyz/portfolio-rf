@@ -9,7 +9,7 @@
 import { getProjects } from '../lib/projects.js';
 import { projectRoutes } from '../lib/slug.js';
 import { SITE } from '../lib/schema-ids.js';
-import { SOFTWARE, PRODUCTIONS, BRANDS } from '../data/profile.js';
+import { SOFTWARE, PRODUCTIONS, BRANDS, PRACTICAL } from '../data/profile.js';
 import { ui } from '../i18n/strings.js';
 import { LEGAL } from '../data/legal.js';
 import { getDuration } from '../lib/thumb.js';
@@ -37,6 +37,15 @@ export function GET() {
     return `- ${p.title}\n  ${facts.join(' | ')}`;
   });
 
+  // Conditions de travail : seules les entrées renseignées par Roxane.
+  const practicalLines = [
+    `- Working area: ${ui.en['work.location']}`,
+    `- Languages: ${ui.en['contactPage.languagesValue']}`,
+    ...Object.entries(PRACTICAL)
+      .filter(([, value]) => value)
+      .map(([key, value]) => `- ${ui.en[`contactPage.${key}`]}: ${value.en}`),
+  ];
+
   const body = `# Roxane Foare - full profile
 
 Freelance video editor (monteuse vidéo), based in Paris and Angers, France.
@@ -58,6 +67,11 @@ ${ui.fr['about.introParagraphs'].map(stripTags).join('\n\n')}
 
 Editing: ${SOFTWARE.editing.join(', ')}.
 Live: ${SOFTWARE.live.join(', ')}.
+
+## Practical details
+
+${practicalLines.join('\n')}
+- Contact: ${SITE}/contact
 
 ## Productions worked with
 

@@ -155,6 +155,11 @@ export const ui = {
     'contactPage.languages': 'Languages',
     'contactPage.languagesValue': 'French, English',
     'contactPage.elsewhere': 'Elsewhere',
+    'contactPage.turnaround': 'Turnaround',
+    'contactPage.remote': 'Remote work',
+    'contactPage.deliverables': 'Deliverables',
+    'contactPage.review': 'Review tools',
+    'contactPage.travel': 'Travel',
 
     // Footer
     'footer.rights': 'All rights reserved',
@@ -299,6 +304,11 @@ export const ui = {
     'contactPage.languages': 'Langues',
     'contactPage.languagesValue': 'Français, anglais',
     'contactPage.elsewhere': 'Ailleurs',
+    'contactPage.turnaround': 'Délais',
+    'contactPage.remote': 'Travail à distance',
+    'contactPage.deliverables': 'Formats livrés',
+    'contactPage.review': 'Validation',
+    'contactPage.travel': 'Déplacements',
 
     // Footer
     'footer.rights': 'Tous droits réservés',

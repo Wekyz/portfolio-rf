@@ -617,6 +617,9 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .contact-info dd { font-size: 14px; display: flex; gap: 16px; }
 .contact-info dd a { color: var(--black); text-underline-offset: 3px; }
+/* Une phrase, pas une liste de liens : bloc de texte à largeur de lecture. */
+.contact-info .contact-fact { max-width: 32ch; }
+.contact-info .contact-fact dd { display: block; line-height: 1.5; }
 
 /* ── SÉLECTION (accueil) ──────────────────────────────────── */
 .featured { padding: 96px 56px 24px; }
