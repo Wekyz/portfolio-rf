@@ -38,6 +38,7 @@ import { dirname, join } from 'node:path';
 import sharp from 'sharp';
 import { createHash } from 'node:crypto';
 import { buildSlugMap } from '../src/lib/slug.js';
+import { SHOWREEL } from '../src/data/profile.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -52,6 +53,10 @@ const LIVE_DIR = join(ROOT, 'public', 'live');
 // 545 Ko que personne ne demande jamais. `public/` veut dire « publié ».
 const BRANDS_SRC_DIR = join(ROOT, 'assets', 'brands-src');
 const BRANDS_DIR = join(ROOT, 'public', 'brands');
+const SHOWREEL_DIR = join(ROOT, 'public', 'showreel');
+const SHOWREEL_CACHE_FILE = join(ROOT, 'src', 'data', 'showreel.json');
+/** Largeurs servies pour l'image d'ouverture du showreel (format 1920x803). */
+const SHOWREEL_WIDTHS = [960, 1920];
 
 // Variantes responsive générées pour les images posées à la main (public/live/).
 const VARIANTS = [
@@ -324,6 +329,55 @@ async function ensureFaviconIco() {
   return true;
 }
 
+/**
+ * Image d'ouverture du showreel, tirée de sa miniature Vimeo.
+ *
+ * L'accueil chargeait le lecteur Vimeo dès l'arrivée : 1,4 Mo sur 1,44 Mo de
+ * page (lecteur, hls.js, flux). L'image s'affiche d'abord, le lecteur est
+ * injecté une fois la page chargée (voir app.js) et prend sa place quand la
+ * lecture démarre.
+ *
+ * Régénérée seulement si la miniature a changé sur Vimeo (l'URL est retenue
+ * dans src/data/showreel.json) ou si un fichier manque. Vimeo injoignable :
+ * on garde les fichiers existants, comme pour les autres miniatures.
+ *
+ * @returns {Promise<'made' | 'kept' | 'offline'>}
+ */
+async function ensureShowreelPoster() {
+  let thumbBase;
+  try {
+    ({ thumbBase } = await resolveThumbInfo(SHOWREEL.id, SHOWREEL.hash));
+  } catch (err) {
+    if (isNetworkError(err)) return 'offline';
+    throw err;
+  }
+
+  let previous = null;
+  try {
+    previous = JSON.parse(await readFile(SHOWREEL_CACHE_FILE, 'utf8')).thumbBase;
+  } catch {
+    // Pas encore de registre : l'image sera générée.
+  }
+  const files = SHOWREEL_WIDTHS.map((w) => join(SHOWREEL_DIR, `poster-${w}.webp`));
+  const present = (await Promise.all(files.map(exists))).every(Boolean);
+  if (present && previous === thumbBase) return 'kept';
+
+  // La miniature Vimeo existe au format exact de la vidéo (1920x803).
+  const res = await fetch(`${thumbBase}_1920x803`, { signal: AbortSignal.timeout(OEMBED_TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`miniature du showreel : HTTP ${res.status}`);
+  const source = Buffer.from(await res.arrayBuffer());
+
+  await mkdir(SHOWREEL_DIR, { recursive: true });
+  for (const [i, width] of SHOWREEL_WIDTHS.entries()) {
+    await sharp(source)
+      .resize({ width, height: Math.round((width * 803) / 1920), fit: 'cover' })
+      .webp({ quality: 72 })
+      .toFile(files[i]);
+  }
+  await writeFile(SHOWREEL_CACHE_FILE, JSON.stringify({ thumbBase }, null, 2) + '\n');
+  return 'made';
+}
+
 /** Lit les sources dans `srcDir`, écrit les densités servies dans `outDir`. */
 async function ensureBrandVariants(srcDir, outDir) {
   let files;
@@ -590,6 +644,15 @@ async function main() {
 
   if (await ensureAppleIcon()) console.log('[icone] apple-touch-icon.png (180x180) régénérée.');
   if (await ensureFaviconIco()) console.log('[icone] favicon.ico (16, 32, 48) régénéré.');
+
+  const showreel = await ensureShowreelPoster();
+  console.log(
+    {
+      made: "[showreel] image d'ouverture régénérée.",
+      kept: "[showreel] image d'ouverture à jour.",
+      offline: "[showreel] Vimeo injoignable, image d'ouverture conservée.",
+    }[showreel]
+  );
 
   const bl = await ensureBrandVariants(BRANDS_SRC_DIR, BRANDS_DIR);
   console.log(`[logos] ${bl.made} variante(s) générée(s), ${bl.kept} déjà présente(s).`);

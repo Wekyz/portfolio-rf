@@ -15,6 +15,13 @@
 /** Profil IMDb - seule présence externe existante. */
 export const IMDB_URL = 'https://www.imdb.com/fr/name/nm8663077/';
 
+/**
+ * Showreel de l'accueil (vidéo Vimeo privée, d'où le hash). Lu par
+ * Hero.astro pour le lecteur et par scripts/fetch-thumbs.mjs, qui en tire
+ * l'image affichée avant le chargement du lecteur (public/showreel/).
+ */
+export const SHOWREEL = { id: '1211961310', hash: '33632a8dbb' };
+
 /** Logiciels, dans l'ordre d'affichage de la page À propos. */
 export const SOFTWARE = {
   editing: ['Adobe Premiere Pro', 'DaVinci Resolve', 'Avid Media Composer'],

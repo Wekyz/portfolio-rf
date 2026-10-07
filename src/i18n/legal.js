@@ -115,7 +115,7 @@ export const legalPages = {
           title: 'Aucun cookie',
           paragraphs: [
             "Ce site ne dépose aucun cookie et n'utilise aucun traceur publicitaire. Aucune bannière de consentement n'est donc nécessaire.",
-            "La mesure d'audience repose sur Vercel Web Analytics, qui fonctionne sans cookie et sans identifiant persistant. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
+            "La mesure d'audience repose sur Vercel Web Analytics, et la mesure de la vitesse d'affichage des pages sur Vercel Speed Insights. Les deux fonctionnent sans cookie et sans identifiant persistant. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
           ],
         },
         ...captchaSection(true),
@@ -199,7 +199,7 @@ export const legalPages = {
           title: 'No cookies',
           paragraphs: [
             'This site sets no cookies and uses no advertising trackers. No consent banner is therefore required.',
-            'Audience measurement relies on Vercel Web Analytics, which works without cookies and without persistent identifiers. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
+            'Audience measurement relies on Vercel Web Analytics, and page speed measurement on Vercel Speed Insights. Both work without cookies and without persistent identifiers. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
           ],
         },
         ...captchaSection(false),

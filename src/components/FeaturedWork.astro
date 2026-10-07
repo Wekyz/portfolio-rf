@@ -53,7 +53,7 @@ const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, L
                 <img
                   src={src}
                   srcset={srcset}
-                  sizes="(max-width: 900px) 100vw, 33vw"
+                  sizes="(max-width: 900px) 100vw, calc((100vw - 160px) / 3)"
                   alt={p.title}
                   loading={i === 0 ? 'eager' : 'lazy'}
                   decoding="async"

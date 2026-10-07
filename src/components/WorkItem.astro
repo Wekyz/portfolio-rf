@@ -8,6 +8,7 @@
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
 import { creditLine } from '../lib/credits.js';
+import { gridSizes } from '../lib/spans.js';
 
 const { project, placement, priority = false, lang = 'en', href } = Astro.props;
 const t = useTranslations(lang);
@@ -40,9 +41,7 @@ const { src: thumbSrc, srcset: thumbSrcset, responsive, width, height } = resolv
 const imgWidth = p.poster ? (width ?? 1280) : p.portrait ? 600 : 1280;
 const imgHeight = p.poster ? (height ?? 1280) : p.portrait ? 900 : 800;
 const spanN = placement?.span ?? 6;
-const sizes = responsive
-  ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw`
-  : undefined;
+const sizes = responsive ? gridSizes(p, spanN) : undefined;
 ---
 
 <div

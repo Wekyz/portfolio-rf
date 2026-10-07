@@ -5,7 +5,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
 import BackToTop from '../components/BackToTop.astro';
-import { computeSpans } from '../lib/spans.js';
+import { computeSpans, gridSizes } from '../lib/spans.js';
 import { resolveThumb } from '../lib/thumb.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { useTranslations } from '../i18n/strings.js';
@@ -67,6 +67,7 @@ const ogAlt = ogImageAlt ?? t('head.ogImageAlt');
 
 const projects = getProjects();
 const isPortfolio = page === 'portfolio';
+const usesVimeo = page === 'home' || page === 'portfolio' || page === 'project';
 
 // - Préchargement de l'image LCP (1ʳᵉ vignette) : seulement pertinent sur la
 //   page Portfolio, où la grille est le 1er contenu visuel de la page. -
@@ -76,7 +77,7 @@ const firstThumbResolved = first ? resolveThumb(first) : null;
 const firstThumb = firstThumbResolved?.src ?? null;
 const firstSrcset = firstThumbResolved?.srcset;
 const firstSpanN = spans[0]?.span ?? 6;
-const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
+const firstSizes = first ? gridSizes(first, firstSpanN) : undefined;
 
 // - Données structurées de la page Portfolio -------------------------------
 // Une ItemList qui pointe vers les pages projet, et rien de plus.
@@ -291,10 +292,17 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <link rel="preload" as="font" type="font/woff2" href="/DalaFloda-Roman.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DMSans-latin.woff2" crossorigin />
 
-  {/* Connexion anticipée vers Vimeo : le showreel (Accueil), la grille +
-       lightbox (Portfolio) en dépendent toutes deux. */}
-  <link rel="preconnect" href="https://i.vimeocdn.com" />
-  <link rel="preconnect" href="https://player.vimeo.com" />
+  {/* Connexion anticipée vers Vimeo, seulement là où Vimeo sert : le
+       showreel (Accueil), la grille et la lightbox (Portfolio), le lecteur
+       et les vignettes liées (fiches projet). Elle partait sur les 75 pages,
+       y compris À propos, Contact et les pages légales, qui n'en chargent
+       rien : deux connexions TLS ouvertes pour rien à chaque visite. */}
+  {usesVimeo && (
+    <Fragment>
+      <link rel="preconnect" href="https://i.vimeocdn.com" />
+      <link rel="preconnect" href="https://player.vimeo.com" />
+    </Fragment>
+  )}
 
   {/* Préchargement de l'image LCP (1ʳᵉ vignette, page Portfolio uniquement) */}
   {firstThumb && (
@@ -310,6 +318,13 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
 
   {/* Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) */}
   <script defer is:inline src="/_vercel/insights/script.js"></script>
+  {/* Vercel Speed Insights : Core Web Vitals mesurés chez les vrais
+       visiteurs. PageSpeed Insights n'a pas de données terrain (CrUX) pour un
+       site de ce trafic, toutes les mesures étaient donc faites en
+       laboratoire. Même origine, même absence de cookie que Web Analytics.
+       À activer dans le tableau de bord Vercel (onglet Speed Insights) : tant
+       que ce n'est pas fait, le script répond 404 et ne fait rien. */}
+  <script defer is:inline src="/_vercel/speed-insights/script.js"></script>
 
   {/* JSON-LD structured data (contenu + hash CSP calculés ci-dessus) */}
   {ldBlocks.map((block) => (

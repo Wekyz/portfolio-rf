@@ -98,7 +98,7 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ data/videos.json         # données projets (éditées via le CMS)
 │  ├─ data/profile.js          # IMDb, logiciels, productions, marques (À propos + llms-full.txt)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
-├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image (EN) et og-image-fr
+├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image (EN) et og-image-fr, showreel/ (image d'ouverture, générée)
 ├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)
 ├─ tests/                      # tests fumée (node:test)
 ├─ scripts/fetch-thumbs.mjs    # résolution des miniatures Vimeo au build

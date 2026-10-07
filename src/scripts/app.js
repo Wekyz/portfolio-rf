@@ -121,9 +121,10 @@ import { applySpans } from '../lib/spans.js';
   // À noter, l'événement s'appelle `playProgress` et non `timeupdate` : le
   // pont postMessage brut n'expose pas les mêmes noms que le SDK. Il porte
   // `seconds`, `percent` et `duration`, ce qui dispense d'interroger la durée.
-  const showreel = document.querySelector('.showreel-frame');
+  const showreel = document.querySelector('.showreel-frame[data-src]');
   const showreelControls = document.getElementById('showreelControls');
   if (showreel && showreelControls) {
+    const showreelBox = document.getElementById('showreel');
     const showreelToggle = document.getElementById('showreelToggle');
     const seek = document.getElementById('showreelSeek');
     const VIMEO_ORIGIN = 'https://player.vimeo.com';
@@ -207,6 +208,12 @@ import { applySpans } from '../lib/spans.js';
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) post('pause');
       }
 
+      // Première image réellement jouée : le lecteur prend la place de
+      // l'image d'ouverture, en fondu (voir .showreel-frame).
+      if (msg.event === 'play' || (msg.event === 'playProgress' && msg.data && msg.data.seconds > 0)) {
+        showreelBox.classList.add('is-playing');
+      }
+
       if (msg.event === 'play') setPaused(false);
       else if (msg.event === 'pause') setPaused(true);
       else if (msg.event === 'playProgress' && msg.data) {
@@ -224,24 +231,43 @@ import { applySpans } from '../lib/spans.js';
       }
     });
 
-    // L'iframe peut avoir fini de charger avant ce script comme après, et le
-    // lecteur ne met pas les souscriptions en file d'attente : on s'abonne
-    // tout de suite, encore au `load`, puis on réessaie jusqu'à la première
-    // réponse.
+    // Le lecteur ne met pas les souscriptions en file d'attente : on
+    // s'abonne dès l'injection, encore au `load`, puis on réessaie jusqu'à la
+    // première réponse.
     const subscribe = () => {
       post('addEventListener', 'playProgress');
       post('addEventListener', 'play');
       post('addEventListener', 'pause');
     };
-    subscribe();
-    showreel.addEventListener('load', subscribe);
-    subscribeTimer = setInterval(() => {
-      if (ready) clearInterval(subscribeTimer);
-      else subscribe();
-    }, 600);
-    // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister et les
-    // commandes restent cachées, ce qui est la bonne façon d'échouer ici.
-    setTimeout(() => clearInterval(subscribeTimer), 15000);
+
+    // Injection différée du lecteur (voir Hero.astro) : après le `load` de la
+    // page, au premier temps mort, au plus tard deux secondes après.
+    // `location.replace` plutôt que `src` : aucune entrée ajoutée à
+    // l'historique (même raison que pour la lightbox).
+    const startPlayer = () => {
+      const src = showreel.dataset.src;
+      try {
+        showreel.contentWindow.location.replace(src);
+      } catch {
+        showreel.src = src;
+      }
+      subscribe();
+      showreel.addEventListener('load', subscribe);
+      subscribeTimer = setInterval(() => {
+        if (ready) clearInterval(subscribeTimer);
+        else subscribe();
+      }, 600);
+      // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister, les
+      // commandes restent cachées et l'image d'ouverture reste en place,
+      // ce qui est la bonne façon d'échouer ici.
+      setTimeout(() => clearInterval(subscribeTimer), 15000);
+    };
+    const whenIdle = () =>
+      'requestIdleCallback' in window
+        ? window.requestIdleCallback(startPlayer, { timeout: 2000 })
+        : setTimeout(startPlayer, 200);
+    if (document.readyState === 'complete') whenIdle();
+    else window.addEventListener('load', whenIdle, { once: true });
   }
 
   // ── Retour en haut (Portfolio / About) ────────────────────────

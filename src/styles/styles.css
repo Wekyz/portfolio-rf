@@ -280,6 +280,16 @@ nav.nav-flush { border-bottom-color: transparent; }
   aspect-ratio: 1920 / 803;
   border: 0;
   transform: translate(-50%, -50%);
+  /* Invisible tant que la lecture n'a pas commencé : le lecteur Vimeo
+     affiche un cadre noir pendant son démarrage, l'image d'ouverture reste
+     donc visible dessous jusqu'à la première image de la vidéo. */
+  opacity: 0; transition: opacity .6s ease;
+}
+.showreel.is-playing .showreel-frame,
+.showreel-frame-static { opacity: 1; }
+/* Image d'ouverture (façade) : même cadre que le lecteur. */
+.showreel-poster {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
 
 /* Commandes du showreel : bouton d'arrêt + curseur de position.
@@ -599,6 +609,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   aspect-ratio: 16/9;
   background: var(--black); overflow: hidden;
 }
+.project-player-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .project-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 .project-facts {
