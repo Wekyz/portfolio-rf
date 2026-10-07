@@ -265,6 +265,24 @@ jusqu'en avril 2028, passage à Node 26 courant 2027. TypeScript 7 reste
 bloqué tant que `@astrojs/check` ne le prend pas en charge (voir
 `.github/dependabot.yml`).
 
+## Services tiers
+
+Ce qui tourne en production et chez qui. Les colonnes « Compte » et
+« Offre » sont à tenir à jour : c'est ce qu'il faut savoir le jour d'une panne
+ou d'une passation.
+
+| Service | Rôle | Compte | Offre / quota |
+|---|---|---|---|
+| Vercel | Hébergement, fonctions `api/`, Web Analytics, Speed Insights, deploy hook | à compléter | à compléter |
+| GitHub | Dépôt `Wekyz/portfolio-rf`, CI, Dependabot, commits du CMS | Wekyz (admin), RFoare (écriture) | à compléter |
+| Namecheap | Domaine `roxane-foare.com` et DNS | à compléter | à compléter |
+| Vimeo | Vidéos (privées, limitées au domaine), lecteur, vignettes, oEmbed au build | à compléter | à compléter |
+| Resend | Envoi des messages du formulaire (DKIM sur `send.`) | à compléter | à compléter |
+| Upstash Redis | Limitation de débit, compteurs, jetons à usage unique, messages en échec | à compléter | Gratuit (limite de commandes) |
+| Cloudflare Turnstile | Captcha du formulaire | à compléter | Gratuit |
+| Cloudflare Workers | Relais OAuth du CMS (`sveltia-cms-auth.wekyz.workers.dev`) | Wekyz | à compléter |
+| unpkg, jsDelivr | Script, traductions et polices du CMS (CDN publics, sans compte) | - | - |
+
 ## Édition du contenu (monteuse)
 
 Via le CMS **Sveltia** sur `/admin/` (auth **GitHub OAuth**). La config
