@@ -869,6 +869,26 @@ import { applySpans } from '../lib/spans.js';
   // Bouton « Copier » à côté de l'adresse écrite : montré seulement si le
   // presse-papiers est disponible (contexte sécurisé), sinon l'adresse reste
   // sélectionnable à la main.
+  // Même principe sur les fiches projet : copier l'adresse canonique de la
+  // page, pour l'envoyer à une production sans passer par la barre d'adresse.
+  const copyLink = document.getElementById('copyLink');
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (copyLink && navigator.clipboard) {
+    copyLink.hidden = false;
+    const label = copyLink.textContent;
+    let resetTimer = null;
+    copyLink.addEventListener('click', () => {
+      navigator.clipboard
+        .writeText(canonical ? canonical.href : window.location.href)
+        .then(() => {
+          copyLink.textContent = copyLink.dataset.copied;
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => { copyLink.textContent = label; }, 2000);
+        })
+        .catch(() => { /* refus du navigateur : l'adresse reste dans la barre */ });
+    });
+  }
+
   const copyEmail = document.getElementById('copyEmail');
   const contactAddress = document.getElementById('contactAddress');
   if (copyEmail && contactAddress && navigator.clipboard) {

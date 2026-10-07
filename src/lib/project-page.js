@@ -144,6 +144,23 @@ export function buildProjectMeta(project, slug, lang) {
  * Jusqu'à `limit` autres projets de la même catégorie, pour le maillage
  * interne en bas de page (et pour qu'aucune page projet ne soit orpheline).
  */
+/**
+ * Projets précédent et suivant dans la même catégorie, dans l'ordre du
+ * portfolio, en bouclant aux extrémités comme la lightbox. Une fiche ne se
+ * quittait que par le fil d'Ariane ou les trois vignettes liées, toujours les
+ * trois premières de la catégorie : impossible de parcourir une catégorie de
+ * fiche en fiche. `null` quand le projet est seul dans sa catégorie.
+ */
+export function siblingProjects(project, routes) {
+  const list = routes.filter((r) => r.project.cat === project.cat);
+  const i = list.findIndex((r) => r.project === project);
+  if (i === -1 || list.length < 2) return null;
+  return {
+    prev: list[(i - 1 + list.length) % list.length],
+    next: list[(i + 1) % list.length],
+  };
+}
+
 export function relatedProjects(project, routes, limit = 3) {
   return routes
     .filter((r) => r.project !== project && r.project.cat === project.cat)

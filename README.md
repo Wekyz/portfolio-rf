@@ -83,6 +83,7 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ pages/fr/portfolio.astro # Portfolio FR (/fr/portfolio)
 │  ├─ pages/fr/portfolio/[slug].astro # Pages projet FR (/fr/portfolio/<slug>)
 │  ├─ pages/fr/about.astro     # About FR (/fr/about)
+│  ├─ pages/review/[id].astro  # sélections privées (/review/<id>, noindex, éditées dans le CMS)
 │  ├─ pages/sitemap.xml.js     # sitemap généré au build (pages fixes + pages projet)
 │  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue + page
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
@@ -168,6 +169,10 @@ redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
 Signature du jeton anti-bot du formulaire (recommandé) : `FORM_SECRET` - à
 défaut, la clé se dérive de `RESEND_API_KEY`, de toute façon nécessaire pour
 que le formulaire fonctionne (voir `api/_lib/form-token.js`).
+Alerte immédiate quand un envoi échoue (optionnel) : `ALERT_WEBHOOK_URL`, une
+adresse ntfy.sh (ex. `https://ntfy.sh/un-sujet-difficile-a-deviner`, puis
+s'abonner à ce sujet dans l'application ntfy), ou un webhook Discord ou Slack
+(voir `sendAlert` dans `api/_lib/observe.js`).
 
 **Version de Node.** `engines.node` (`package.json`) fait autorité : la
 documentation Vercel précise qu'il **prime sur le réglage Node.js du projet**.
@@ -236,6 +241,16 @@ image à produire.
 Tout enregistrement dans le CMS crée un commit GitHub, ce qui déclenche
 automatiquement un nouveau build Vercel (donc une résolution fraîche des
 miniatures Vimeo) - **aucune action supplémentaire à faire** dans ce cas.
+
+### Sélections privées
+
+Collection **« Sélections privées »** du CMS (`src/data/reviews.json`) : une
+page `roxane-foare.com/review/<identifiant>` par sélection, avec un titre, un
+mot d'accompagnement et les projets choisis, pour répondre à une production
+précise. L'identifiant est généré au hasard ; la page n'est ni indexée
+(`noindex` + `X-Robots-Tag`), ni dans le sitemap, ni liée depuis le site. Ce
+n'est pas un contrôle d'accès : quiconque a le lien voit la page. Une date de
+fin facultative la retire au déploiement suivant.
 
 ### Redéployer sans passer par le CMS
 

@@ -17,10 +17,11 @@ import type { Project } from '../lib/types';
 interface Props {
   project: Project;
   related?: { project: Project; slug: string }[];
+  siblings?: { prev: { project: Project; slug: string }; next: { project: Project; slug: string } } | null;
   lang?: 'en' | 'fr';
 }
 
-const { project: p, related = [], lang = 'en' } = Astro.props;
+const { project: p, related = [], siblings = null, lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const langBase = lang === 'fr' ? '/fr' : '';
 
@@ -126,6 +127,27 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
       </a>
     </p>
   )}
+
+  {/* Parcours de la catégorie fiche par fiche, et lien à copier pour
+       l'envoyer à une production. Le bouton n'apparaît que si le
+       presse-papiers est disponible (voir app.js). */}
+  <nav class="project-pager" aria-label={t('project.pagerAria')}>
+    {siblings && (
+      <a class="project-pager-link" href={`${langBase}/portfolio/${siblings.prev.slug}`} rel="prev">
+        <span class="project-pager-label">&larr; {t('project.prev')}</span>
+        <span class="project-pager-title">{siblings.prev.project.title}</span>
+      </a>
+    )}
+    <button type="button" class="project-copy" id="copyLink" data-copied={t('project.copied')} hidden>
+      {t('project.copyLink')}
+    </button>
+    {siblings && (
+      <a class="project-pager-link project-pager-next" href={`${langBase}/portfolio/${siblings.next.slug}`} rel="next">
+        <span class="project-pager-label">{t('project.next')} &rarr;</span>
+        <span class="project-pager-title">{siblings.next.project.title}</span>
+      </a>
+    )}
+  </nav>
 
   {related.length > 0 && (
     <section class="project-related">

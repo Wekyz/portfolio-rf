@@ -85,7 +85,8 @@ collections:
                 label: "Année"
                 widget: string
                 required: false
-                hint: "ex : 2024  ou  2018-2022"
+                pattern: ['^\d{4}(-\d{4})?$', "Une année (2024) ou une période (2018-2022)"]
+                hint: "ex : 2024  ou  2018-2022. Laisser vide si l'année n'est pas sûre : elle s'affiche sur la grille, la fiche et dans les données lues par Google."
 
               - name: id
                 label: "ID Vimeo"
@@ -137,7 +138,7 @@ collections:
                 label: "Présentation du projet"
                 widget: text
                 required: false
-                hint: "Trois à cinq phrases : le parti pris de montage, le format, les contraintes, votre rôle exact. Affiché sur la page du projet et repris par Google et les moteurs de réponse. Facultatif - à remplir en priorité pour les projets les plus représentatifs."
+                hint: "Trois à cinq phrases, soit 300 à 800 caractères environ : le parti pris de montage, le format, les contraintes, votre rôle exact. Affiché sur la page du projet et repris par Google et les moteurs de réponse. Facultatif - à remplir en priorité pour les projets les plus représentatifs."
 
               - name: featured
                 label: "Mettre en avant sur l'accueil"
@@ -165,3 +166,67 @@ collections:
                 default: false
                 required: false
                 hint: "Force le clic désactivé même si un ID Vimeo est renseigné. Inutile pour un Live en photo simple (déjà non cliquable sans ID)."
+
+  # Sélections privées (AME-05) : une page /review/<identifiant> par entrée,
+  # non indexée et absente du sitemap, pour envoyer à une production une
+  # sélection de projets avec un mot d'accompagnement. L'identifiant est
+  # généré au hasard : seule une personne qui a reçu le lien trouve la page.
+  - name: "reviews"
+    label: "Sélections privées"
+    label_singular: "Sélection privée"
+    description: "Pages de visionnage à envoyer à une production. Chacune a une adresse secrète (roxane-foare.com/review/...) que les moteurs de recherche n'indexent pas. Supprimer une sélection retire sa page au déploiement suivant."
+    files:
+      - name: "reviews"
+        label: "Liste des sélections"
+        file: "src/data/reviews.json"
+        fields:
+          - name: "reviews"
+            label: "Sélections"
+            label_singular: "Sélection"
+            widget: list
+            required: false
+            summary: "{{fields.title}}"
+            fields:
+              - name: id
+                label: "Identifiant de la page"
+                widget: uuid
+                hint: "Généré automatiquement. L'adresse à envoyer est roxane-foare.com/review/ suivi de cet identifiant."
+
+              - name: title
+                label: "Titre"
+                widget: string
+                hint: "Affiché en haut de la page, ex : Sélection pour Atelier B, documentaire."
+
+              - name: lang
+                label: "Langue de la page"
+                widget: select
+                default: "fr"
+                options:
+                  - { label: "Français", value: "fr" }
+                  - { label: "Anglais", value: "en" }
+
+              - name: intro
+                label: "Mot d'accompagnement"
+                widget: text
+                required: false
+                hint: "Quelques phrases pour la production. Une ligne vide sépare deux paragraphes."
+
+              - name: projects
+                label: "Projets"
+                widget: relation
+                collection: videos
+                file: videos
+                value_field: "videos.*.title"
+                search_fields: ["videos.*.title"]
+                display_fields: ["videos.*.title"]
+                multiple: true
+                hint: "Dans l'ordre d'affichage. Seuls les projets avec une vidéo Vimeo sont montrés."
+
+              - name: expires
+                label: "Date de fin (facultatif)"
+                widget: datetime
+                required: false
+                date_format: "DD/MM/YYYY"
+                time_format: false
+                picker_utc: true
+                hint: "Après cette date, la page n'est plus générée (au déploiement suivant)."

@@ -8,6 +8,8 @@
  *   RESEND_FROM               expéditeur vérifié, ex. "Portfolio <noreply@roxane-foare.com>"
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir ci-dessous) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
+ *   ALERT_WEBHOOK_URL         alerte immédiate en cas d'échec - optionnel,
+ *                             voir sendAlert dans _lib/observe.js
  *
  * Le `from` doit appartenir à un domaine vérifié dans Resend (SPF/DKIM).
  *
@@ -133,7 +135,7 @@ export default async function handler(req, res) {
   // le captcha en silence, sans que personne ne puisse le constater.
   if (captcha === 'unreachable') {
     countRejection('captcha-unreachable');
-    reportError('turnstile-unreachable', 'envoi accepté sans vérification');
+    await reportError('turnstile-unreachable', 'envoi accepté sans vérification');
   }
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -142,7 +144,7 @@ export default async function handler(req, res) {
   if (!apiKey || !to) {
     // Panne silencieuse la plus probable : une variable d'environnement
     // supprimée ou expirée. Rien ne cassait au build, donc rien ne prévenait.
-    reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
+    await reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
     stashFailedMessage({ firstName, lastName, email, message });
     return res.status(500).json({ code: 'unavailable', error: 'Service email non configuré.' });
   }
@@ -165,14 +167,14 @@ export default async function handler(req, res) {
     if (!r.ok) {
       // Quota atteint, clé révoquée, domaine dévérifié : Resend le dit par un
       // code HTTP que personne ne lisait.
-      reportError('resend-http', `HTTP ${r.status}`);
+      await reportError('resend-http', `HTTP ${r.status}`);
       stashFailedMessage({ firstName, lastName, email, message });
       return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
     }
     countSent();
     return res.status(200).json({ ok: true });
   } catch (err) {
-    reportError('resend-network', err?.message || 'fetch échoué');
+    await reportError('resend-network', err?.message || 'fetch échoué');
     stashFailedMessage({ firstName, lastName, email, message });
     return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
   }

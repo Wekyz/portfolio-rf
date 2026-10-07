@@ -633,6 +633,27 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .project-cta a:hover { background: var(--black); color: var(--white); }
 
+/* Précédent / copier le lien / suivant. Trois colonnes : le bouton reste
+   centré même quand un seul voisin existe. */
+.project-pager {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px;
+  margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--gray-light);
+}
+.project-pager-link { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--black); min-width: 0; }
+.project-pager-next { grid-column: 3; text-align: right; }
+.project-pager-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-mid); }
+.project-pager-title { font-family: var(--font-hennessy); font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-pager-link:hover .project-pager-title { text-decoration: underline; text-underline-offset: 3px; }
+.project-copy {
+  grid-column: 2; grid-row: 1;
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--black);
+  border-bottom: 1px solid var(--border-ui);
+}
+.project-copy:hover { border-bottom-color: var(--black); }
+.project-copy[hidden] { display: none; }
+
 .project-related { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--gray-light); }
 .project-related h2 {
   font-family: var(--font-hennessy); font-size: 24px; font-weight: 400;
@@ -1181,6 +1202,12 @@ footer {
   .work-item,
   .work-item[data-portrait='true'],
   .work-item[data-poster='true'] { grid-column: span 12 !important; }
+  /* Précédent et suivant côte à côte, le bouton de copie dessous : à trois
+     sur une ligne, les titres étaient coupés après cinq lettres. */
+  .project-pager { grid-template-columns: 1fr 1fr; }
+  .project-pager-next { grid-column: 2; }
+  .project-copy { grid-column: 1 / -1; grid-row: 2; justify-self: center; margin-top: 8px; }
+  .project-pager-title { white-space: normal; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */
