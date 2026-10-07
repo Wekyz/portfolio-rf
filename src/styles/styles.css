@@ -777,9 +777,10 @@ nav.nav-flush { border-bottom-color: transparent; }
   /* Ne pas ajouter de `-webkit-mask-image` à la main : le build passe la
      feuille dans lightningcss, qui gère les préfixes selon ses cibles
      navigateurs. Il les AJOUTE tout seul quand la cible le demande, et
-     SUPPRIME ceux écrits en dur quand elle ne le demande pas (cible actuelle
-     Safari 16+, donc préfixe retiré du CSS livré). Le levier, s'il faut un
-     jour couvrir Safari < 15.4, est la cible du build, pas cette ligne. */
+     SUPPRIME ceux écrits en dur quand elle ne le demande pas. Avec la cible
+     actuelle (Safari 16.4, BROWSER_TARGET dans astro.config.mjs), il ajoute
+     `-webkit-mask-image` au CSS livré. Le levier, s'il faut changer de
+     navigateurs, est cette cible, pas cette ligne. */
   mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
 .brand-marquee-track {

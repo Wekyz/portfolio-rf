@@ -5,13 +5,13 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
 import BackToTop from '../components/BackToTop.astro';
-import data from '../data/videos.json';
 import { computeSpans } from '../lib/spans.js';
 import { resolveThumb } from '../lib/thumb.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { useTranslations } from '../i18n/strings.js';
-import { PERSON_ID, WEBSITE_ID, SERVICE_ID, personRef, pageIds } from '../lib/schema-ids.js';
-import type { Project } from '../lib/types';
+import { getProjects } from '../lib/projects.js';
+import { IMDB_URL } from '../data/profile.js';
+import { SITE, PERSON_ID, WEBSITE_ID, SERVICE_ID, personRef, pageIds } from '../lib/schema-ids.js';
 
 // `page` détermine le head (title/description/canonical/JSON-LD) et le
 // routage - voir plus bas. 'portfolio' est la seule page à embarquer la
@@ -47,7 +47,6 @@ const buildDate = new Date().toISOString().slice(0, 10);
 const modified = dateModified ?? buildDate;
 const t = useTranslations(lang);
 
-const SITE = 'https://roxane-foare.com';
 const langBase = lang === 'fr' ? '/fr' : '';
 const pagePath = path ?? (page === 'home' ? '' : `/${page}`);
 const canonical = `${SITE}${langBase}${pagePath}` || `${SITE}/`;
@@ -63,7 +62,7 @@ const ogImageUrl = ogImage ?? `${SITE}/og-image.jpg`;
 // Pas de og:logo non plus : la propriété n'existe pas dans la spécification
 // Open Graph, aucun consommateur ne la lit.
 
-const projects = (data.videos || data) as Project[];
+const projects = getProjects();
 const isPortfolio = page === 'portfolio';
 
 // - Préchargement de l'image LCP (1ʳᵉ vignette) : seulement pertinent sur la
@@ -131,7 +130,7 @@ const jsonLd = {
   // `sameAs` se limite à IMDb : c'est le seul profil public existant. Pas de
   // LinkedIn, pas de Vimeo public, pas de réseau social - déclarer des URL
   // mortes affaiblirait le signal au lieu de le renforcer.
-  sameAs: ['https://www.imdb.com/fr/name/nm8663077/'],
+  sameAs: [IMDB_URL],
   // Les deux prix étaient dans la bio sans être déclarés nulle part. Ce sont
   // les faits les plus forts du profil.
   award: [t('award.cyprus'), t('award.athens')],

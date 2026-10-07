@@ -82,6 +82,48 @@ const SITE_DOMAIN = process.env.SITE_DOMAIN || 'https://roxane-foare.com';
 // voulue (voir WorkItem.astro).
 const WIDTH_SUFFIX_RE = /_\d+(\?.*)?$/;
 
+// Appels oEmbed. Ils partaient un par un et sans délai d'expiration : une
+// réponse de Vimeo qui n'arrivait jamais figeait le build jusqu'à la limite de
+// Vercel (45 minutes). Chaque appel est désormais abandonné au bout de 8 s -
+// le repli sur le cache versionné prend alors le relais pour cette vidéo - et
+// six partent en même temps, assez pour diviser la durée sans ressembler à un
+// balayage aux yeux de Vimeo.
+const OEMBED_TIMEOUT_MS = 8_000;
+const OEMBED_CONCURRENCY = 6;
+
+/**
+ * `fn` appliquée à chaque élément, au plus `limit` à la fois. Les résultats
+ * reviennent dans l'ordre de `items`, quel que soit l'ordre d'arrivée : le
+ * cache écrit et les journaux restent donc identiques d'un build à l'autre.
+ */
+async function mapLimit(items, limit, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
+/**
+ * Erreur due au réseau (DNS, connexion, délai dépassé) plutôt qu'au contenu
+ * du dépôt. Sert à décider si le build peut continuer sur les caches.
+ */
+const NETWORK_CODES = new Set([
+  'ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'EAI_AGAIN',
+  'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_SOCKET',
+]);
+function isNetworkError(err) {
+  if (!err) return false;
+  if (err.name === 'TimeoutError' || err.name === 'AbortError') return true;
+  if (err instanceof TypeError && err.message === 'fetch failed') return true;
+  return NETWORK_CODES.has(err.code) || NETWORK_CODES.has(err.cause?.code);
+}
+
 /**
  * Ajoute une ligne au résumé de job GitHub Actions, quand il existe.
  * Le nombre de miniatures résolues n'apparaissait que dans les journaux,
@@ -121,6 +163,7 @@ function toIsoUtc(uploadDate) {
 
 async function resolveThumbInfo(id, hash) {
   const res = await fetch(oembedUrl(id, hash), {
+    signal: AbortSignal.timeout(OEMBED_TIMEOUT_MS),
     // Referer/Origin du domaine autorisé : indispensable pour que Vimeo
     // renvoie la miniature des vidéos privées restreintes par domaine.
     headers: {
@@ -409,12 +452,30 @@ async function main() {
   let resolved = 0;
   let failed = 0;
 
-  for (const v of videos) {
-    if (!v.id) continue; // pas d'ID Vimeo (photo de plateau) -> rien à résoudre
-    try {
-      cache[v.id] = await resolveThumbInfo(v.id, v.hash);
+  // Pas d'ID Vimeo (photo de plateau) : rien à résoudre.
+  const outcomes = await mapLimit(
+    videos.filter((v) => v.id),
+    OEMBED_CONCURRENCY,
+    async (v) => {
+      try {
+        return { v, info: await resolveThumbInfo(v.id, v.hash) };
+      } catch (err) {
+        return { v, err };
+      }
+    }
+  );
+
+  for (const { v, info, err: raw } of outcomes) {
+    if (info) {
+      cache[v.id] = info;
       resolved++;
-    } catch (err) {
+    } else {
+      // Le message natif d'un délai dépassé (« The operation was aborted due
+      // to timeout ») ne dit pas lequel : on le reformule.
+      const err =
+        raw?.name === 'TimeoutError'
+          ? new Error(`pas de réponse de Vimeo en ${OEMBED_TIMEOUT_MS / 1000} s`)
+          : raw;
       failed++;
       // On retombe sur la dernière info connue plutôt que de perdre la
       // miniature/date pour un souci réseau ponctuel.
@@ -497,8 +558,20 @@ async function main() {
   console.log(`[logos] ${Object.keys(brands).length} dimension(s) enregistrée(s).`);
 }
 
-main().catch((err) => {
-  console.error('[thumbs] erreur fatale :', err);
-  // Build non bloqué par un souci réseau ponctuel
-  process.exit(0);
+// Une erreur qui remonte jusqu'ici n'est presque jamais réseau - les appels
+// Vimeo ont leur propre repli plus haut. C'est un videos.json illisible, une
+// image déposée par le CMS que sharp ne sait pas lire, un fichier impossible à
+// écrire. Le script sortait pourtant en succès dans tous les cas : le build
+// partait sans variantes ni dimensions, et seule une ligne perdue dans les
+// journaux le disait. Désormais il ne laisse passer que le réseau ; le reste
+// arrête le build, et Vercel garde en ligne le dernier déploiement réussi.
+main().catch(async (err) => {
+  if (isNetworkError(err)) {
+    console.warn(`[thumbs] erreur réseau, build poursuivi avec les caches versionnés : ${err.message}`);
+    await summarize(`> [!WARNING]\n> Miniatures : erreur réseau (${err.message}), caches du dernier build utilisés.`);
+    process.exit(0);
+  }
+  console.error('[thumbs] erreur fatale, build interrompu :', err);
+  await summarize(`> [!CAUTION]\n> Script des miniatures interrompu : ${err.message}`);
+  process.exit(1);
 });

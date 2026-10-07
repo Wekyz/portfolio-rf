@@ -10,12 +10,11 @@
  * indexables distinctes portant le même lecteur, et leur appariement hreflang
  * est déjà déclaré dans sitemap.xml.
  */
-import data from '../data/videos.json';
+import { getProjects } from '../lib/projects.js';
+import { SITE } from '../lib/schema-ids.js';
 import { projectRoutes } from '../lib/slug.js';
 import { buildProjectMeta, embedUrl } from '../lib/project-page.js';
 import { getUploadDate, getDurationSeconds } from '../lib/thumb.js';
-
-const SITE = 'https://roxane-foare.com';
 const LANGS = /** @type {const} */ (['en', 'fr']);
 
 /**
@@ -33,9 +32,7 @@ function xml(value) {
 }
 
 export function GET() {
-  const routes = projectRoutes(
-    /** @type {import('../lib/types').Project[]} */ (data.videos || data)
-  );
+  const routes = projectRoutes(getProjects());
 
   const entries = routes.flatMap(({ project, slug }) =>
     LANGS.map((lang) => {

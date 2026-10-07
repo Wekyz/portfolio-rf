@@ -9,11 +9,15 @@
  * lu par des machines et qui contient une affirmation fausse est pire que pas
  * de fichier du tout : la génération supprime cette classe d'erreur.
  */
-import data from '../data/videos.json';
+import { getProjects } from '../lib/projects.js';
 import { projectRoutes } from '../lib/slug.js';
+import { SITE } from '../lib/schema-ids.js';
 import { ui } from '../i18n/strings.js';
+import { IMDB_URL, SOFTWARE } from '../data/profile.js';
 
-const SITE = 'https://roxane-foare.com';
+/** « A, B and C » : la forme d'une énumération dans une phrase anglaise. */
+const andList = (items) =>
+  items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
 const CATEGORY_LABELS = {
   pub: 'Commercial',
@@ -26,7 +30,7 @@ const CATEGORY_LABELS = {
 };
 
 export function GET() {
-  const projects = /** @type {import('../lib/types').Project[]} */ (data.videos || data);
+  const projects = getProjects();
   const routes = projectRoutes(projects);
   const bySlug = new Map(routes.map((r) => [r.project, r.slug]));
   const t = (key) => ui.en[key];
@@ -59,9 +63,8 @@ export function GET() {
 > editing feature films, documentaries, commercials, corporate films, live
 > broadcast and events. Works in French and English.
 
-Roxane Foare (monteuse vidéo) edits on Adobe Premiere Pro, DaVinci Resolve and
-Avid Media Composer. Live work uses TriCaster, XPression by Ross, LSM by EVS
-and Blackmagic ATEM.
+Roxane Foare (monteuse vidéo) edits on ${andList(SOFTWARE.editing)}.
+Live work uses ${andList(SOFTWARE.live)}.
 
 ## Key facts
 
@@ -69,7 +72,7 @@ and Blackmagic ATEM.
 - Based in Paris and Angers, France; available elsewhere.
 - Languages: French, English.
 - Awards: ${t('award.cyprus')}; ${t('award.athens')}.
-- IMDb: https://www.imdb.com/fr/name/nm8663077/
+- IMDb: ${IMDB_URL}
 
 ## Projects
 

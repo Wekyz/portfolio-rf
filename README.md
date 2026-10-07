@@ -87,6 +87,7 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue + page
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
 │  ├─ components/              # Nav, Hero, Work, WorkItem, ProjectDetail, About, Contact, Footer, Lightbox
+│  ├─ lib/projects.js          # getProjects() : lecture typée de videos.json, seul point d'accès
 │  ├─ lib/spans.js             # pattern de grille (build + client)
 │  ├─ lib/slug.js              # slugs des pages projet (dérivés du titre, unicité garantie)
 │  ├─ lib/project-page.js      # métadonnées + JSON-LD VideoObject d'une page projet
@@ -94,6 +95,7 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ scripts/app.js           # interactivité client (filtres, lightbox, form)
 │  ├─ styles/styles.css        # feuille de style du site
 │  ├─ data/videos.json         # données projets (éditées via le CMS)
+│  ├─ data/profile.js          # IMDb, logiciels, productions, marques (À propos + llms-full.txt)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
 ├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image
 ├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)

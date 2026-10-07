@@ -15,10 +15,8 @@
  */
 import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
 import { useTranslations, catGender } from '../i18n/strings.js';
-import { personRef, pageIds } from './schema-ids.js';
+import { SITE, personRef, pageIds } from './schema-ids.js';
 import contentDates from '../data/content-dates.json' with { type: 'json' };
-
-const SITE = 'https://roxane-foare.com';
 
 /** URL absolue de la miniature (le CDN Vimeo en sert déjà une). */
 function absThumb(p) {

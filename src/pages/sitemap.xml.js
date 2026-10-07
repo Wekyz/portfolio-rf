@@ -3,10 +3,9 @@
  * figée à maintenir à la main). Site bilingue : 3 pages fixes + une page par
  * projet vidéo, le tout x 2 langues, avec alternances hreflang par page.
  */
-import data from '../data/videos.json';
+import { getProjects } from '../lib/projects.js';
 import { projectRoutes } from '../lib/slug.js';
-
-const SITE = 'https://roxane-foare.com';
+import { SITE } from '../lib/schema-ids.js';
 
 // path : segment commun aux deux langues ('' pour l'accueil).
 //
@@ -20,9 +19,7 @@ export function GET() {
 
   const PAGES = [
     ...FIXED_PAGES,
-    ...projectRoutes(
-      /** @type {import('../lib/types').Project[]} */ (data.videos || data)
-    ).map(({ slug }) => `/portfolio/${slug}`),
+    ...projectRoutes(getProjects()).map(({ slug }) => `/portfolio/${slug}`),
   ];
 
   const urls = PAGES.flatMap((path) => {

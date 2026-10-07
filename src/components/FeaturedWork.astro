@@ -19,8 +19,7 @@
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
 import { buildSlugMap } from '../lib/slug.js';
-import data from '../data/videos.json';
-import type { Project } from '../lib/types';
+import { getProjects } from '../lib/projects.js';
 
 interface Props {
   lang?: 'en' | 'fr';
@@ -31,7 +30,7 @@ const t = useTranslations(lang);
 const langBase = lang === 'fr' ? '/fr' : '';
 
 const LIMIT = 3;
-const projects = (data.videos || data) as Project[];
+const projects = getProjects();
 const slugMap = buildSlugMap(projects);
 
 const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, LIMIT);
