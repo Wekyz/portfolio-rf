@@ -2,15 +2,11 @@
 #
 # Vercel construit à partir d'une copie du dépôt : tout ce qui n'entre ni dans
 # le build ni dans les fonctions serverless est du transfert et du temps de
-# build pour rien. Le plus lourd est `assets/brands-src/` - 545 Ko de logos en
-# 160 px, sortis de `public/` en août précisément parce qu'ils ne sont jamais
-# servis (seules les densités -64 et -96 le sont).
+# build pour rien.
 #
-# ATTENTION : ces sources restent nécessaires pour REGÉNÉRER les densités.
-# `ensureBrandVariants` ne tourne que si les fichiers existent, et il n'écrit
-# que ce qui manque - or `public/brands/` est versionné, donc rien ne manque en
-# production. Un `public/brands/` vidé exigerait un `npm run thumbs` local.
-assets/
+# ATTENTION à la forme des motifs : comme dans .gitignore, `assets/` viserait
+# AUSSI src/assets/, dont le build a besoin (images traitées par
+# astro:assets). Ancrer avec un `/` initial pour viser la racine seule.
 
 # Tests : ils tournent en CI, pas au déploiement.
 e2e/

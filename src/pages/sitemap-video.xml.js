@@ -14,6 +14,7 @@ import { getProjects } from '../lib/projects.js';
 import { SITE } from '../lib/schema-ids.js';
 import { projectRoutes } from '../lib/slug.js';
 import { buildProjectMeta, embedUrl } from '../lib/project-page.js';
+import { localImages } from '../lib/images.js';
 import { getUploadDate, getDurationSeconds } from '../lib/thumb.js';
 const LANGS = /** @type {const} */ (['en', 'fr']);
 
@@ -36,7 +37,7 @@ export function GET() {
 
   const entries = routes.flatMap(({ project, slug }) =>
     LANGS.map((lang) => {
-      const meta = buildProjectMeta(project, slug, lang);
+      const meta = buildProjectMeta(project, slug, lang, { local: localImages });
       const loc = `${SITE}${lang === 'fr' ? '/fr' : ''}${meta.path}`;
       const seconds = getDurationSeconds(project);
       const published = getUploadDate(project);

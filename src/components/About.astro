@@ -7,27 +7,24 @@ const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const introParagraphs = t('about.introParagraphs');
 
-// Logos clients (bandeau défilant) - fichiers pré-détourés/redimensionnés
-// (voir public/brands/, générés depuis le dossier "Logos RF" fourni par la
-// monteuse). Les originaux font 160 px de haut pour un affichage à 32 px
-// (.brand-logo img dans styles.css) : le build en tire deux densités, 64 px
-// et 96 px, et le srcset laisse le navigateur prendre celle qu'il lui faut.
-// Les dimensions viennent de brands.json (mesurées au build, voir
-// scripts/fetch-thumbs.mjs) : elles fixent le ratio et évitent un saut de
-// mise en page pendant le chargement.
-import brandSizes from '../data/brands.json';
+// Logos clients (bandeau défilant) - fichiers pré-détourés fournis par la
+// monteuse (dossier "Logos RF"), dans src/assets/brands/. Les originaux font
+// 160 px de haut pour un affichage à 32 px : astro:assets en tire deux
+// densités, 64 et 96 px, en WebP et en AVIF (voir lib/images.js). Les
+// dimensions fixent le ratio et évitent un saut de mise en page.
+import { brandImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
 
 const summary =
   lang === 'fr'
     ? `Monteuse vidéo freelance depuis plus de dix ans, basée à Paris et Angers et disponible partout ailleurs. Publicité, long métrage, documentaire, corporate, événementiel, teaser et captation live. Deux prix du meilleur montage. Travail en français et en anglais.`
     : `Freelance video editor for over ten years, based in Paris and Angers and available anywhere else. Commercials, feature films, documentaries, corporate films, events, teasers and live broadcast. Two Best Editing Awards. Works in French and English.`;
 
-const brandImg = (slug: string) => ({
-  src: `/brands/${slug}-64.webp`,
-  srcset: `/brands/${slug}-64.webp 2x, /brands/${slug}-96.webp 3x`,
-  width: brandSizes[slug as keyof typeof brandSizes]?.width,
-  height: brandSizes[slug as keyof typeof brandSizes]?.height,
-});
+const brandImg = (slug: string) => {
+  const img = brandImages[slug];
+  if (!img) throw new Error(`Logo introuvable : src/assets/brands/${slug}.webp (voir BRANDS dans data/profile.js)`);
+  return img;
+};
 ---
 <section id="about">
   <div class="about-left">
@@ -105,14 +102,14 @@ const brandImg = (slug: string) => ({
           <div class="brand-marquee-group">
             {BRANDS.map((b) => (
               <span class="brand-logo">
-                <img {...brandImg(b.slug)} alt={b.name} loading="lazy" decoding="async" />
+                <Thumb {...brandImg(b.slug)} alt={b.name} loading="lazy" decoding="async" />
               </span>
             ))}
           </div>
           <div class="brand-marquee-group" aria-hidden="true">
             {BRANDS.map((b) => (
               <span class="brand-logo">
-                <img {...brandImg(b.slug)} alt="" loading="lazy" decoding="async" />
+                <Thumb {...brandImg(b.slug)} alt="" loading="lazy" decoding="async" />
               </span>
             ))}
           </div>

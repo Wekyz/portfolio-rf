@@ -9,13 +9,15 @@ backend:
 # Pas d'option `locale` : Sveltia ne la prend pas en charge (avertissement
 # en console depuis la 0.202) ; l'interface suit la langue du navigateur.
 
-# media_folder : où Decap COMMIT les fichiers (chemin repo)
-# public_folder : URL publique servie par le site
+# media_folder : où le CMS COMMIT les fichiers déposés (chemin dans le dépôt)
+# public_folder : préfixe inscrit dans les champs qui y font référence
 # Aucun champ ci-dessous n'utilise de widget image/file (les miniatures
 # viennent du CDN Vimeo, voir le champ `thumb`) : ces deux réglages ne
-# servent qu'aux overrides manuels (ex. live/live1.webp), d'où le chemin
-# vers public/live plutôt que l'ancien public/thumbs (supprimé).
-media_folder: "public/live"
+# servent qu'aux overrides manuels (ex. live/live1.webp). Les images vivent
+# dans src/assets/live/ : astro:assets les décline au build, en WebP et en
+# AVIF, sous des noms à empreinte (voir src/lib/images.js). Le champ garde la
+# forme `live/<fichier>`, rien ne change dans la saisie.
+media_folder: "src/assets/live"
 public_folder: "/live"
 
 collections:
@@ -105,7 +107,7 @@ collections:
                 label: "Miniature (optionnel)"
                 widget: string
                 required: false
-                hint: "Laisser VIDE si un ID Vimeo est renseigné : la miniature est récupérée automatiquement depuis Vimeo au build. Pour un Live en photo (sans vidéo), renseigner ici l'image (ex. live/live1.webp) et laisser ID Vimeo vide."
+                hint: "Laisser VIDE si un ID Vimeo est renseigné : la miniature est récupérée automatiquement depuis Vimeo au build. Pour un Live en photo (sans vidéo) ou une affiche, déposer l'image dans la médiathèque (icône image en haut), puis écrire ici live/ suivi du nom du fichier (ex. live/live1.webp). WebP, JPEG ou PNG."
 
               - name: fullWidth
                 label: "Pleine largeur"

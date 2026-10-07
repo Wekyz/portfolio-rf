@@ -7,6 +7,7 @@ import Lightbox from '../components/Lightbox.astro';
 import BackToTop from '../components/BackToTop.astro';
 import { computeSpans, gridSizes } from '../lib/spans.js';
 import { resolveThumb } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { useTranslations } from '../i18n/strings.js';
 import { getProjects } from '../lib/projects.js';
@@ -73,9 +74,12 @@ const usesVimeo = page === 'home' || page === 'portfolio' || page === 'project' 
 //   page Portfolio, où la grille est le 1er contenu visuel de la page. -
 const spans = isPortfolio ? computeSpans(projects) : [];
 const first = isPortfolio ? projects[0] : null;
-const firstThumbResolved = first ? resolveThumb(first) : null;
+const firstThumbResolved = first ? resolveThumb(first, { local: localImages }) : null;
 const firstThumb = firstThumbResolved?.src ?? null;
 const firstSrcset = firstThumbResolved?.srcset;
+// Image locale proposée en AVIF : on précharge CE fichier-là, sans quoi le
+// navigateur chargerait le WebP préchargé puis l'AVIF du <picture>.
+const firstAvif = firstThumbResolved?.avifSrcset;
 const firstSpanN = spans[0]?.span ?? 6;
 const firstSizes = first ? gridSizes(first, firstSpanN) : undefined;
 
@@ -309,9 +313,10 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
     <link
       rel="preload"
       as="image"
-      href={firstThumb}
-      imagesrcset={firstSrcset}
+      href={firstAvif ? undefined : firstThumb}
+      imagesrcset={firstAvif ?? firstSrcset}
       imagesizes={firstSizes}
+      type={firstAvif ? 'image/avif' : undefined}
       fetchpriority="high"
     />
   )}

@@ -94,12 +94,14 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ lib/slug.js              # slugs des pages projet (dérivés du titre, unicité garantie)
 │  ├─ lib/project-page.js      # métadonnées + JSON-LD VideoObject d'une page projet
 │  ├─ lib/thumb.js             # résolution src/srcset miniature (Vimeo CDN ou override local)
+│  ├─ lib/images.js            # images locales (src/assets/live, src/assets/brands) déclinées par astro:assets, WebP + AVIF
+│  ├─ assets/                  # sources de ces images (vignettes posées dans le CMS, logos)
 │  ├─ scripts/app.js           # interactivité client (filtres, lightbox, form)
 │  ├─ styles/styles.css        # feuille de style du site
 │  ├─ data/videos.json         # données projets (éditées via le CMS)
 │  ├─ data/profile.js          # IMDb, logiciels, productions, marques (À propos + llms-full.txt)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
-├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image (EN) et og-image-fr, showreel/ (image d'ouverture, générée)
+├─ public/                     # admin/ (CMS + redeploy.html), polices, favicons, icônes, og-image (EN) et og-image-fr, showreel/ (image d'ouverture, générée)
 ├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)
 ├─ tests/                      # tests fumée (node:test)
 ├─ scripts/fetch-thumbs.mjs    # résolution des miniatures Vimeo au build
@@ -146,11 +148,12 @@ clé hors `source`/`headers`/`has`/`missing`), d'où cette note. Trois politique
 | Ressource | Politique | Pourquoi |
 |---|---|---|
 | `/_astro/`, `*.woff2` | `immutable`, 1 an | Nom porteur d'une empreinte de contenu : un changement produit un nouveau nom. |
-| `/live/`, `/brands/`, favicons, `og-image.jpg`, `og-image-fr.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
+| `/showreel/`, favicons, icônes, `og-image.jpg`, `og-image-fr.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
 | HTML | `max-age=0, must-revalidate` (défaut Vercel) | Le contenu change à chaque publication CMS. L'edge Vercel le met **déjà** en cache de lui-même (`X-Vercel-Cache: HIT`), il n'y a donc rien à ajouter côté CDN. |
 
-Sans la règle `/brands/`, les 93 fichiers de logos étaient revalidés à chaque
-visite de la page À propos.
+Les vignettes posées à la main et les logos ne sont plus dans `public/` : ils
+passent par astro:assets (`src/assets/`, voir `src/lib/images.js`) et sortent
+sous `/_astro/`, avec empreinte et cache d'un an, en WebP et en AVIF.
 
 ## Déploiement
 
@@ -288,8 +291,8 @@ ou d'une passation.
 Via le CMS **Sveltia** sur `/admin/` (auth **GitHub OAuth**). La config
 (`public/admin/config.yml`) pointe sur :
 - `file: src/data/videos.json`
-- `media_folder: public/live` (overrides manuels uniquement - les miniatures
-  viennent du CDN Vimeo, voir plus bas)
+- `media_folder: src/assets/live` (overrides manuels uniquement - les
+  miniatures viennent du CDN Vimeo, voir plus bas)
 - `backend: github` (repo + branche `main`) + `base_url` du relais OAuth
 
 Pour une nouvelle vidéo, il suffit de l'**ID Vimeo** (+ hash si privée) : la
@@ -345,8 +348,9 @@ est publique et contient l'appel en clair, le secret ne peut donc pas y être
   depuis l'URL de base Vimeo (voir `src/lib/thumb.js`, utilisé par
   `WorkItem.astro` et `Base.astro`).
 - Le champ `thumb` reste un **override manuel** prioritaire (affiche de film,
-  image live) - fichier local sous `public/`, avec ses propres variantes
-  `-640`/`-1280` générées par `sharp` (voir `public/live/`).
+  image live) - fichier de `src/assets/live/`, décliné en 640 / 960 / 1280 et
+  en WebP + AVIF par astro:assets (voir `src/lib/images.js`). Un chemin sans
+  fichier correspondant n'affiche pas d'image plutôt qu'une image cassée.
 - Régénérer manuellement : `npm run thumbs`.
 - `sharp` est en **`devDependencies`** : il ne sert qu'à ce script, au build.
   Les fonctions serverless de `api/` n'en font aucun usage. Vercel installe les

@@ -10,6 +10,8 @@
  */
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb, getDuration } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
 import { embedUrl, formatDuration } from '../lib/project-page.js';
 import { creditParts, creditLine } from '../lib/credits.js';
 import type { Project } from '../lib/types';
@@ -36,7 +38,7 @@ const duration = formatDuration(getDuration(p));
 // l'élément LCP, chargée en priorité, et sert de fond pendant que le lecteur
 // Vimeo démarre. L'iframe reste en place et par-dessus : c'est lui qui
 // conditionne l'indexation de la vidéo (voir l'en-tête de ce fichier).
-const poster = resolveThumb(p);
+const poster = resolveThumb(p, { local: localImages });
 
 // Découpage en paragraphes fait ici et non dans le template : une regex
 // contenant `{2,}` y serait lue comme une expression JSX par le vérificateur
@@ -79,10 +81,11 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
 
   <div class="project-player">
     {poster.src && (
-      <img
+      <Thumb
         class="project-player-poster"
         src={poster.src}
         srcset={poster.srcset}
+        avifSrcset={poster.avifSrcset}
         sizes="(max-width: 900px) 100vw, (max-width: 1180px) calc(100vw - 112px), 1068px"
         alt=""
         fetchpriority="high"
@@ -154,14 +157,15 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
       <h2>{t('project.related')}</h2>
       <ul>
         {related.map(({ project: r, slug }) => {
-          const { src, srcset } = resolveThumb(r);
+          const { src, srcset, avifSrcset } = resolveThumb(r, { local: localImages });
           return (
             <li>
               <a href={`${langBase}/portfolio/${slug}`}>
                 {src && (
-                  <img
+                  <Thumb
                     src={src}
                     srcset={srcset}
+                    avifSrcset={avifSrcset}
                     sizes="(max-width: 900px) 100vw, (min-width: 1180px) 340px, calc((100vw - 160px) / 3)"
                     alt={r.title}
                     loading="lazy"

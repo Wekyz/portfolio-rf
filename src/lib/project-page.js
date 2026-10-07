@@ -19,9 +19,13 @@ import { SITE, personRef, pageIds } from './schema-ids.js';
 import { lastModified } from './page-dates.js';
 import { creditLine } from './credits.js';
 
-/** URL absolue de la miniature (le CDN Vimeo en sert déjà une). */
-function absThumb(p) {
-  const { src } = resolveThumb(p);
+/**
+ * URL absolue de la miniature (le CDN Vimeo en sert déjà une). `local` : les
+ * images de src/assets/live/ traitées au build (lib/images.js), passées par
+ * l'appelant pour que ce module reste chargeable sous Node.
+ */
+function absThumb(p, local) {
+  const { src } = resolveThumb(p, { local });
   if (!src) return undefined;
   return src.startsWith('/') ? `${SITE}${src}` : src;
 }
@@ -84,7 +88,7 @@ export function buildBreadcrumb(project, lang, slug) {
   };
 }
 
-export function buildProjectMeta(project, slug, lang) {
+export function buildProjectMeta(project, slug, lang, { local = {} } = {}) {
   const t = useTranslations(lang);
   const p = project;
   const catLabel = t(`cat.${p.cat}`);
@@ -115,7 +119,7 @@ export function buildProjectMeta(project, slug, lang) {
     '@id': pageIds(canonical).video,
     name: p.title,
     description: richDescription,
-    thumbnailUrl: absThumb(p),
+    thumbnailUrl: absThumb(p, local),
     // Date d'upload réelle résolue au build depuis Vimeo (fetch-thumbs.mjs) ;
     // repli sur le 1er janvier de `year` en UTC complet si indisponible.
     uploadDate:
@@ -136,7 +140,7 @@ export function buildProjectMeta(project, slug, lang) {
     path,
     title: `${p.title} - ${t('project.titleSuffix')}`,
     description,
-    ogImage: absThumb(p),
+    ogImage: absThumb(p, local),
     ogImageAlt: p.title,
     // Type Open Graph des pages dont le sujet est une vidéo. Les fiches
     // partageaient `website` avec le reste du site.

@@ -9,6 +9,7 @@ import Base from '../../layouts/Base.astro';
 import ProjectDetail from '../../components/ProjectDetail.astro';
 import Contact from '../../components/Contact.astro';
 import { projectRoutes } from '../../lib/slug.js';
+import { localImages } from '../../lib/images.js';
 import { getProjects } from '../../lib/projects.js';
 import { buildProjectMeta, relatedProjects, siblingProjects, buildBreadcrumb } from '../../lib/project-page.js';
 
@@ -26,7 +27,7 @@ export function getStaticPaths() {
 }
 
 const { project, slug, related, siblings } = Astro.props;
-const meta = buildProjectMeta(project, slug, 'en');
+const meta = buildProjectMeta(project, slug, 'en', { local: localImages });
 ---
 <Base lang="en" page="project" {...meta} breadcrumb={buildBreadcrumb(project, 'en', slug)}>
   <ProjectDetail project={project} related={related} siblings={siblings} lang="en" />

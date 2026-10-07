@@ -142,6 +142,10 @@ body {
 }
 .skip-link:focus { top: 8px; }
 
+/* <picture> des images locales (Thumb.astro) : sans effet sur la mise en
+   page, le <img> qu'il contient se comporte comme avant. */
+picture { display: contents; }
+
 /* ── A11Y : contenu réservé aux lecteurs d'écran ──────────── */
 .visually-hidden {
   position: absolute;

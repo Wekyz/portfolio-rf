@@ -18,6 +18,8 @@
  */
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
 import { buildSlugMap } from '../lib/slug.js';
 import { getProjects } from '../lib/projects.js';
 import { creditLine } from '../lib/credits.js';
@@ -45,14 +47,15 @@ const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, L
 
     <ul class="featured-grid">
       {featured.map((p, i) => {
-        const { src, srcset } = resolveThumb(p);
+        const { src, srcset, avifSrcset } = resolveThumb(p, { local: localImages });
         return (
           <li>
             <a href={`${langBase}/portfolio/${slugMap.get(p)}`}>
               {src && (
-                <img
+                <Thumb
                   src={src}
                   srcset={srcset}
+                  avifSrcset={avifSrcset}
                   sizes="(max-width: 900px) 100vw, calc((100vw - 160px) / 3)"
                   alt={p.title}
                   loading={i === 0 ? 'eager' : 'lazy'}
