@@ -93,7 +93,8 @@ for (const [nom, url, exclusions] of PAGES) {
   });
 }
 
-test('accessibilité : lightbox ouverte', async ({ page }) => {
+test('accessibilité : lightbox ouverte', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
   await page.goto('/fr/portfolio');
   await page.locator('a.work-thumb-wrap').first().click();
   await expect(page.locator('#lightbox')).toHaveClass(/open/);

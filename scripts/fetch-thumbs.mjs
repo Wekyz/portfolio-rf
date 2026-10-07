@@ -263,15 +263,35 @@ async function ensureVariants(dir) {
  * système applique par-dessus.
  */
 async function ensureAppleIcon() {
-  const out = join(ROOT, 'public', 'apple-touch-icon.png');
+  return ensureSquareIcon('apple-touch-icon.png', 180);
+}
+
+/**
+ * Icônes 192 et 512 px du manifeste (MOB-05) : Android s'en sert pour
+ * l'ajout à l'écran d'accueil et l'écran de lancement, et étirait jusqu'ici
+ * l'icône iOS de 180 px. Même rendu que celle-ci.
+ */
+async function ensureManifestIcons() {
+  const made = await Promise.all([ensureSquareIcon('icon-192.png', 192), ensureSquareIcon('icon-512.png', 512)]);
+  return made.some(Boolean);
+}
+
+/**
+ * Icône carrée sur fond opaque, rendue depuis favicon.svg, glyphe à 82 % du
+ * côté (148 px sur 180, proportion d'origine de l'icône iOS). Générée
+ * seulement si elle manque : les fichiers sont versionnés.
+ */
+async function ensureSquareIcon(name, size) {
+  const out = join(ROOT, 'public', name);
   if (await exists(out)) return false;
   const svg = await readFile(join(ROOT, 'public', 'favicon.svg'));
+  const inner = Math.round((size * 148) / 180);
   const glyphe = await sharp(svg, { density: 600 })
-    .resize(148, 148, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize(inner, inner, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
     .toBuffer();
   await sharp({
-    create: { width: 180, height: 180, channels: 4, background: { r: 250, g: 250, b: 248, alpha: 1 } },
+    create: { width: size, height: size, channels: 4, background: { r: 250, g: 250, b: 248, alpha: 1 } },
   })
     .composite([{ input: glyphe, gravity: 'center' }])
     .png({ compressionLevel: 9 })
@@ -644,6 +664,7 @@ async function main() {
 
   if (await ensureAppleIcon()) console.log('[icone] apple-touch-icon.png (180x180) régénérée.');
   if (await ensureFaviconIco()) console.log('[icone] favicon.ico (16, 32, 48) régénéré.');
+  if (await ensureManifestIcons()) console.log('[icone] icon-192.png et icon-512.png régénérées.');
 
   const showreel = await ensureShowreelPoster();
   console.log(

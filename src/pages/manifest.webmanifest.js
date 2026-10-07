@@ -28,6 +28,9 @@ export function GET() {
       { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
       { src: '/favicon.png', sizes: '64x64', type: 'image/png' },
       { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      // Tailles attendues par Android (écran d'accueil, écran de lancement).
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
     ],
   };
 

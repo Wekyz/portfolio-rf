@@ -487,6 +487,7 @@ import { applySpans } from '../lib/spans.js';
     // La vignette est un <a> vers sa page projet (voir WorkItem.astro). On
     // intercepte le clic simple pour ouvrir la lightbox, comportement
     // inchangé pour le visiteur ; toute autre forme de clic suit le lien.
+    const coarse = window.matchMedia('(pointer: coarse)');
     originalOrder.forEach((item) => {
       const link = item.querySelector('a.work-thumb-wrap');
       if (!link) return;
@@ -496,6 +497,11 @@ import { applySpans } from '../lib/spans.js';
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
         // Lien externe (projet sans vidéo Vimeo) : il ouvre déjà son onglet.
         if (link.target === '_blank') return;
+        // Écran tactile : le lien mène à la fiche. En portrait, le lecteur
+        // 16/9 de la lightbox n'occupait qu'un tiers de l'écran ; la fiche
+        // donne un lecteur pleine largeur, le plein écran natif du téléphone
+        // et une adresse partageable.
+        if (coarse.matches) return;
         if (!item.dataset.id) return;
         e.preventDefault();
         openLightbox(item, link);
@@ -787,7 +793,7 @@ import { applySpans } from '../lib/spans.js';
 
       btn.innerHTML = FORM_LABELS.sending;
       btn.disabled = true;
-      btn.classList.remove('is-success', 'is-error');
+      btn.classList.remove('is-error');
       if (formError) formError.hidden = true;
       // Le libellé du bouton est visuel uniquement (innerHTML) : cette région
       // aria-live annonce le même statut aux lecteurs d'écran.
@@ -861,7 +867,7 @@ import { applySpans } from '../lib/spans.js';
             // Rien à rétablir si la confirmation a pris la place du formulaire.
             if (formDone && !formDone.hidden) return;
             btn.innerHTML = originalHTML;
-            btn.classList.remove('is-success', 'is-error');
+            btn.classList.remove('is-error');
             btn.disabled = false;
             if (formStatus) formStatus.textContent = '';
           }, 4000);

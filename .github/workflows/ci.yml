@@ -104,7 +104,19 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # Le job e2e n'a besoin que de Playwright et d'`astro preview`, mais
+      # réinstallait tout l'arbre à chaque exécution. node_modules est mis en
+      # cache, indexé sur le lockfile et la version de Node : tant que rien ne
+      # change, `npm ci` ne tourne pas.
+      - name: Cache node_modules
+        id: nm
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json', '.nvmrc') }}
+
       - name: Install dependencies
+        if: steps.nm.outputs.cache-hit != 'true'
         run: npm ci
 
       # La version de Playwright détermine celle du navigateur : la clé de
@@ -171,7 +183,15 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Cache node_modules
+        id: nm
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json', '.nvmrc') }}
+
       - name: Install dependencies
+        if: steps.nm.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Install Playwright (webkit)

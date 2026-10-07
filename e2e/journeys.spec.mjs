@@ -54,7 +54,8 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   await expect(page.locator('.work-item:not(.hidden)')).toHaveCount(total);
 });
 
-test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }) => {
+test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
   await page.goto('/fr/portfolio');
 
   const premier = page.locator('a.work-thumb-wrap').first();
@@ -82,7 +83,8 @@ test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }) =
   await expect(page).toHaveURL(/\/fr\/portfolio$/);
 });
 
-test('le bouton Retour ferme la vidéo au lieu de quitter le portfolio', async ({ page }) => {
+test('le bouton Retour ferme la vidéo au lieu de quitter le portfolio', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
   await page.goto('/fr/portfolio');
   await page.locator('a.work-thumb-wrap').first().click();
   await expect(page.locator('#lightbox')).toHaveClass(/open/);
@@ -487,7 +489,8 @@ test('le focus ne sort pas de la lightbox au clavier', async ({ page }, testInfo
   }
 });
 
-test('la lightbox porte le titre du projet comme nom', async ({ page }) => {
+test('la lightbox porte le titre du projet comme nom', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
   await page.goto('/fr/portfolio');
   const premier = page.locator('a.work-thumb-wrap').first();
   const titre = (await premier.locator('.work-title').textContent()).trim();
@@ -509,4 +512,16 @@ test('le nom d’une vignette reprend son texte visible', async ({ page }) => {
 test('le champ message est signalé comme facultatif', async ({ page }) => {
   await page.goto('/fr/contact');
   await expect(page.locator('label[for="message"]')).toContainText('(facultatif)');
+});
+
+test('sur écran tactile, une vignette ouvre la fiche du projet', async ({ page }, testInfo) => {
+  // MOB-04 : en portrait, la lightbox ne donnait au lecteur qu'un tiers de
+  // l'écran. La fiche offre un lecteur pleine largeur et le plein écran natif.
+  test.skip(!testInfo.project.use.isMobile, 'comportement propre aux écrans tactiles');
+  await page.goto('/fr/portfolio');
+  const premier = page.locator('a.work-thumb-wrap[href^="/fr/portfolio/"]').first();
+  const fiche = await premier.getAttribute('href');
+  await premier.tap();
+  await expect(page).toHaveURL(new RegExp(`${fiche}$`));
+  await expect(page.locator('.project-player iframe')).toBeVisible();
 });

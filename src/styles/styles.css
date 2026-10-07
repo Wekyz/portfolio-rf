@@ -111,7 +111,6 @@
   .brand-marquee .brand-logo img,
   .brand-marquee .brand-logo:hover img { filter: grayscale(1) invert(1); }
   /* États du bouton d'envoi : fonds colorés fixes, texte clair fixe. */
-  .form-submit.is-success,
   .form-submit.is-error { color: var(--on-media); }
 }
 
@@ -161,6 +160,7 @@ body {
    n'en décrire qu'un. L'icône annonce l'action à venir, pas l'état courant :
    « pause » tant que ça bouge, « lecture » une fois arrêté. */
 .media-toggle {
+  position: relative;
   width: 32px; height: 32px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: none; border: 1px solid var(--border-ui); border-radius: 50%;
@@ -168,6 +168,9 @@ body {
   transition: border-color var(--t-fast) ease, color var(--t-fast) ease;
 }
 .media-toggle:hover { border-color: var(--black); color: var(--black); }
+/* Zone tactile de 44 px autour du cercle de 32 : le dessin ne change pas,
+   le doigt a de la marge. Même procédé pour .lightbox-nav. */
+.media-toggle::after { content: ''; position: absolute; inset: -7px; }
 .media-toggle .icon-play { display: none; }
 .media-toggle[aria-pressed='true'] .icon-pause { display: none; }
 .media-toggle[aria-pressed='true'] .icon-play { display: block; }
@@ -213,7 +216,8 @@ body > nav {
 /* Accueil : le showreel touche le bas de la nav, le filet devient un faux
    séparateur superflu au-dessus de la vidéo. */
 nav.nav-flush { border-bottom-color: transparent; }
-/* Wrapper sémantique : le H1 ne doit pas modifier l'apparence du logo. */
+/* Conteneur du logo (ce n'est plus un H1, voir Nav.astro) : neutralise les
+   marges et la typographie héritées. */
 .nav-logo-wrap { margin: 0; font-size: inherit; font-weight: inherit; line-height: 1; }
 .nav-logo {
   font-family: var(--font-dala);
@@ -244,10 +248,13 @@ nav.nav-flush { border-bottom-color: transparent; }
 .nav-lang:hover { color: var(--black) !important; border-color: var(--black); }
 
 /* Menu burger (mobile uniquement, voir media query 900px) */
+/* 44x44 px de zone tactile (recommandation Apple, WCAG 2.5.5) pour des traits
+   inchangés de 32 px : le padding porte la différence, la marge négative
+   garde le bord droit aligné sur la navigation. */
 .nav-burger {
-  display: none;
+  display: none; box-sizing: border-box;
   flex-direction: column; justify-content: center; gap: 5px;
-  width: 32px; height: 32px; padding: 0;
+  width: 44px; height: 44px; padding: 0 6px; margin-right: -6px;
   background: none; border: none; cursor: pointer;
 }
 .nav-burger span {
@@ -561,11 +568,9 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* ── NON CLIQUABLE (ex. Live en photo) ───────────────────────
    Un item Live peut être une simple photo (non cliquable) ou une vidéo
    Vimeo (cliquable) - voir public/admin/config.yml. WorkItem.astro rend un
-   <button> pour les items cliquables et un <div> pour les autres : cibler
-   `:not(button)` désactive le curseur/l'icône play uniquement sur les
-   items réellement non interactifs, quelle que soit leur catégorie. */
-/* Vignette non cliquable (projet `noClick` : live sans lien) - rendue en
-   <div> plutôt qu'en <a>, voir WorkItem.astro. */
+   <a> pour les items cliquables et un <div> pour les autres : cibler
+   `:not(a)` désactive le curseur et l'icône play uniquement sur les items
+   réellement non interactifs, quelle que soit leur catégorie. */
 .work-thumb-wrap:not(a) { cursor: default; }
 .work-thumb-wrap:not(a) .work-play { display: none; }
 .work-thumb-wrap:not(a):hover .work-thumb { transform: none; }
@@ -1003,7 +1008,6 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .form-submit:hover { background: var(--gray-dark); gap: 22px; }
 .form-submit[disabled] { opacity: .6; cursor: progress; }
-.form-submit.is-success { background: #5a7a5a; }
 .form-submit.is-error   { background: #c0392b; }
 
 /* ── FOOTER ───────────────────────────────────────────────── */
@@ -1082,6 +1086,7 @@ footer {
 }
 .lightbox-sheet:hover { color: var(--on-media); }
 .lightbox-nav {
+  position: relative;
   flex-shrink: 0; order: -1;
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
@@ -1089,6 +1094,7 @@ footer {
   color: var(--on-media); font-size: 15px; cursor: pointer;
   transition: border-color var(--t-fast) ease, background var(--t-fast) ease;
 }
+.lightbox-nav::after { content: ''; position: absolute; inset: -6px; }
 .lightbox-nav:hover { border-color: var(--on-media); background: rgba(255, 255, 255, .1); }
 #lightboxNext { order: 1; }
 .lightbox-bar [hidden] { display: none; }
@@ -1150,8 +1156,11 @@ footer {
   .project-facts { gap: 28px; }
   .form-row { grid-template-columns: 1fr; }
   body > nav { padding-top: 20px; padding-bottom: 20px; }
-  /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */
-  .showreel { aspect-ratio: 4 / 3; }
+  /* Plus de cadre 4/3 sur mobile : la vidéo 2,39:1 y restait entière, avec
+     près de la moitié de la hauteur vide, et l'image d'ouverture (en cover)
+     n'y était pas cadrée comme la vidéo. Le cadre garde le ratio de la
+     vidéo ; un vrai format mobile demanderait un montage du showreel en
+     4/5 ou 1/1. */
   .hero-content { margin-top: 40px; }
   /* Le texte tenait sur une ligne en desktop (taille réduite) : sur mobile
      on revient à une taille confortable, avec retour à la ligne normal. */
@@ -1214,8 +1223,6 @@ footer {
 @media (max-width: 480px) {
   body > nav { padding-left: 16px; padding-right: 16px; }
   .nav-logo { font-size: 17px; }
-  .nav-links { gap: 18px; }
-  .nav-links a { font-size: 12px; }
 }
 
 /* ── A11Y : motion reduit ─────────────────────────────────── */
