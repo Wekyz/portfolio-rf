@@ -32,6 +32,7 @@ import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
 import { verifyToken } from './_lib/form-token.js';
 import { verifyTurnstile } from './_lib/turnstile.js';
 import { reportError, countSent, stashFailedMessage } from './_lib/observe.js';
+import { CONTACT_LIMITS } from '../src/lib/contact-limits.js';
 
 /**
  * Neutralise les retours à la ligne. Le sujet d'un email est un en-tête :
@@ -76,20 +77,31 @@ export default async function handler(req, res) {
 
   // Longueurs maximales. Il n'y en avait aucune : un prénom de 100 000
   // caractères partait tel quel dans le sujet de l'email.
-  const TOO_LONG = [
-    firstName.length > 100,
-    lastName.length > 100,
-    email.length > 254, // RFC 5321
-    message.length > 5000,
-  ].some(Boolean);
-  if (TOO_LONG) {
+  //
+  // `field` nomme le champ fautif (attribut `name`) : le client le signale et
+  // y place le focus, au lieu d'un « un des champs » à deviner.
+  const values = { 'first-name': firstName, 'last-name': lastName, email, message };
+  const tooLong = Object.keys(CONTACT_LIMITS).find((name) => values[name].length > CONTACT_LIMITS[name]);
+  if (tooLong) {
     countRejection('too-long');
-    return res.status(413).json({ code: 'too-long', error: 'Un des champs dépasse la longueur autorisée.' });
+    return res.status(413).json({
+      code: 'too-long',
+      field: tooLong,
+      max: CONTACT_LIMITS[tooLong],
+      error: 'Un des champs dépasse la longueur autorisée.',
+    });
   }
 
-  if (!firstName || !lastName || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+  const invalid = !firstName
+    ? 'first-name'
+    : !lastName
+      ? 'last-name'
+      : !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+        ? 'email'
+        : null;
+  if (invalid) {
     countRejection('invalid-fields');
-    return res.status(400).json({ code: 'invalid-fields', error: 'Champs requis manquants ou email invalide.' });
+    return res.status(400).json({ code: 'invalid-fields', field: invalid, error: 'Champs requis manquants ou email invalide.' });
   }
 
   // Délai anti-bot vérifié côté serveur : le contrôle des 3 secondes vivait

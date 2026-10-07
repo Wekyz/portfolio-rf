@@ -155,6 +155,12 @@ export const ui = {
     'contact.messagePh': 'Tell me about your project…',
     'contact.send': 'Send',
     'contact.honeypot': "Don't fill this out:",
+    'contact.copy': 'Copy',
+    'contact.copied': 'Copied',
+    'contact.copyAria': 'Copy the email address',
+    'contact.sent': 'Message sent.',
+    'contact.sentSub': "Thank you, I'll get back to you shortly.",
+    'contact.again': 'Write another message',
     'contactPage.title': 'Contact - Roxane Foare, Video Editor',
     'contactPage.description': 'Get in touch with Roxane Foare, freelance video editor based in Paris & Angers. Contact form, email and practical details.',
     'contactPage.area': 'Working area',
@@ -305,6 +311,9 @@ export const ui = {
     'contact.messagePh': 'Parlez-moi de votre projet…',
     'contact.send': 'Envoyer',
     'contact.honeypot': 'Ne remplissez pas ce champ :',
+    'contact.copy': 'Copier',
+    'contact.copied': 'Copié',
+    'contact.copyAria': "Copier l'adresse e-mail",
     'contact.sent': 'Message envoyé.',
     'contact.sentSub': 'Merci - je vous réponds au plus vite.',
     'contact.again': 'Écrire un autre message',
@@ -339,11 +348,23 @@ export const ui = {
 
 /**
  * Renvoie une fonction de traduction pour la langue donnee (repli sur l'anglais).
+ *
+ * Une clé absente des deux dictionnaires était rendue telle quelle : la
+ * confirmation d'envoi du formulaire affichait "contact.sent" à tout visiteur
+ * anglophone, sans que le build ne dise rien. Elle fait désormais échouer le
+ * build de production, et reste un simple avertissement en développement
+ * (et dans les tests, où `import.meta.env` n'existe pas).
+ *
  * @param {'en'|'fr'} lang
  */
 export function useTranslations(lang) {
   const dict = ui[lang] || ui[defaultLang];
   return function t(key) {
-    return dict[key] ?? ui[defaultLang][key] ?? key;
+    const value = dict[key] ?? ui[defaultLang][key];
+    if (value !== undefined) return value;
+    const message = `[i18n] clé de traduction absente : "${key}" (${lang})`;
+    if (import.meta.env?.PROD) throw new Error(message);
+    globalThis.console.warn(message);
+    return key;
   };
 }

@@ -67,15 +67,30 @@ test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }) =
   await expect(page.locator('#lightboxMeta')).not.toBeEmpty();
   await expect(page.locator('#lightboxSheet')).toHaveAttribute('href', /^\/fr\/portfolio\//);
 
-  // Le clic simple ne doit pas avoir navigué.
-  expect(new URL(page.url()).pathname).toBe('/fr/portfolio');
+  // Le clic simple n'a pas chargé de page, mais l'adresse est celle de la
+  // fiche : elle se partage telle quelle.
+  const fiche = await page.locator('#lightboxSheet').getAttribute('href');
+  expect(new URL(page.url()).pathname).toBe(fiche);
 
   await page.locator('#lightboxNext').click();
   await expect(page.locator('#lightboxTitle')).not.toHaveText(titreVignette.trim());
   await expect(modale).toHaveClass(/open/);
+  expect(new URL(page.url()).pathname).not.toBe(fiche);
 
   await page.keyboard.press('Escape');
   await expect(modale).not.toHaveClass(/open/);
+  await expect(page).toHaveURL(/\/fr\/portfolio$/);
+});
+
+test('le bouton Retour ferme la vidéo au lieu de quitter le portfolio', async ({ page }) => {
+  await page.goto('/fr/portfolio');
+  await page.locator('a.work-thumb-wrap').first().click();
+  await expect(page.locator('#lightbox')).toHaveClass(/open/);
+
+  await page.goBack();
+  await expect(page.locator('#lightbox')).not.toHaveClass(/open/);
+  await expect(page).toHaveURL(/\/fr\/portfolio$/);
+  await expect(page.locator('#workGrid')).toBeVisible();
 });
 
 test('ctrl+clic sur une vignette ouvre la page projet au lieu de la modale', async ({
@@ -237,8 +252,8 @@ test('une URL inexistante affiche la page 404 du site', async ({ page }) => {
   // `astro preview` ne sert pas 404.html automatiquement : on la vise
   // directement, l'objet du test étant son contenu, pas le routage de Vercel.
   await page.goto('/404.html');
-  await expect(page.locator('h1')).toBeVisible();
-  await expect(page.locator('.notfound-links a')).toHaveCount(3);
+  await expect(page.locator('h1:visible')).toHaveCount(1);
+  await expect(page.locator('.notfound:visible .notfound-links a')).toHaveCount(3);
 });
 
 test('un refus du serveur est expliqué, pas résumé à « Erreur »', async ({ page }) => {
@@ -329,4 +344,116 @@ test('un ?cat= inconnu retombe sur « toutes » sans effacer l’URL', async ({ 
   // L'URL n'est pas réécrite : un paramètre erroné qui disparaît tout seul est
   // plus déroutant qu'un filtre qui ne s'applique pas.
   await expect(page).toHaveURL(/cat=nimportequoi/);
+});
+
+/* ── Audit UX (UX-01 à UX-07) ───────────────────────────────────────── */
+
+const jetonFactice = (route) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: '{"token":"1700000000000.sig"}' });
+
+async function remplir(page) {
+  await page.fill('#first-name', 'Marie');
+  await page.fill('#last-name', 'Dupont');
+  await page.fill('#email', 'marie@studio.com');
+  await page.fill('#message', 'Bonjour, un projet à discuter.');
+}
+
+test('la confirmation d’envoi est rédigée en anglais sur la version anglaise', async ({ page }) => {
+  await page.route('**/api/form-token', jetonFactice);
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' })
+  );
+  await page.goto('/contact');
+  await remplir(page);
+  await page.locator('.form-submit').click();
+  const fait = page.locator('#formDone');
+  await expect(fait).toBeVisible({ timeout: 15_000 });
+  await expect(fait).toContainText('Message sent.');
+  await expect(fait).not.toContainText('contact.');
+});
+
+test('un champ trop long est nommé et reçoit le focus', async ({ page }) => {
+  await page.route('**/api/form-token', jetonFactice);
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({
+      status: 413,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'too-long', field: 'last-name', max: 100, error: 'trop long' }),
+    })
+  );
+  await page.goto('/fr/contact');
+  await remplir(page);
+  await page.locator('.form-submit').click();
+  await expect(page.locator('#formError')).toContainText(/Nom : 100 caractères maximum/, { timeout: 15_000 });
+  await expect(page.locator('#last-name')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#last-name')).toBeFocused();
+});
+
+test('les champs portent leur longueur maximale', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('#first-name')).toHaveAttribute('maxlength', '100');
+  await expect(page.locator('#email')).toHaveAttribute('maxlength', '254');
+  await expect(page.locator('#message')).toHaveAttribute('maxlength', '5000');
+});
+
+test('un jeton expiré est renouvelé sans perdre le message', async ({ page }) => {
+  let jetons = 0;
+  let envois = 0;
+  await page.route('**/api/form-token', (route) => {
+    jetons++;
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ token: `jeton-${jetons}` }),
+    });
+  });
+  await page.route('**/api/contact', (route) => {
+    envois++;
+    const { formToken } = JSON.parse(route.request().postData() || '{}');
+    return formToken === 'jeton-1'
+      ? route.fulfill({ status: 400, contentType: 'application/json', body: '{"code":"bad-token"}' })
+      : route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+  });
+  await page.goto('/fr/contact');
+  await remplir(page);
+  await page.locator('.form-submit').click();
+  await expect(page.locator('#formDone')).toBeVisible({ timeout: 20_000 });
+  expect(jetons).toBe(2);
+  expect(envois).toBe(2);
+});
+
+test('l’adresse e-mail est écrite à côté du lien, avec un bouton pour la copier', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('#contactAddress')).toContainText('@');
+  await expect(page.locator('#copyEmail')).toBeVisible();
+});
+
+test('une adresse française inexistante affiche la 404 en français', async ({ page }) => {
+  // Même limite que plus haut : `astro preview` ne sert pas 404.html. On
+  // le sert à la place d'une adresse /fr inexistante, comme le fait Vercel.
+  const html = await (await page.request.get('/404.html')).text();
+  await page.route('**/fr/page-inexistante', (route) =>
+    route.fulfill({ status: 404, contentType: 'text/html; charset=utf-8', body: html })
+  );
+  const erreursCsp = [];
+  page.on('console', (msg) => {
+    if (/Content Security Policy/i.test(msg.text())) erreursCsp.push(msg.text());
+  });
+  await page.goto('/fr/page-inexistante');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  await expect(page.locator('h1:visible')).toHaveText("Cette page n'existe pas");
+  await expect(page.locator('#notfoundFr .notfound-links a').first()).toHaveAttribute('href', '/fr/portfolio');
+  await expect(page.locator('footer')).toContainText('Mentions légales');
+  expect(erreursCsp).toEqual([]);
+});
+
+test('la 404 reste en anglais hors de /fr', async ({ page }) => {
+  await page.goto('/404.html');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('h1:visible')).toHaveText('This page does not exist');
+});
+
+test('le lien Contact du menu signale la page courante', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('#navLinks a[href="/fr/contact"]')).toHaveAttribute('aria-current', 'page');
 });

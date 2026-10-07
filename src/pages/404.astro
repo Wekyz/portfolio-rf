@@ -7,16 +7,80 @@
  * reconnaît nativement. Aucune règle à déclarer dans vercel.json.
  *
  * Une seule page pour tout le site : Vercel sert le même fichier quelle que
- * soit l'URL manquante, y compris sous /fr. Elle est donc en anglais, la
- * langue par défaut (x-default), et propose un accès à la version française.
+ * soit l'URL manquante, y compris sous /fr. Elle est rendue en anglais, la
+ * langue par défaut (x-default), et contient aussi la version française,
+ * cachée. Le script en bas de page bascule sur celle-ci quand l'adresse
+ * demandée commence par /fr : jusqu'ici, un lien français cassé tombait sur
+ * une page uniquement en anglais. Le menu et le pied de page sont traduits
+ * par la même occasion, à partir des dictionnaires (pas de texte en double).
+ *
+ * Le script est inline et Astro ne calcule pas l'empreinte CSP d'un script
+ * `is:inline` : sans elle, le navigateur le bloquerait. Son code vit donc dans
+ * une chaîne, dont l'empreinte est calculée ici et déclarée par
+ * `Astro.csp.insertScriptHash`. Elle porte toujours sur le texte exact injecté.
  *
  * `path=""` force le sélecteur de langue de la navigation à viser l'accueil
  * français : sans lui il visait /fr/404, qui n'existe pas.
  */
+import { createHash } from 'node:crypto';
 import Base from '../layouts/Base.astro';
-import { useTranslations } from '../i18n/strings.js';
+import { useTranslations, ui } from '../i18n/strings.js';
 
 const t = useTranslations('en');
+const tf = useTranslations('fr');
+
+// Paires anglais -> français pour le menu et le pied de page.
+const chrome = Object.keys(ui.en)
+  .filter((key) => key.startsWith('nav.') || key.startsWith('footer.'))
+  .map((key) => [ui.en[key as keyof typeof ui.en], ui.fr[key as keyof typeof ui.fr]])
+  .filter(([en, fr]) => en && fr && en !== fr);
+const i18n = JSON.stringify({ title: tf('notfound.title'), chrome });
+
+const SWITCH_SCRIPT = `(function () {
+  var path = location.pathname;
+  if (path !== '/fr' && path.indexOf('/fr/') !== 0) return;
+  var data = JSON.parse(document.getElementById('notfoundI18n').textContent);
+  var swap = function (text) {
+    for (var i = 0; i < data.chrome.length; i++) {
+      if (text.indexOf(data.chrome[i][0]) !== -1) return text.replace(data.chrome[i][0], data.chrome[i][1]);
+    }
+    return text;
+  };
+
+  document.documentElement.lang = 'fr';
+  document.title = data.title;
+  document.getElementById('notfoundEn').hidden = true;
+  document.getElementById('notfoundFr').hidden = false;
+
+  // Le menu est déjà là, le pied de page pas encore : il suit ce script.
+  var chrome = function () {
+    document.querySelectorAll('body > nav, footer').forEach(translate);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chrome);
+  else chrome();
+
+  function translate(root) {
+    root.querySelectorAll('a[href^="/"]').forEach(function (a) {
+      var href = a.getAttribute('href');
+      if (a.classList.contains('nav-lang')) {
+        a.setAttribute('href', '/');
+        a.setAttribute('lang', 'en');
+        a.setAttribute('hreflang', 'en');
+      } else if (href !== '/fr' && href.indexOf('/fr/') !== 0) {
+        a.setAttribute('href', href === '/' ? '/fr' : '/fr' + href);
+      }
+    });
+    root.querySelectorAll('[aria-label]').forEach(function (el) {
+      el.setAttribute('aria-label', swap(el.getAttribute('aria-label')));
+    });
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (var node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (node.nodeValue.trim()) node.nodeValue = swap(node.nodeValue);
+    }
+  }
+})();
+`;
+Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update(SWITCH_SCRIPT).digest('base64')}`);
 ---
 <Base
   lang="en"
@@ -26,7 +90,7 @@ const t = useTranslations('en');
   noindex
   path=""
 >
-  <section class="notfound">
+  <section class="notfound" id="notfoundEn">
     <p class="notfound-code" aria-hidden="true">404</p>
     <h1 class="notfound-heading">{t('notfound.heading')}</h1>
     <p class="notfound-text">{t('notfound.text')}</p>
@@ -35,6 +99,21 @@ const t = useTranslations('en');
       <a href="/about" class="hero-cta-btn hero-cta-secondary">{t('nav.about')}</a>
       <a href="/contact" class="hero-cta-btn hero-cta-secondary">{t('nav.contact')}</a>
     </div>
-    <p class="notfound-lang"><a href="/fr">Voir le site en français</a></p>
+    <p class="notfound-lang"><a href="/fr" lang="fr" hreflang="fr">Voir le site en français</a></p>
   </section>
+
+  <section class="notfound" id="notfoundFr" lang="fr" hidden>
+    <p class="notfound-code" aria-hidden="true">404</p>
+    <h1 class="notfound-heading">{tf('notfound.heading')}</h1>
+    <p class="notfound-text">{tf('notfound.text')}</p>
+    <div class="notfound-links">
+      <a href="/fr/portfolio" class="hero-cta-btn hero-cta-primary">{tf('nav.work')}</a>
+      <a href="/fr/about" class="hero-cta-btn hero-cta-secondary">{tf('nav.about')}</a>
+      <a href="/fr/contact" class="hero-cta-btn hero-cta-secondary">{tf('nav.contact')}</a>
+    </div>
+    <p class="notfound-lang"><a href="/" lang="en" hreflang="en">See the site in English</a></p>
+  </section>
+
+  <script type="application/json" id="notfoundI18n" set:html={i18n} />
+  <script is:inline set:html={SWITCH_SCRIPT} />
 </Base>

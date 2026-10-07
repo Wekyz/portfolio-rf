@@ -207,6 +207,17 @@ test('un champ démesuré est refusé en 413, sans rien envoyer', async () => {
 test('un message de plus de 5000 caractères est refusé', async () => {
   const { res } = await withResend(valid({ message: 'x'.repeat(5001) }));
   assert.equal(res.statusCode, 413);
+  // Le champ et la limite sont nommés : le client les affiche (UX-02).
+  assert.equal(res.body.field, 'message');
+  assert.equal(res.body.max, 5000);
+});
+
+test('un refus de validation désigne le champ en cause', async () => {
+  const sansNom = await withResend(valid({ 'last-name': '' }));
+  assert.equal(sansNom.res.statusCode, 400);
+  assert.equal(sansNom.res.body.field, 'last-name');
+  const mauvaisEmail = await withResend(valid({ email: 'pas-un-email' }));
+  assert.equal(mauvaisEmail.res.body.field, 'email');
 });
 
 test('une adresse de plus de 254 caractères est refusée', async () => {

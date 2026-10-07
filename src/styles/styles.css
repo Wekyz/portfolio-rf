@@ -150,10 +150,15 @@ body {
 .slide-label .lbl-out,
 .slide-label .lbl-in { display: block; transition: transform var(--t-mid) var(--ease); }
 .slide-label .lbl-in { position: absolute; top: 0; left: 0; transform: translateX(-110%); color: var(--black); }
+/* `.active` pour les filtres, `aria-current` pour la navigation : les liens
+   du menu portaient bien aria-current, mais aucun style ne le lisait, la page
+   courante n'avait donc aucun repère visuel. */
 .slide-label:hover .lbl-out,
-.slide-label.active .lbl-out { transform: translateX(110%); }
+.slide-label.active .lbl-out,
+.slide-label[aria-current='page'] .lbl-out { transform: translateX(110%); }
 .slide-label:hover .lbl-in,
-.slide-label.active .lbl-in  { transform: translateX(0); }
+.slide-label.active .lbl-in,
+.slide-label[aria-current='page'] .lbl-in  { transform: translateX(0); }
 .slide-label::after {
   content: ''; position: absolute; bottom: -2px; left: 0;
   width: 100%; height: 1px; background: var(--black);
@@ -161,7 +166,8 @@ body {
   transition: transform var(--t-mid) var(--ease);
 }
 .slide-label:hover::after,
-.slide-label.active::after { transform: scaleX(1); }
+.slide-label.active::after,
+.slide-label[aria-current='page']::after { transform: scaleX(1); }
 
 /* ── NAV ──────────────────────────────────────────────────── */
 /* Scopé au > body : le sélecteur nu s'appliquait aussi au fil d'Ariane des
@@ -850,6 +856,22 @@ nav.nav-flush { border-bottom-color: transparent; }
   display: inline-block; padding: 3px; transform: rotate(-45deg);
 }
 
+/* Adresse écrite sous le lien : le `mailto:` ne mène nulle part sur un poste
+   sans logiciel de messagerie. */
+.contact-address {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px;
+  font-size: 14px; color: var(--gray-dark); padding-left: 32px;
+  overflow-wrap: anywhere;
+}
+.contact-copy {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--black);
+  border-bottom: 1px solid var(--border-ui);
+}
+.contact-copy:hover { border-bottom-color: var(--black); }
+.contact-copy[hidden] { display: none; }
+
 .contact-form { display: flex; flex-direction: column; gap: 20px; }
 /* Même piège que `.showreel-controls` : `display: flex` d'une feuille
    d'auteur l'emporte sur le `[hidden] { display: none }` du navigateur. Sans
@@ -888,6 +910,10 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .form-group input:focus,
 .form-group textarea:focus { border-bottom-color: var(--black); }
+/* Champ désigné par le serveur (trop long, manquant, adresse invalide). */
+.form-group [aria-invalid="true"] { border-bottom-color: var(--error-text); }
+.form-count { font-size: 12px; color: var(--gray-mid); text-align: right; }
+.form-count.is-full { color: var(--error-text); }
 /* --gray-light sur le fond du site ne donnait que 1,18:1 (mesuré) : les
    exemples « Marie », « marie@studio.com » étaient invisibles pour une bonne
    part des visiteurs, très en dessous du minimum WCAG de 4,5:1.

@@ -23,7 +23,7 @@ import contentDates from '../data/content-dates.json' with { type: 'json' };
  * chemin commun aux deux langues, la date vaut pour /x et /fr/x.
  */
 export const FIXED_PAGE_DATES = {
-  '': '2026-09-06',
+  '': '2026-10-07',
   '/portfolio': '2026-10-07',
   '/about': '2026-09-06',
   '/contact': '2026-10-07',

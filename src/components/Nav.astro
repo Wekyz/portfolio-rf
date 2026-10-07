@@ -47,7 +47,7 @@ const otherLang = lang === 'fr' ? 'en' : 'fr';
   <ul class="nav-links" id="navLinks">
     <li><a class="slide-label" href={portfolioHref} aria-current={page === 'portfolio' ? 'page' : undefined}><span class="lbl-out">{t('nav.work')}</span><span class="lbl-in" aria-hidden="true">{t('nav.work')}</span></a></li>
     <li><a class="slide-label" href={aboutHref} aria-current={page === 'about' ? 'page' : undefined}><span class="lbl-out">{t('nav.about')}</span><span class="lbl-in" aria-hidden="true">{t('nav.about')}</span></a></li>
-    <li><a class="slide-label" href={contactHref}><span class="lbl-out">{t('nav.contact')}</span><span class="lbl-in" aria-hidden="true">{t('nav.contact')}</span></a></li>
+    <li><a class="slide-label" href={contactHref} aria-current={page === 'contact' ? 'page' : undefined}><span class="lbl-out">{t('nav.contact')}</span><span class="lbl-in" aria-hidden="true">{t('nav.contact')}</span></a></li>
     <li><a class="nav-lang" href={otherHref} lang={otherLang} hreflang={otherLang} aria-label={t('nav.langAria')}>{t('nav.langLabel')}</a></li>
   </ul>
 </nav>
