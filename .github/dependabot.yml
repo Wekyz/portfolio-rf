@@ -9,8 +9,25 @@ updates:
     labels:
       - "dependencies"
     groups:
-      # Regroupe les mises à jour mineures/patch dans une seule PR
-      minor-and-patch:
+      # Outils de build et de test, mineures et correctifs : une PR, fusionnée
+      # automatiquement si la CI passe (.github/workflows/dependabot.yml).
+      # Exclus : Astro (le site entier en dépend, une mineure peut changer la
+      # sortie) et Sveltia CMS (sa balise script, son empreinte SRI et la CSP
+      # de /admin/ sont à mettre à jour à la main, tests/cms-version.test.mjs
+      # le vérifie). Ceux-là arrivent en PR séparées, relues à la main.
+      dev-minor-and-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+        exclude-patterns:
+          - "astro"
+          - "@astrojs/*"
+          - "@sveltia/cms"
+      # Dépendances exécutées en production (fonctions de api/ : Upstash) :
+      # regroupées, mais relues à la main.
+      prod-minor-and-patch:
+        dependency-type: "production"
         update-types:
           - "minor"
           - "patch"
@@ -23,10 +40,17 @@ updates:
       - dependency-name: "typescript"
         versions: [">=7.0.0"]
 
-  # Actions GitHub (si des workflows sont ajoutés plus tard)
+  # Actions GitHub, épinglées par SHA dans les workflows : Dependabot remplace
+  # le SHA et le commentaire de version ensemble. Une seule PR par semaine
+  # pour toutes les actions (il y en avait cinq ouvertes à la fois), relue à
+  # la main : une action s'exécute avec les droits du workflow.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     labels:
       - "dependencies"
+    groups:
+      actions:
+        patterns:
+          - "*"

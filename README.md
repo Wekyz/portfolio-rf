@@ -221,8 +221,16 @@ Trois couches, de la plus discrète à la plus visible :
 
 Chaque rejet incrémente un compteur mensuel dans Upstash, sous
 `abuse:AAAA-MM:<motif>` (`honeypot`, `rate-limit`, `too-fast`, `bad-token`,
-`too-long`, `invalid-fields`, `captcha-*`). Sans ça, aucune trace ne permettait
-de savoir si le dispositif était surdimensionné ou déjà dépassé.
+`token-reused`, `too-long`, `invalid-fields`, `captcha-*`, `bad-origin`,
+`suspect`), conservé 400 jours. Sans ça, aucune trace ne permettait de savoir
+si le dispositif était surdimensionné ou déjà dépassé.
+
+Le jeton du formulaire ne sert qu'une fois (rendu si l'envoi échoue). Les
+messages qui ressemblent à du spam (plus de deux liens, alphabet cyrillique
+ou chinois/japonais/coréen, prénom identique au nom, démarchage SEO ou
+crypto) ne sont **pas** rejetés : ils arrivent avec `[suspect]` en tête du
+sujet et les motifs en bas du texte (`api/_lib/spam.js`). Un filtre Gmail
+sur ce préfixe suffit à les ranger.
 
 ### Mise à jour du CMS (Sveltia)
 
@@ -234,8 +242,28 @@ comme n'importe quelle dépendance.
 `tests/cms-version.test.mjs` fait échouer la CI tant que
 `public/admin/index.html` n'a pas suivi une montée de version - version **et**
 empreinte, recalculée depuis le paquet npm (vérifié identique octet pour octet
-au fichier servi par unpkg). La montée reste donc un geste conscient, à faire
-avec le CMS testé.
+au fichier servi par unpkg), ainsi que la CSP de `/admin/` dans `vercel.json`,
+qui n'autorise que le dossier de cette version. La montée reste donc un geste
+conscient, à faire avec le CMS testé : Sveltia est exclu de la fusion
+automatique des PR Dependabot.
+
+Une montée touche trois endroits : `package.json` (`npm install -D
+@sveltia/cms@x.y.z`), la balise et son `integrity` dans
+`public/admin/index.html` (le test donne la nouvelle empreinte), et les deux
+`@sveltia/cms@x.y.z/` de la CSP dans `vercel.json`.
+
+### Mises à jour des dépendances
+
+Dependabot ouvre ses PR le lundi. Les outils de build et de test (mineures et
+correctifs, hors Astro et Sveltia) sont fusionnés automatiquement quand la CI
+est verte (`.github/workflows/dependabot.yml`). Le reste se relit : dépendances
+de production, actions GitHub (une PR groupée), Astro, Sveltia, versions
+majeures. Prévoir un passage mensuel d'une demi-heure.
+
+Calendrier : Node 24 entre en maintenance fin octobre 2026 et reste supporté
+jusqu'en avril 2028, passage à Node 26 courant 2027. TypeScript 7 reste
+bloqué tant que `@astrojs/check` ne le prend pas en charge (voir
+`.github/dependabot.yml`).
 
 ## Édition du contenu (monteuse)
 

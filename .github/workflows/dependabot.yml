@@ -1,0 +1,45 @@
+name: Dependabot
+
+# Fusion automatique des mises à jour sans risque (MAJ-02). Les PR Dependabot
+# s'empilaient tant que personne ne les regardait : jusqu'à six ouvertes en
+# même temps, dont une force-poussée plusieurs fois.
+#
+# Seul le groupe `dev-minor-and-patch` (outils de build et de test, mineures
+# et correctifs, hors Astro et Sveltia CMS : voir .github/dependabot.yml) est
+# fusionné sans relecture, et SEULEMENT quand la CI est verte : `--auto`
+# confie la fusion à GitHub, qui attend les contrôles obligatoires de la
+# branche. Tout le reste (production, actions, Astro, Sveltia, majeures)
+# reste en PR à relire.
+#
+# Prérequis côté dépôt (Settings) :
+#   - General > Pull Requests > « Allow auto-merge » coché ;
+#   - Branches > règle sur `main` exigeant les contrôles « Lint, types,
+#     build, tests », « Parcours et accessibilité » et « Audit des
+#     dépendances ». Sans contrôle obligatoire, GitHub refuse d'activer la
+#     fusion automatique : ce workflow échoue alors sans rien fusionner.
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    name: Fusion automatique des outils de développement
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+
+    steps:
+      - name: Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        if: steps.meta.outputs.dependency-group == 'dev-minor-and-patch'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

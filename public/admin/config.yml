@@ -6,7 +6,8 @@ backend:
   branch: main
   base_url: https://sveltia-cms-auth.wekyz.workers.dev
 
-locale: fr
+# Pas d'option `locale` : Sveltia ne la prend pas en charge (avertissement
+# en console depuis la 0.202) ; l'interface suit la langue du navigateur.
 
 # media_folder : où Decap COMMIT les fichiers (chemin repo)
 # public_folder : URL publique servie par le site

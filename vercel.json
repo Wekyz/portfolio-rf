@@ -25,7 +25,7 @@
         { "key": "Cache-Control", "value": "no-store" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com/@sveltia/cms@0.167.5/; style-src 'self' 'unsafe-inline' https://unpkg.com/@sveltia/cms@0.167.5/ https://fonts.googleapis.com; font-src 'self' data: https://unpkg.com/@sveltia/cms@0.167.5/ https://fonts.gstatic.com; img-src 'self' data: blob: https://*.githubusercontent.com https://avatars.githubusercontent.com https://*.vimeocdn.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://unpkg.com/@sveltia/cms@0.167.5/ https://unpkg.com/@sveltia/cms/package.json https://raw.githubusercontent.com https://sveltia-cms-auth.wekyz.workers.dev https://fonts.googleapis.com; frame-src 'self';"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com/@sveltia/cms@0.230.1/; style-src 'self' 'unsafe-inline'; font-src 'self' data: https://cdn.jsdelivr.net/fontsource/; img-src 'self' data: blob: https://*.githubusercontent.com https://avatars.githubusercontent.com https://*.vimeocdn.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.github.com https://*.githubusercontent.com https://raw.githubusercontent.com https://unpkg.com/@sveltia/cms@0.230.1/ https://unpkg.com/@sveltia/cms/package.json https://www.githubstatus.com/api/ https://sveltia-cms-auth.wekyz.workers.dev; frame-src 'self' blob:; manifest-src 'self' blob:;"
         }
       ]
     },
