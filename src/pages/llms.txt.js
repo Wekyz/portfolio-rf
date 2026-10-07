@@ -14,6 +14,7 @@ import { projectRoutes } from '../lib/slug.js';
 import { SITE } from '../lib/schema-ids.js';
 import { ui } from '../i18n/strings.js';
 import { IMDB_URL, SOFTWARE } from '../data/profile.js';
+import { creditLine } from '../lib/credits.js';
 
 /** « A, B and C » : la forme d'une énumération dans une phrase anglaise. */
 const andList = (items) =>
@@ -43,7 +44,7 @@ export function GET() {
       const items = projects.filter((p) => p.cat === cat);
       if (items.length === 0) return null;
       const lines = items.map((p) => {
-        const bits = [p.credit, p.year].filter(Boolean).join(', ');
+        const bits = [creditLine(p, 'en'), p.year].filter(Boolean).join(', ');
         const slug = bySlug.get(p);
         const label = slug ? `[${p.title}](${SITE}/portfolio/${slug})` : p.title;
         // Les distinctions sont le fait le plus citable d'un projet qui en

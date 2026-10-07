@@ -11,6 +11,7 @@
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb, getDuration } from '../lib/thumb.js';
 import { embedUrl, formatDuration } from '../lib/project-page.js';
+import { creditParts, creditLine } from '../lib/credits.js';
 import type { Project } from '../lib/types';
 
 interface Props {
@@ -42,7 +43,7 @@ const paragraphs = p.description
 // catégorie à l'autre bout de la rangée. Une par ligne, la colonne reprend une
 // largeur normale et chaque prix se lit d'un coup d'œil.
 const facts: { label: string; value?: string; values?: string[] }[] = [];
-if (p.credit) facts.push({ label: t('project.production'), value: p.credit });
+for (const { label, value } of creditParts(p, lang)) facts.push({ label, value });
 if (p.year) facts.push({ label: t('project.year'), value: p.year });
 // Posées juste après l'année : ce sont les faits les plus forts d'un projet
 // qui en porte, et elles étaient jusqu'ici noyées dans le champ crédit.
@@ -127,7 +128,7 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
                   />
                 )}
                 <span class="project-related-title">{r.title}</span>
-                {r.credit && <span class="project-related-credit">{r.credit}</span>}
+                {creditLine(r, lang) && <span class="project-related-credit">{creditLine(r, lang)}</span>}
               </a>
             </li>
           );

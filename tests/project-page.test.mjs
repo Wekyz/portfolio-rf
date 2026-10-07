@@ -128,7 +128,7 @@ test('les distinctions alimentent le VideoObject et non le crédit', () => {
   const p = {
     cat: 'film',
     title: 'En mille morceaux',
-    credit: 'Director : Véronique Mériadec',
+    director: 'Véronique Mériadec',
     year: '2024',
     awards: ['Best Editing Award - Cyprus International Film Festival'],
   };

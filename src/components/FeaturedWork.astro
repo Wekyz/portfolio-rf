@@ -20,6 +20,7 @@ import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { getProjects } from '../lib/projects.js';
+import { creditLine } from '../lib/credits.js';
 
 interface Props {
   lang?: 'en' | 'fr';
@@ -62,7 +63,7 @@ const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, L
               )}
               <span class="featured-name">{p.title}</span>
               <span class="featured-meta">
-                {[p.credit, p.year].filter(Boolean).join(' · ')}
+                {[creditLine(p, lang), p.year].filter(Boolean).join(' · ')}
               </span>
             </a>
           </li>

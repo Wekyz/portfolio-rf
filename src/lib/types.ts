@@ -19,8 +19,17 @@ export type Category = 'pub' | 'film' | 'doc' | 'corpo' | 'event' | 'teaser' | '
 export interface Project {
   cat: Category;
   title: string;
-  /** Production et/ou réalisation, ex. « Production : Atelier B ». */
-  credit?: string;
+  /** Société de production, ex. « Atelier B ». */
+  production?: string;
+  /** Réalisateur ou réalisatrice, ex. « Thomas Gérard ». */
+  director?: string;
+  /** Format, saisi dans les deux langues, ex. « 5 épisodes de 14 min ». */
+  format?: { fr?: string; en?: string };
+  /**
+   * Poste de Roxane quand ce n'est pas le montage (lives), tel qu'au
+   * générique, ex. « LSM Operator ».
+   */
+  role?: string;
   /** Année d'exploitation, ex. « 2024 » ou « 2018-2022 ». */
   year?: string;
   /** ID Vimeo. Absent pour un item non cliquable (photo de plateau). */
@@ -37,9 +46,8 @@ export interface Project {
    * Distinctions du projet, une par entrée. Affichées en fait sur la page
    * projet et reprises en `award` dans le VideoObject.
    *
-   * Comme `credit`, ce texte est rendu tel quel dans les deux langues : les
-   * noms de festivals sont des noms propres, et c'est déjà la convention du
-   * champ crédit (« Director : … » s'affiche ainsi sur la version française).
+   * Rendu tel quel dans les deux langues : les noms de festivals sont des
+   * noms propres.
    */
   awards?: string[];
   /** Mis en avant sur la page d'accueil. */

@@ -50,11 +50,36 @@ collections:
                 label: "Titre"
                 widget: string
 
-              - name: credit
-                label: "Crédit / Production"
+              # Anciennement un champ unique "credit" qui mélangeait production,
+              # réalisation, format et rôle : la fiche affichait
+              # "Production : Episodes of 30 min". Un champ par information.
+              - name: production
+                label: "Société de production"
                 widget: string
                 required: false
-                hint: "ex : Production : Atelier B  /  Director : Thomas Gérard"
+                hint: "Le nom seul, ex : Atelier B. Le libellé « Production » est ajouté par le site, dans la bonne langue."
+
+              - name: director
+                label: "Réalisation"
+                widget: string
+                required: false
+                hint: "Nom du réalisateur ou de la réalisatrice, ex : Thomas Gérard."
+
+              - name: format
+                label: "Format"
+                widget: object
+                required: false
+                collapsed: true
+                hint: "Pour une série ou un format particulier, ex : 5 épisodes de 14 min. À saisir dans les deux langues."
+                fields:
+                  - { name: fr, label: "Français", widget: string, required: false }
+                  - { name: en, label: "Anglais", widget: string, required: false }
+
+              - name: role
+                label: "Poste (si autre que le montage)"
+                widget: string
+                required: false
+                hint: "Pour les lives surtout, tel qu'au générique, ex : LSM Operator. Laisser vide pour un montage."
 
               - name: year
                 label: "Année"

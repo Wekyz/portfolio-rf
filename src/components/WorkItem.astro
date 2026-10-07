@@ -7,6 +7,7 @@
 
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
+import { creditLine } from '../lib/credits.js';
 
 const { project, placement, priority = false, lang = 'en', href } = Astro.props;
 const t = useTranslations(lang);
@@ -27,7 +28,7 @@ const fetchpriority = priority ? 'high' : undefined;
 // nécessaire pour garantir l'unicité des slugs).
 const external = !p.id && p.externalLink;
 const interactive = !p.noClick && href;
-const prod = p.credit || t(`cat.${p.cat}`) || p.cat;
+const prod = creditLine(p, lang) || t(`cat.${p.cat}`) || p.cat;
 
 const { src: thumbSrc, srcset: thumbSrcset, responsive, width, height } = resolveThumb(p);
 

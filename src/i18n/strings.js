@@ -94,6 +94,12 @@ export const ui = {
     // Pages projet (/portfolio/[slug])
     'project.breadcrumb': 'Breadcrumb',
     'project.production': 'Production',
+    'project.director': 'Director',
+    'project.format': 'Format',
+    'project.role': 'Role',
+    // Séparateur libellé/valeur : pas d'espace avant les deux-points en
+    // anglais, une espace en français.
+    'ui.colon': ': ',
     'project.year': 'Year',
     'project.duration': 'Duration',
     'project.category': 'Category',
@@ -243,6 +249,10 @@ export const ui = {
     // Pages projet (/portfolio/[slug])
     'project.breadcrumb': "Fil d'Ariane",
     'project.production': 'Production',
+    'project.director': 'Réalisation',
+    'project.format': 'Format',
+    'project.role': 'Rôle',
+    'ui.colon': ' : ',
     'project.year': 'Année',
     'project.duration': 'Durée',
     'project.category': 'Catégorie',

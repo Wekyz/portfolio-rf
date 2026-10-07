@@ -17,6 +17,7 @@ import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
 import { useTranslations, catGender } from '../i18n/strings.js';
 import { SITE, personRef, pageIds } from './schema-ids.js';
 import { lastModified } from './page-dates.js';
+import { creditLine } from './credits.js';
 
 /** URL absolue de la miniature (le CDN Vimeo en sert déjà une). */
 function absThumb(p) {
@@ -86,7 +87,8 @@ export function buildProjectMeta(project, slug, lang) {
   // texte libre saisi dans le CMS, lui, peut être long - il alimente la page
   // et le VideoObject, pas la balise meta.
   const bits = [p.title];
-  if (p.credit) bits.push(p.credit);
+  const credit = creditLine(p, lang);
+  if (credit) bits.push(credit);
   const head = bits.join(' - ') + (p.year ? ` (${p.year})` : '');
   // Le suffixe s'accorde avec la catégorie qui le précède : « Publicité
   // montée par », « Documentaire monté par ». Voir `catGender` dans
@@ -113,7 +115,7 @@ export function buildProjectMeta(project, slug, lang) {
     inLanguage: lang,
     editor: personRef(),
     genre: catLabel,
-    // Les distinctions vivaient dans le champ `credit`, mélangées à la
+    // Les distinctions vivaient dans l'ancien champ `credit`, mélangées à la
     // réalisation : elles n'étaient donc déclarées nulle part comme telles,
     // et gonflaient la meta description à 245 caractères.
     award: p.awards?.length ? p.awards : undefined,

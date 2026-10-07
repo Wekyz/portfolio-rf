@@ -14,6 +14,7 @@ import { ui } from '../i18n/strings.js';
 import { LEGAL } from '../data/legal.js';
 import { getDuration } from '../lib/thumb.js';
 import { formatDuration } from '../lib/project-page.js';
+import { creditParts } from '../lib/credits.js';
 
 /** La bio contient du balisage (<em>) : inutile hors HTML. */
 const stripTags = (s) => String(s).replace(/<[^>]*>/g, '');
@@ -27,7 +28,7 @@ export function GET() {
     const slug = bySlug.get(p);
     const duree = formatDuration(getDuration(p));
     const facts = [
-      p.credit && `production: ${p.credit}`,
+      ...creditParts(p, 'en').map(({ key, value }) => `${key}: ${value}`),
       p.year && `year: ${p.year}`,
       `category: ${p.cat}`,
       duree && `duration: ${duree}`,
