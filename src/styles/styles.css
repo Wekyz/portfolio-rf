@@ -311,7 +311,9 @@ nav.nav-flush { border-bottom-color: transparent; }
      mais il vient de strings.js et une retouche éditoriale un peu longue
      l'aurait fait sortir du cadre au lieu de passer à la ligne. `balance`
      répartit les lignes proprement si le cas se présente. */
-  font-size: clamp(11px, 1.1vw, 14px); text-wrap: balance;
+  /* Le minimum était de 11 px : entre 901 et 1 270 px de large, ce H1 (et
+     élément LCP) s'affichait plus petit que le texte courant (15 px). */
+  font-size: clamp(16px, 1.3vw, 19px); text-wrap: balance;
   font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
   color: var(--gray-dark); margin-bottom: 56px;
 }
@@ -472,18 +474,18 @@ nav.nav-flush { border-bottom-color: transparent; }
   display: flex; gap: 14px; align-items: center; margin-top: 6px; flex-wrap: wrap;
 }
 .work-prod {
-  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
 }
 /* L'année était saisie dans le CMS pour chacun des 36 projets et n'apparaissait
    nulle part. Elle prend sa place dans le `gap` déjà prévu par .work-meta,
    en retrait de la production pour rester secondaire. */
 .work-year {
-  font-size: 10px; letter-spacing: .1em; color: rgba(255, 255, 255, .62);
+  font-size: 12px; letter-spacing: .1em; color: rgba(255, 255, 255, .62);
 }
 .work-badge {
   display: inline-block; margin-top: 10px;
   padding: 5px 14px; border: 1px solid rgba(255, 255, 255, .5);
-  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
   color: rgba(255, 255, 255, .85);
 }
 
@@ -573,7 +575,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--gray-light);
 }
 .project-fact dt {
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--gray-mid); margin-bottom: 6px;
 }
 .project-fact dd { font-size: 15px; color: var(--black); }
@@ -621,7 +623,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   padding-top: 28px; border-top: 1px solid var(--gray-light);
 }
 .contact-info dt {
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--gray-mid); margin-bottom: 8px;
 }
 .contact-info dd { font-size: 14px; display: flex; gap: 16px; }
@@ -672,7 +674,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .work-badge-still {
   border-color: rgba(255, 255, 255, .32);
   color: rgba(255, 255, 255, .72);
-  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
 }
 
 /* ── DISTINCTIONS ─────────────────────────────────────────── */
@@ -707,7 +709,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .legal-facts { display: grid; gap: 12px; }
 .legal-fact { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: baseline; }
 .legal-fact dt {
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid);
+  font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid);
 }
 .legal-fact dd { color: var(--black); overflow-wrap: anywhere; }
 
@@ -900,7 +902,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label {
-  font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--gray-mid);
+  font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--gray-mid);
 }
 .form-group input,
 .form-group textarea {
@@ -1021,8 +1023,13 @@ footer {
 #lightboxNext { order: 1; }
 .lightbox-bar [hidden] { display: none; }
 .lightbox-inner iframe { width: 100%; height: 100%; border: none; }
+/* Zone de 44x44 px (cible tactile recommandée) : le "×" seul, sans
+   dimension, n'offrait qu'environ 16x28 px. Le lecteur est centré avec au
+   moins 85 px libres au-dessus (voir .lightbox-inner), le bouton y tient. */
 .lightbox-close {
-  position: absolute; top: -44px; right: 0;
+  position: absolute; top: -48px; right: -10px;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
   background: none; border: none; color: #fff;
   font-size: 28px; cursor: pointer; line-height: 1;
   opacity: .7; transition: opacity var(--t-fast);
