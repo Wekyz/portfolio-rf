@@ -1,0 +1,56 @@
+name: Déploiement
+
+# Contrôle d'un déploiement Vercel réel (CI-05). Vercel signale chaque
+# déploiement terminé à GitHub (évènement deployment_status) avec son URL :
+# preview d'une PR ou production. C'est le seul endroit où vercel.json (en-têtes,
+# redirections) et les fonctions de api/ tournent pour de vrai.
+#
+# Si la protection des previews est active sur Vercel, créer le secret de dépôt
+# VERCEL_AUTOMATION_BYPASS_SECRET (Project Settings > Deployment Protection >
+# Protection Bypass for Automation), sinon toutes les requêtes répondront 401.
+
+permissions:
+  contents: read
+
+on:
+  deployment_status:
+
+jobs:
+  check:
+    name: En-têtes, redirections, fonctions, Lighthouse
+    runs-on: ubuntu-latest
+    if: github.event.deployment_status.state == 'success'
+    env:
+      DEPLOY_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      # Aucune dépendance à installer : le script n'utilise que fetch.
+      - name: Check headers, redirects and functions
+        run: node scripts/check-deployment.mjs "$DEPLOY_URL"
+
+      # Chrome est déjà présent sur les machines ubuntu-latest de GitHub.
+      - name: Lighthouse CI
+        if: always()
+        run: npx --yes @lhci/cli@0.15.1 autorun
+        env:
+          LHCI_BASE_URL: ${{ env.DEPLOY_URL }}
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          retention-days: 14
+          if-no-files-found: ignore

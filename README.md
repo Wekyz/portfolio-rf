@@ -158,12 +158,24 @@ visite de la page À propos.
 le déploiement** (Root Directory = racine du dépôt, framework Astro,
 `npm run build`, sortie `dist/`). Les headers/CSP/cache sont définis dans
 [`vercel.json`](vercel.json) et les fonctions serverless dans [`api/`](api/).
-La CI (`.github/workflows/ci.yml`) fait build + tests + `npm audit` sur chaque
-push/PR vers `main`.
+La CI (`.github/workflows/ci.yml`) tourne sur chaque push/PR vers `main` :
+lint, types, build, validation HTML (`npm run validate:html`), tests unitaires
+(dont liens internes et JSON-LD sur `dist/`), parcours Playwright et axe sur
+Chromium, audit npm bloquant pour les dépendances de production. Chaque lundi
+s'y ajoutent Safari iOS (WebKit) et les liens externes (lychee, non bloquant).
+Actions épinglées par SHA.
+
+Chaque déploiement Vercel (preview ou production) est contrôlé par
+`.github/workflows/deployment.yml` : en-têtes, redirections, fonctions
+(`scripts/check-deployment.mjs`, lançable à la main sur n'importe quelle URL)
+et Lighthouse CI sur trois pages (`lighthouserc.cjs`). Si la protection des
+previews est active, ajouter le secret de dépôt
+`VERCEL_AUTOMATION_BYPASS_SECRET`.
 
 Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
 `CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`, `DEPLOY_HOOK_URL`,
-**`REDEPLOY_TOKEN`**. Rate limiting du formulaire et du bouton de
+**`REDEPLOY_TOKEN`** (32 caractères minimum, sinon l'administration reste
+fermée ; 5 essais ratés par heure et par IP). Rate limiting du formulaire et du bouton de
 redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
 `UPSTASH_REDIS_REST_TOKEN` (intégration Vercel Marketplace Upstash).
 Signature du jeton anti-bot du formulaire (recommandé) : `FORM_SECRET` - à

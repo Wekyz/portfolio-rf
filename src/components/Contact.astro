@@ -59,7 +59,7 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <form class="contact-form" name="contact" method="POST" action="/api/contact">
     <p class="hp-field" aria-hidden="true">
-      <label>{t('contact.honeypot')} <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+      <label>{t('contact.honeypot')} <input type="text" name="bot-field" tabindex="-1" autocomplete="off" /></label>
     </p>
 
     <div class="form-row">

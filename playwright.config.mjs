@@ -7,9 +7,8 @@ import { defineConfig, devices } from '@playwright/test';
  * Ils tournent sur le build réel servi par `astro preview`, pas sur le serveur
  * de développement : c'est bien le HTML livré qu'on veut éprouver.
  *
- * Un seul navigateur, Chromium. Sur un site statique de cette taille, ajouter
- * Firefox et WebKit triplerait la durée de la CI pour un gain marginal - le
- * rendu ne dépend d'aucune API exotique.
+ * Chromium à chaque PR. WebKit (iPhone 14) une fois par semaine seulement,
+ * voir le projet `iphone` plus bas.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -27,6 +26,11 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // Safari iOS, où se trouvent beaucoup de producteurs et la plupart des
+    // comportements particuliers (iframe Vimeo, défilement, focus). Lancé
+    // seulement par l'exécution hebdomadaire de la CI (E2E_WEBKIT=1) : il
+    // doublerait la durée de chaque PR.
+    ...(process.env.E2E_WEBKIT ? [{ name: 'iphone', use: { ...devices['iPhone 14'] } }] : []),
   ],
 
   webServer: {

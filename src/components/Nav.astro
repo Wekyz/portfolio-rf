@@ -27,7 +27,10 @@ const otherHref = lang === 'fr' ? currentPath || '/' : `/fr${currentPath}`;
 // `hreflang` est de toute façon justifié : le lien mène à l'autre version.
 const otherLang = lang === 'fr' ? 'en' : 'fr';
 ---
-<nav class:list={[page === 'home' && 'nav-flush']}>
+{/* Nommée : la page compte jusqu'à quatre <nav> (menu, fil d'Ariane, fiches
+     voisines, pages légales), indiscernables pour un lecteur d'écran qui
+     liste les zones de la page. */}
+<nav class:list={[page === 'home' && 'nav-flush']} aria-label={t('nav.aria')}>
   {/* Le logo n'est PAS un H1 : il est identique sur toutes les pages, alors
        que le H1 doit annoncer le contenu propre à chacune. L'identité de
        Roxane est déjà portée par le <title>, le domaine et le JSON-LD Person.

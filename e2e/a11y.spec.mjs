@@ -101,7 +101,7 @@ test('accessibilité : lightbox ouverte', async ({ page }) => {
 });
 
 test('accessibilité : menu mobile déplié', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile', 'Le menu burger n’existe qu’en mobile.');
+  test.skip(!testInfo.project.use.isMobile, 'Le menu burger n’existe qu’en mobile.');
   await page.goto('/fr');
   await page.locator('#navBurger').click();
   await expect(page.locator('#navBurger')).toHaveAttribute('aria-expanded', 'true');

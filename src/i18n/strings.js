@@ -49,6 +49,7 @@ export const ui = {
 
     // Nav
     'nav.sub': 'Video Editor',
+    'nav.aria': 'Main navigation',
     'nav.home': 'Home',
     'nav.work': 'Portfolio',
     'nav.about': 'About',
@@ -219,6 +220,7 @@ export const ui = {
 
     // Nav
     'nav.sub': 'Monteuse vidéo',
+    'nav.aria': 'Navigation principale',
     'nav.home': 'Accueil',
     // « Portfolio » et non « Projets » : c'est le mot de l'URL, du <title> et
     // du bouton de l'accueil, et il se cherche aussi en français. La page

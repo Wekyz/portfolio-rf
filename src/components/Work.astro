@@ -63,6 +63,7 @@ const gridEntries = projects.map((p, i) => {
             boutons sans état exposé entre le rendu HTML et l'exécution du JS.
             Le script se contente désormais de les mettre à jour. */}
         <button
+          type="button"
           class:list={['filter-btn', 'slide-label', value === 'all' && 'active']}
           data-filter={value}
           aria-pressed={value === 'all' ? 'true' : 'false'}

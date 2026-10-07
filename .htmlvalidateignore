@@ -1,0 +1,3 @@
+# Pages d’administration : coque HTML minimale du CMS Sveltia et page de
+# redéploiement, écrites à la main et hors du gabarit du site.
+dist/admin/**

@@ -16,7 +16,7 @@ const t = useTranslations(lang);
   <div class="lightbox-inner">
     <button type="button" class="lightbox-close" id="lightboxClose" aria-label={t('lb.close')}>&times;</button>
     <div class="lightbox-spinner" id="lightboxSpinner" aria-hidden="true"></div>
-    <iframe id="lightboxFrame" src="" title={t('lb.frameTitle')} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    <iframe id="lightboxFrame" title={t('lb.frameTitle')} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 
     {/* Barre d'information et navigation : une fois la vidéo ouverte, plus
          rien n'indiquait ce qu'on regardait ni pour qui, et il fallait fermer

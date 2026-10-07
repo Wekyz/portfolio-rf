@@ -33,7 +33,7 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   expect(total).toBeGreaterThan(10);
 
   // Les boutons sont masqués sur mobile au profit du menu déroulant.
-  if (testInfo.project.name === 'mobile') {
+  if (testInfo.project.use.isMobile) {
     await page.selectOption('#filterSelect', 'doc');
   } else {
     await page.locator('.filter-btn[data-filter="doc"]').click();
@@ -46,7 +46,7 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   }
 
   // Retour à « tous ».
-  if (testInfo.project.name === 'mobile') {
+  if (testInfo.project.use.isMobile) {
     await page.selectOption('#filterSelect', 'all');
   } else {
     await page.locator('.filter-btn[data-filter="all"]').click();
@@ -97,7 +97,7 @@ test('ctrl+clic sur une vignette ouvre la page projet au lieu de la modale', asy
   page,
   browserName,
 }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'pas de clic modifié au doigt');
+  test.skip(Boolean(testInfo.project.use.isMobile), 'pas de clic modifié au doigt');
   await page.goto('/fr/portfolio');
   const modificateur = browserName === 'webkit' ? 'Meta' : 'Control';
   await page.locator('a.work-thumb-wrap').first().click({ modifiers: [modificateur] });
@@ -105,7 +105,7 @@ test('ctrl+clic sur une vignette ouvre la page projet au lieu de la modale', asy
 });
 
 test('le menu mobile s’ouvre et mène à une autre page', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile', 'le burger n’existe qu’en dessous de 900 px');
+  test.skip(!testInfo.project.use.isMobile, 'le burger n’existe qu’en dessous de 900 px');
   await page.goto('/fr');
 
   const burger = page.locator('#navBurger');
@@ -226,7 +226,7 @@ test('un second message repart avec un jeton captcha neuf', async ({ page }) => 
 
 test('la bascule de langue conserve la page courante', async ({ page }, testInfo) => {
   const ouvrirMenu = async () => {
-    if (testInfo.project.name === 'mobile') await page.locator('#navBurger').click();
+    if (testInfo.project.use.isMobile) await page.locator('#navBurger').click();
   };
 
   await page.goto('/about');
@@ -317,7 +317,7 @@ test('le filtre de catégorie vit dans l’URL', async ({ page }, testInfo) => {
   //
   // Les deux commandes doivent produire le même effet : sous 900 px, les
   // boutons cèdent la place à un menu déroulant (voir la media query).
-  const mobile = testInfo.project.name === 'mobile';
+  const mobile = Boolean(testInfo.project.use.isMobile);
   const choisir = (v) =>
     mobile ? page.selectOption('#filterSelect', v) : page.locator(`.filter-btn[data-filter="${v}"]`).click();
 
@@ -468,7 +468,7 @@ test('le lien Contact du menu signale la page courante', async ({ page }) => {
 /* ── Accessibilité (A11Y-01 à A11Y-04) ──────────────────────────────── */
 
 test('le focus ne sort pas de la lightbox au clavier', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'pas de tabulation au doigt');
+  test.skip(Boolean(testInfo.project.use.isMobile), 'pas de tabulation au doigt');
   await page.route('**://player.vimeo.com/**', (route) =>
     route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' })
   );
@@ -477,9 +477,11 @@ test('le focus ne sort pas de la lightbox au clavier', async ({ page }, testInfo
   await expect(page.locator('#lightbox')).toHaveClass(/open/);
   for (let i = 0; i < 10; i++) {
     await page.keyboard.press('Tab');
-    const dedans = await page.evaluate(() => {
-      const el = document.activeElement;
-      return !el || el === document.body || Boolean(el.closest('#lightbox'));
+    // Même convention que plus haut : le document vient de l'élément reçu.
+    const dedans = await page.locator('#lightbox').evaluate((box) => {
+      const doc = box.ownerDocument;
+      const el = doc.activeElement;
+      return !el || el === doc.body || box.contains(el);
     });
     expect(dedans, `tabulation ${i + 1} : le focus a quitté la lightbox`).toBe(true);
   }

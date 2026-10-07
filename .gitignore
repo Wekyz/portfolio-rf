@@ -55,3 +55,6 @@ env.local
 
 # Logs
 *.log
+
+# Lighthouse CI : rapports locaux (voir lighthouserc.cjs)
+.lighthouseci/

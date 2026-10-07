@@ -57,4 +57,10 @@ export default [
     ],
     languageOptions: { globals: globals.node },
   },
+
+  // Configuration Lighthouse CI : module CommonJS lu par @lhci/cli sous Node.
+  {
+    files: ['lighthouserc.cjs'],
+    languageOptions: { sourceType: 'commonjs', globals: globals.node },
+  },
 ];
