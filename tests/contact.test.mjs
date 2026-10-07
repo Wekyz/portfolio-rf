@@ -7,7 +7,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/contact.js';
+import handler, { allowedOrigin } from '../api/contact.js';
 import { issueToken } from '../api/_lib/form-token.js';
 
 // Clé de signature explicite, posée avant toute fabrication de jeton : sans
@@ -296,4 +296,24 @@ test('jeton périmé au-delà de deux heures : refusé', async () => {
     delete process.env.RESEND_API_KEY;
   }
   assert.equal(res.statusCode, 400);
+});
+
+/* ── Origine (SEC-08) ───────────────────────────────────────────────── */
+
+test('un formulaire hébergé sur un autre site est refusé en 403', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { origin: 'https://site-tiers.example' }, body: '{}' }, res);
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.code, 'bad-origin');
+});
+
+test('origines autorisées : le site, le déploiement en cours, localhost hors production', () => {
+  const env = { VERCEL_URL: 'portfolio-rf-abc123.vercel.app', VERCEL_ENV: 'preview' };
+  assert.ok(allowedOrigin('https://roxane-foare.com', env));
+  assert.ok(allowedOrigin('https://portfolio-rf-abc123.vercel.app', env));
+  assert.ok(allowedOrigin('http://localhost:3000', env));
+  assert.ok(allowedOrigin(undefined, env), 'sans en-tête Origin : pas concerné');
+  assert.ok(!allowedOrigin('https://autre-projet.vercel.app', env));
+  assert.ok(!allowedOrigin('http://localhost:3000', { VERCEL_ENV: 'production' }));
+  assert.ok(!allowedOrigin('https://roxane-foare.com.example', env));
 });

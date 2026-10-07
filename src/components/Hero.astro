@@ -36,7 +36,9 @@ const base = lang === 'fr' ? '/fr' : '';
 // miniature Vimeo occupe le cadre (générée par scripts/fetch-thumbs.mjs) et
 // devient l'élément LCP, en 16 Ko. Le lecteur apparaît en fondu au début de
 // la lecture ; s'il ne démarre jamais (bloqueur, réseau), l'image reste.
-const embedSrc = `https://player.vimeo.com/video/${SHOWREEL.id}?h=${SHOWREEL.hash}&background=1&autoplay=1&loop=1&muted=1`;
+// `dnt=1` : pas de cookie de mesure d'audience Vimeo (voir embedUrl dans
+// lib/project-page.js).
+const embedSrc = `https://player.vimeo.com/video/${SHOWREEL.id}?h=${SHOWREEL.hash}&background=1&autoplay=1&loop=1&muted=1&dnt=1`;
 ---
 <section id="hero" class="hero">
   <div class="showreel" id="showreel">

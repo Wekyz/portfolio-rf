@@ -171,7 +171,11 @@ export async function readStatus() {
     'captcha-invalid',
     'captcha-unreachable',
     'redeploy-bad-token',
+    'redeploy-bad-token-locked',
     'redeploy-rate-limit',
+    'status-bad-token',
+    'status-bad-token-locked',
+    'bad-origin',
   ];
 
   const [sent, rejets, incidents, echecs] = await Promise.all([

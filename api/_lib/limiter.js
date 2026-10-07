@@ -40,7 +40,12 @@ export function createLimiter(prefix, max, window) {
   return new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(max, window),
-    analytics: true,
+    // Pas d'analytics : elles enregistrent chaque identifiant, donc chaque
+    // IP, pour le tableau de bord Upstash, sans durée limitée. La politique
+    // de confidentialité affirme que l'IP n'est « ni conservée durablement ».
+    // Les compteurs de rejet (countRejection) suffisent, et ne contiennent
+    // aucune IP. Économise aussi des commandes sur le quota gratuit.
+    analytics: false,
     prefix,
   });
 }

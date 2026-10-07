@@ -12,8 +12,8 @@
  *
  * Variable d'environnement : REDEPLOY_TOKEN (voir api/redeploy.js).
  */
-import { checkAdminToken } from './_lib/secret.js';
-import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
+import { guardAdmin, MIN_SECRET_LENGTH } from './_lib/secret.js';
+import { createLimiter, clientIp } from './_lib/limiter.js';
 import { readStatus } from './_lib/observe.js';
 
 const ratelimit = createLimiter('status', 30, '10 m');
@@ -23,12 +23,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const auth = checkAdminToken(req);
+  // Verrou après 5 échecs par heure (voir _lib/secret.js) : cette réponse
+  // contient des noms, adresses et messages de visiteurs.
+  const auth = await guardAdmin(req, 'status-bad-token');
   if (auth === 'unconfigured') {
-    return res.status(503).json({ error: 'Consultation désactivée (REDEPLOY_TOKEN non configuré).' });
+    return res.status(503).json({
+      error: `Consultation désactivée (REDEPLOY_TOKEN absent ou de moins de ${MIN_SECRET_LENGTH} caractères).`,
+    });
+  }
+  if (auth === 'locked') {
+    return res.status(429).json({ error: 'Trop de tentatives échouées. Réessayez dans une heure.' });
   }
   if (auth === 'denied') {
-    countRejection('status-bad-token');
     return res.status(401).json({ error: 'Phrase secrète invalide.' });
   }
 

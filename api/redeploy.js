@@ -24,14 +24,15 @@
  *
  * Variables d'environnement (Vercel → Settings → Environment Variables) :
  *   REDEPLOY_TOKEN            OBLIGATOIRE - phrase secrète, à saisir sur la
- *                              page de redéploiement. Générer une valeur
- *                              longue et aléatoire.
+ *                              page de redéploiement. 32 caractères minimum,
+ *                              aléatoires (ex. `openssl rand -base64 32`) :
+ *                              plus courte, l'administration reste fermée.
  *   DEPLOY_HOOK_URL           URL du Deploy Hook (Project Settings → Git →
  *                              Deploy Hooks, créer un hook sur la branche main)
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir api/contact.js) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
  */
-import { checkAdminToken } from './_lib/secret.js';
+import { guardAdmin, MIN_SECRET_LENGTH } from './_lib/secret.js';
 import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
 
 const ratelimit = createLimiter('redeploy', 3, '10 m');
@@ -41,14 +42,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Contrôle du secret partagé, factorisé dans _lib/secret.js depuis que
-  // /api/status s'appuie sur le même.
-  const auth = checkAdminToken(req);
+  // Contrôle du secret partagé et verrou après 5 échecs par heure, factorisés
+  // dans _lib/secret.js depuis que /api/status s'appuie sur le même.
+  const auth = await guardAdmin(req, 'redeploy-bad-token');
   if (auth === 'unconfigured') {
-    return res.status(503).json({ error: 'Redéploiement désactivé (REDEPLOY_TOKEN non configuré).' });
+    return res.status(503).json({
+      error: `Redéploiement désactivé (REDEPLOY_TOKEN absent ou de moins de ${MIN_SECRET_LENGTH} caractères).`,
+    });
+  }
+  if (auth === 'locked') {
+    return res.status(429).json({ error: 'Trop de tentatives échouées. Réessayez dans une heure.' });
   }
   if (auth === 'denied') {
-    countRejection('redeploy-bad-token');
     return res.status(401).json({ error: 'Phrase secrète invalide.' });
   }
 

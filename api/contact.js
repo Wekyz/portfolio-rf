@@ -46,9 +46,37 @@ const headerSafe = (s) => s.replace(/[\r\n]+/g, ' ').trim();
 
 const ratelimit = createLimiter('contact-form', 5, '10 m');
 
+/**
+ * Origines autorisées à poster le formulaire. N'importe quel site pouvait
+ * jusqu'ici héberger un formulaire qui poste ici : le navigateur envoie
+ * l'en-tête Origin avec chaque POST, il suffit de le lire.
+ *
+ * Le domaine du site, et les adresses du déploiement en cours (previews de
+ * PR), que Vercel expose dans VERCEL_URL et VERCEL_BRANCH_URL. En dehors de
+ * la production, localhost aussi (`vercel dev`). Une requête SANS Origin
+ * (script serveur, outil en ligne de commande) n'est pas concernée : ce
+ * contrôle vise les formulaires tiers dans un navigateur, le reste est
+ * l'affaire du jeton, du délai et du captcha.
+ */
+export function allowedOrigin(origin, env = process.env) {
+  if (!origin) return true;
+  const allowed = new Set(['https://roxane-foare.com', 'https://www.roxane-foare.com']);
+  if (env.SITE_DOMAIN) allowed.add(env.SITE_DOMAIN.replace(/\/$/, ''));
+  for (const host of [env.VERCEL_URL, env.VERCEL_BRANCH_URL]) {
+    if (host) allowed.add(`https://${host}`);
+  }
+  if (allowed.has(origin)) return true;
+  return env.VERCEL_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!allowedOrigin(req.headers.origin)) {
+    countRejection('bad-origin');
+    return res.status(403).json({ code: 'bad-origin', error: 'Origine non autorisée.' });
   }
 
   if (ratelimit) {

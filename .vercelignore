@@ -17,3 +17,14 @@ e2e/
 tests/
 playwright.config.mjs
 eslint.config.js
+lighthouserc.cjs
+.htmlvalidate.json
+.htmlvalidateignore
+
+# Secrets locaux. Un `vercel deploy` en ligne de commande lit ce fichier À LA
+# PLACE de .gitignore : sans ces lignes, env.local (identifiants OAuth du
+# relais Sveltia) partirait dans les sources du build, sans être servi mais
+# stocké chez Vercel.
+env.local
+.env
+.env.*

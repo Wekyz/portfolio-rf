@@ -52,3 +52,18 @@ test("l'empreinte SRI correspond au contenu réel du paquet", () => {
     'empreinte SRI obsolète. Nouvelle valeur : sha384-' + actual
   );
 });
+
+test('la CSP de /admin/ autorise exactement cette version, et pas tout unpkg', () => {
+  // SEC-04 : `https://unpkg.com` seul ouvrait l'administration à n'importe
+  // quel paquet npm. La CSP vise désormais le dossier de la version épinglée :
+  // elle doit suivre chaque montée, comme la balise et son empreinte.
+  const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const csp = vercel.headers
+    .find((r) => r.source === '/admin/(.*)')
+    .headers.find((h) => h.key === 'Content-Security-Policy').value;
+  assert.ok(
+    csp.includes(`https://unpkg.com/@sveltia/cms@${declared}/`),
+    `la CSP de /admin/ ne vise pas @sveltia/cms@${declared} : la mettre à jour dans vercel.json`
+  );
+  assert.ok(!/https:\/\/unpkg\.com[ ;]/.test(csp), 'la CSP de /admin/ autorise encore tout unpkg.com');
+});

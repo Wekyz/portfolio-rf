@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../api/redeploy.js';
 
-const SECRET = 'phrase-secrete-de-test';
+const SECRET = 'phrase-secrete-de-test-assez-longue-32+';
 const HOOK = 'https://api.vercel.com/v1/integrations/deploy/test';
 
 function mockRes() {
@@ -104,4 +104,12 @@ test('phrase secrète valide : déclenche le build et répond 200', async () => 
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.ok, true);
   assert.deepEqual(calls, [{ url: HOOK, method: 'POST' }]);
+});
+
+test('une phrase secrète de moins de 32 caractères laisse l’administration fermée', async () => {
+  // Même avec la bonne valeur : trop courte, elle se devinerait par essais.
+  const court = 'phrase-trop-courte';
+  const { res, calls } = await run(post(court), { secret: court });
+  assert.equal(res.statusCode, 503);
+  assert.equal(calls.length, 0);
 });

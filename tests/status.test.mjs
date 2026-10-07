@@ -35,9 +35,9 @@ test('sans REDEPLOY_TOKEN, tout est refusé (fermé par défaut)', () => {
 
 test('avec REDEPLOY_TOKEN, seul le bon en-tête passe', () => {
   const avant = process.env.REDEPLOY_TOKEN;
-  process.env.REDEPLOY_TOKEN = 'phrase-secrete-de-test';
+  process.env.REDEPLOY_TOKEN = 'phrase-secrete-de-test-assez-longue-32+';
   try {
-    assert.equal(checkAdminToken(req('phrase-secrete-de-test')), 'ok');
+    assert.equal(checkAdminToken(req('phrase-secrete-de-test-assez-longue-32+')), 'ok');
     assert.equal(checkAdminToken(req('mauvaise')), 'denied');
     assert.equal(checkAdminToken(req('')), 'denied');
     assert.equal(checkAdminToken(req()), 'denied', 'en-tête absent');

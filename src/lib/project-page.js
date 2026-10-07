@@ -26,8 +26,19 @@ function absThumb(p) {
   return src.startsWith('/') ? `${SITE}${src}` : src;
 }
 
+/**
+ * Adresse du lecteur Vimeo d'un projet.
+ *
+ * `dnt=1` (« do not track ») : sans lui, le lecteur dépose `vuid`, un cookie
+ * de mesure d'audience de Vimeo, dès le chargement de chaque fiche - alors que
+ * la politique de confidentialité annonce un site sans cookie, et qu'un
+ * cookie d'audience tiers exige un consentement selon la CNIL. Avec lui, il
+ * ne reste que `__cf_bm`, cookie de sécurité de Cloudflare (le CDN de Vimeo),
+ * strictement nécessaire et donc exempté. Même paramètre pour le showreel
+ * (Hero.astro) et la lightbox (app.js).
+ */
 export function embedUrl(p) {
-  return `https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`;
+  return `https://player.vimeo.com/video/${p.id}?${p.hash ? `h=${p.hash}&` : ''}dnt=1`;
 }
 
 /**

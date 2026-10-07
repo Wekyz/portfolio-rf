@@ -389,7 +389,9 @@ import { applySpans } from '../lib/spans.js';
       if (trigger !== undefined) lastFocused = trigger || document.activeElement;
       currentItem = item;
       const { id, hash } = item.dataset;
-      const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
+      // `dnt=1` : pas de cookie de mesure d'audience Vimeo (voir embedUrl dans
+      // lib/project-page.js).
+      const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0', dnt: '1' });
       if (hash) params.set('h', hash);
       frameGo(`https://player.vimeo.com/video/${id}?${params}`);
       fillInfo(item);
