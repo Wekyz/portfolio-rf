@@ -226,7 +226,8 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#fafaf8" />
+  <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#141412" media="(prefers-color-scheme: dark)" />
 
   <title>{pageTitle}</title>
   <meta name="description" content={pageDescription} />

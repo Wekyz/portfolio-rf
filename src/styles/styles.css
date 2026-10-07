@@ -66,6 +66,10 @@
   /* Rouge des messages d'erreur du formulaire. Vérifié par
      tests/contrast.test.mjs au même titre que les autres. */
   --error-text: #a3311c;
+  /* Texte et commandes posés sur une image ou sur le fond de la lightbox :
+     ce fond reste sombre dans les deux thèmes, ce blanc ne s'inverse donc
+     jamais (contrairement à --white, qui est le fond de page). */
+  --on-media:   #fafaf8;
 
   --font-hennessy: 'HennessySerif1765', Georgia, serif;
   --font-dala:     'DalaFloda', Georgia, serif;
@@ -77,12 +81,39 @@
   --t-slow:  .4s;
 }
 
-/* Le site est volontairement clair. Sans cette déclaration, un système en
-   thème sombre rend les contrôles natifs en sombre - le <select> des filtres
-   sur mobile, les champs du formulaire - c'est-à-dire exactement les éléments
-   les plus fonctionnels de la page. Un vrai thème sombre serait un autre
-   chantier. */
+/* ── THÈME SOMBRE ─────────────────────────────────────────────
+   Suit le réglage du système. Toutes les couleurs passent par les jetons
+   ci-dessus : le thème se résume à un second jeu de valeurs. Malgré leurs
+   noms historiques, --white est le FOND et --black le TEXTE ; ils
+   s'inversent ici. Les contrastes de ce jeu sont vérifiés par
+   tests/contrast.test.mjs, comme ceux du thème clair.
+
+   `color-scheme` suit aussi : il règle les contrôles natifs (le <select>
+   des filtres sur mobile, les champs du formulaire, les barres de
+   défilement), qui restaient clairs sur une page sombre sinon. */
 :root { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --white:       #141412;
+    --black:       #ecebe6;
+    --gray-light:  #2c2c29;
+    --gray-mid:    #9c9b94;
+    --gray-dark:   #b9b8b1;
+    --border-ui:   #74736d;
+    --accent-text: #c8b89a;
+    --error-text:  #ec8a74;
+  }
+  /* Logos fournis en sombre sur fond transparent : inversés, sinon ils
+     disparaissent sur le fond de page. Pas de retour à la couleur au
+     survol, qui ramènerait un logo noir sur fond noir. Sélecteur renforcé :
+     la règle de base de .brand-logo img vient plus loin dans la feuille. */
+  .brand-marquee .brand-logo img,
+  .brand-marquee .brand-logo:hover img { filter: grayscale(1) invert(1); }
+  /* États du bouton d'envoi : fonds colorés fixes, texte clair fixe. */
+  .form-submit.is-success,
+  .form-submit.is-error { color: var(--on-media); }
+}
 
 html { scroll-behavior: smooth; }
 body {
@@ -101,7 +132,7 @@ body {
 }
 /* Sur le fond sombre de la lightbox, un contour noir est invisible :
    l'utilisateur au clavier perdait toute trace de sa position. */
-.lightbox :focus-visible { outline-color: var(--white); }
+.lightbox :focus-visible { outline-color: var(--on-media); }
 
 /* ── A11Y : lien d'évitement ──────────────────────────────── */
 .skip-link {
@@ -468,7 +499,7 @@ nav.nav-flush { border-bottom-color: transparent; }
      suffit pas. L'ombre garantit la lisibilité sans assombrir la photo. */
   text-shadow: 0 1px 12px rgba(14, 14, 12, .55);
   font-size: 21px; font-weight: 400;
-  color: var(--white); letter-spacing: -.01em; line-height: 1.25;
+  color: var(--on-media); letter-spacing: -.01em; line-height: 1.25;
 }
 .work-meta {
   display: flex; gap: 14px; align-items: center; margin-top: 6px; flex-wrap: wrap;
@@ -992,7 +1023,7 @@ footer {
 .lightbox-bar {
   position: absolute; top: 100%; left: 0; right: 0;
   display: flex; align-items: center; gap: 16px;
-  padding-top: 16px; color: var(--white);
+  padding-top: 16px; color: var(--on-media);
 }
 .lightbox-info { flex: 1; min-width: 0; }
 .lightbox-title {
@@ -1010,16 +1041,16 @@ footer {
   color: rgba(255, 255, 255, .72); text-decoration: none; white-space: nowrap;
   transition: color var(--t-fast) ease;
 }
-.lightbox-sheet:hover { color: var(--white); }
+.lightbox-sheet:hover { color: var(--on-media); }
 .lightbox-nav {
   flex-shrink: 0; order: -1;
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
   background: none; border: 1px solid rgba(255, 255, 255, .38); border-radius: 50%;
-  color: var(--white); font-size: 15px; cursor: pointer;
+  color: var(--on-media); font-size: 15px; cursor: pointer;
   transition: border-color var(--t-fast) ease, background var(--t-fast) ease;
 }
-.lightbox-nav:hover { border-color: var(--white); background: rgba(255, 255, 255, .1); }
+.lightbox-nav:hover { border-color: var(--on-media); background: rgba(255, 255, 255, .1); }
 #lightboxNext { order: 1; }
 .lightbox-bar [hidden] { display: none; }
 .lightbox-inner iframe { width: 100%; height: 100%; border: none; }
