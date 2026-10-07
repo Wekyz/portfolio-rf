@@ -98,13 +98,19 @@ export const BRANDS = [
  */
 export const PRACTICAL = {
   /** Délais habituels (ours, version finale). */
-  turnaround: null,
+  turnaround: {
+    fr: "Selon le projet : ils varient trop d'un film à l'autre pour être fixés à l'avance.",
+    en: 'Depends on the project: they vary too much from one film to another to be set in advance.',
+  },
   /** Travail à distance ou sur place. */
-  remote: null,
+  remote: { fr: 'À distance ou sur place.', en: 'Remote or on site.' },
   /** Formats livrés (masters, déclinaisons réseaux sociaux, sous-titres...). */
-  deliverables: null,
+  deliverables: { fr: 'Tous formats.', en: 'Any format.' },
   /** Outils de validation (Frame.io, Vimeo review...). */
-  review: null,
+  review: {
+    fr: 'Sur le Frame.io de la société de production, ou par envoi de fichiers.',
+    en: "On the production company's Frame.io, or by file transfer.",
+  },
   /** Déplacements (France, étranger, conditions). */
-  travel: null,
+  travel: { fr: "En France et à l'étranger.", en: 'Across France and abroad.' },
 };

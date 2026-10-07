@@ -607,8 +607,11 @@ nav.nav-flush { border-bottom-color: transparent; }
 .contact-info {
   padding: 0 56px 104px; max-width: 1180px; margin: 0 auto;
 }
+/* Grille et non flex : avec huit entrées de longueurs inégales, le flex
+   produisait des rangées en escalier. */
 .contact-info dl {
-  display: flex; flex-wrap: wrap; gap: 48px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 36px 48px;
   padding-top: 28px; border-top: 1px solid var(--gray-light);
 }
 .contact-info dt {
@@ -617,8 +620,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .contact-info dd { font-size: 14px; display: flex; gap: 16px; }
 .contact-info dd a { color: var(--black); text-underline-offset: 3px; }
-/* Une phrase, pas une liste de liens : bloc de texte à largeur de lecture. */
-.contact-info .contact-fact { max-width: 32ch; }
+/* Une phrase, pas une liste de liens. */
 .contact-info .contact-fact dd { display: block; line-height: 1.5; }
 
 /* ── SÉLECTION (accueil) ──────────────────────────────────── */

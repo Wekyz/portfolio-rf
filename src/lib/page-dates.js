@@ -26,7 +26,7 @@ export const FIXED_PAGE_DATES = {
   '': '2026-09-06',
   '/portfolio': '2026-10-07',
   '/about': '2026-09-06',
-  '/contact': '2026-09-06',
+  '/contact': '2026-10-07',
   '/legal': '2026-08-06',
   '/privacy': '2026-08-06',
 };
