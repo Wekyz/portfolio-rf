@@ -690,7 +690,12 @@ import { applySpans } from '../lib/spans.js';
             formToken,
           }),
         });
-        if (res.ok) return;
+        if (res.ok) {
+          // Jeton à usage unique côté serveur : le prochain message en
+          // demandera un neuf au lieu d'essuyer un refus puis de réessayer.
+          formToken = null;
+          return;
+        }
         // Le serveur nomme la cause, et parfois le champ : on les lit avant
         // de lever.
         const data = await res.json().catch(() => null);

@@ -317,3 +317,17 @@ test('origines autorisées : le site, le déploiement en cours, localhost hors p
   assert.ok(!allowedOrigin('http://localhost:3000', { VERCEL_ENV: 'production' }));
   assert.ok(!allowedOrigin('https://roxane-foare.com.example', env));
 });
+
+/* ── Indices de spam (ANT-03) ───────────────────────────────────────── */
+
+test('un message suspect part quand même, marqué dans le sujet et le texte', async () => {
+  const { res, sent } = await withResend(valid({ message: 'Cheap SEO and backlinks for your site' }));
+  assert.equal(res.statusCode, 200);
+  assert.match(sent.subject, /^\[suspect\] /);
+  assert.match(sent.text, /mots-cles/);
+});
+
+test('un message ordinaire n’est pas marqué', async () => {
+  const { sent } = await withResend(valid());
+  assert.doesNotMatch(sent.subject, /suspect/);
+});

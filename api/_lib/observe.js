@@ -25,7 +25,7 @@
  * conservation est bornée à 90 jours par un TTL, et la politique de
  * confidentialité le mentionne.
  */
-import { redis } from './limiter.js';
+import { redis, incrWithTtl } from './limiter.js';
 
 const MOIS = () => new Date().toISOString().slice(0, 7);
 /** Assez pour voir une panne en cours, trop peu pour constituer un journal. */
@@ -48,7 +48,7 @@ export function reportError(kind, detail = '') {
   const tasks = [sendAlert(kind, detail)];
   if (redis) {
     tasks.push(
-      redis.incr(`errors:${MOIS()}:${kind}`),
+      incrWithTtl(`errors:${MOIS()}:${kind}`),
       redis.lpush('errors:last', JSON.stringify({ at, kind, detail: String(detail).slice(0, 200) })),
       redis.ltrim('errors:last', 0, MAX_INCIDENTS - 1)
     );
@@ -116,7 +116,7 @@ export async function sendAlert(kind, detail = '', deps = {}) {
 /** Compteur mensuel des envois acceptés, pour donner une base de comparaison. */
 export function countSent() {
   if (!redis) return;
-  redis.incr(`sent:${MOIS()}`).catch(() => {});
+  incrWithTtl(`sent:${MOIS()}`);
 }
 
 /**
@@ -167,6 +167,8 @@ export async function readStatus() {
     'invalid-fields',
     'too-fast',
     'bad-token',
+    'token-reused',
+    'suspect',
     'captcha-missing',
     'captcha-invalid',
     'captcha-unreachable',

@@ -31,7 +31,8 @@
  * protégé par le honeypot + délai anti-bot déjà en place côté client).
  */
 import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
-import { verifyToken } from './_lib/form-token.js';
+import { verifyToken, consumeToken, releaseToken } from './_lib/form-token.js';
+import { suspicionReasons } from './_lib/spam.js';
 import { verifyTurnstile } from './_lib/turnstile.js';
 import { reportError, countSent, stashFailedMessage } from './_lib/observe.js';
 import { CONTACT_LIMITS } from '../src/lib/contact-limits.js';
@@ -166,6 +167,20 @@ export default async function handler(req, res) {
     await reportError('turnstile-unreachable', 'envoi accepté sans vérification');
   }
 
+  // Jeton à usage unique, consommé seulement maintenant que tout le reste est
+  // validé : un refus plus haut (champ manquant, captcha) ne le brûle pas.
+  // Le client, sur `bad-token`, en redemande un et renvoie une fois (app.js).
+  if (tokenState === 'ok' && !(await consumeToken(body.formToken))) {
+    countRejection('token-reused');
+    return res.status(400).json({ code: 'bad-token', error: 'Ce formulaire a déjà été envoyé.' });
+  }
+  // Rend le jeton en cas d'échec d'envoi : le visiteur doit pouvoir réessayer.
+  const release = () => (tokenState === 'ok' ? releaseToken(body.formToken) : Promise.resolve());
+
+  // Indices de spam : signalés, jamais rejetés (voir _lib/spam.js).
+  const suspect = suspicionReasons({ firstName, lastName, email, message });
+  if (suspect.length) countRejection('suspect');
+
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_EMAIL;
   const from = process.env.RESEND_FROM || 'Portfolio <noreply@roxane-foare.com>';
@@ -174,6 +189,7 @@ export default async function handler(req, res) {
     // supprimée ou expirée. Rien ne cassait au build, donc rien ne prévenait.
     await reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
     stashFailedMessage({ firstName, lastName, email, message });
+    await release();
     return res.status(500).json({ code: 'unavailable', error: 'Service email non configuré.' });
   }
 
@@ -188,8 +204,10 @@ export default async function handler(req, res) {
         from,
         to: [to],
         reply_to: email,
-        subject: headerSafe(`Nouveau message - ${firstName} ${lastName}`),
-        text: `De : ${firstName} ${lastName} <${email}>\n\n${message || '(aucun message)'}`,
+        subject: headerSafe(`${suspect.length ? '[suspect] ' : ''}Nouveau message - ${firstName} ${lastName}`),
+        text:
+          `De : ${firstName} ${lastName} <${email}>\n\n${message || '(aucun message)'}` +
+          (suspect.length ? `\n\n-- \nMarqué suspect par le site : ${suspect.join(', ')}. Envoyé quand même, au cas où.` : ''),
       }),
     });
     if (!r.ok) {
@@ -197,6 +215,7 @@ export default async function handler(req, res) {
       // code HTTP que personne ne lisait.
       await reportError('resend-http', `HTTP ${r.status}`);
       stashFailedMessage({ firstName, lastName, email, message });
+      await release();
       return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
     }
     countSent();
@@ -204,6 +223,7 @@ export default async function handler(req, res) {
   } catch (err) {
     await reportError('resend-network', err?.message || 'fetch échoué');
     stashFailedMessage({ firstName, lastName, email, message });
+    await release();
     return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
   }
 }
