@@ -58,7 +58,6 @@ const sizes = responsive ? gridSizes(p, spanN) : undefined;
     <a
       href={href}
       class="work-thumb-wrap"
-      aria-label={`${t('work.watchAria')} - ${p.title}`}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
     >
@@ -68,7 +67,7 @@ const sizes = responsive ? gridSizes(p, spanN) : undefined;
           src={thumbSrc}
           srcset={thumbSrcset}
           sizes={sizes}
-          alt={p.title}
+          alt=""
           loading={loading}
           fetchpriority={fetchpriority}
           decoding="async"
@@ -95,6 +94,13 @@ const sizes = responsive ? gridSizes(p, spanN) : undefined;
           )}
         </div>
         <div class="work-info">
+          {/* Nom accessible = texte visible (WCAG 2.5.3). Le lien portait un
+               aria-label « Watch - Hanro » alors qu'on y lit « Hanro,
+               Production : WBA, 2024 » : une commande vocale « cliquer sur
+               Hanro, Production » ne trouvait rien. Le verbe est ajouté pour
+               les lecteurs d'écran, l'image passe en décorative (alt vide)
+               pour que le titre ne soit pas lu deux fois. */}
+          <span class="visually-hidden">{t('work.watchAria')} </span>
           <div class="work-title">{p.title}</div>
           <div class="work-meta">
             <span class="work-prod">{prod}</span>

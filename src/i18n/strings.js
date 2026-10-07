@@ -149,6 +149,7 @@ export const ui = {
     'contact.lastName': 'Last name',
     'contact.email': 'Email',
     'contact.message': 'Message',
+    'contact.optional': 'optional',
     'contact.firstNamePh': 'Marie',
     'contact.lastNamePh': 'Dupont',
     'contact.emailPh': 'marie@studio.com',
@@ -181,7 +182,7 @@ export const ui = {
     'footer.legalAria': 'Legal pages',
 
     // Lightbox
-    'lb.dialog': 'Video player - press Escape to close',
+    'lb.hint': 'Video player. Press Escape to close.',
     'lb.close': 'Close video',
     'lb.frameTitle': 'Vimeo video player',
     'lb.prev': 'Previous project',
@@ -305,6 +306,7 @@ export const ui = {
     'contact.lastName': 'Nom',
     'contact.email': 'Email',
     'contact.message': 'Message',
+    'contact.optional': 'facultatif',
     'contact.firstNamePh': 'Marie',
     'contact.lastNamePh': 'Dupont',
     'contact.emailPh': 'marie@studio.com',
@@ -337,7 +339,7 @@ export const ui = {
     'footer.legalAria': 'Pages légales',
 
     // Lightbox
-    'lb.dialog': 'Lecteur vidéo - appuyez sur Échap pour fermer',
+    'lb.hint': 'Lecteur vidéo. Appuyez sur Échap pour fermer.',
     'lb.close': 'Fermer la vidéo',
     'lb.frameTitle': 'Lecteur vidéo Vimeo',
     'lb.prev': 'Projet précédent',

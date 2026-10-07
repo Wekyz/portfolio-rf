@@ -79,7 +79,9 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     </div>
 
     <div class="form-group">
-      <label for="message">{t('contact.message')}</label>
+      {/* Seul champ facultatif, et rien ne le disait (WCAG 3.3.2). Les trois
+           autres portent `required`, annoncé par les lecteurs d'écran. */}
+      <label for="message">{t('contact.message')} <span class="form-optional">({t('contact.optional')})</span></label>
       <textarea
         id="message"
         name="message"
@@ -106,6 +108,9 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     {/* Le détail de l'erreur, visible. `formStatus` reste la version annoncée
          aux lecteurs d'écran ; les deux portent le même texte. */}
     <p class="form-error" id="formError" hidden></p>
+    {/* Message propre à un champ : app.js le place sous le champ désigné par
+         le serveur et l'y relie (aria-describedby, aria-errormessage). */}
+    <p class="form-error field-error" id="fieldError" hidden></p>
     <p class="visually-hidden" id="formStatus" role="status" aria-live="polite"></p>
   </form>
 

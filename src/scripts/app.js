@@ -394,6 +394,7 @@ import { applySpans } from '../lib/spans.js';
       frameGo(`https://player.vimeo.com/video/${id}?${params}`);
       fillInfo(item);
       lightboxEl.classList.add('open', 'loading'); // 'loading' : affiche le spinner
+      if (!lightboxEl.open) lightboxEl.showModal();
       document.body.style.overflow = 'hidden';
       lightboxClose.focus();
 
@@ -446,7 +447,9 @@ import { applySpans } from '../lib/spans.js';
     });
 
     function closeLightbox() {
+      if (!lightboxEl.classList.contains('open')) return;
       lightboxEl.classList.remove('open');
+      if (lightboxEl.open) lightboxEl.close();
       frameGo('about:blank');
       document.body.style.overflow = '';
       currentItem = null;
@@ -456,28 +459,25 @@ import { applySpans } from '../lib/spans.js';
     }
     lightboxClose.addEventListener('click', requestClose);
     lightboxEl.addEventListener('click', (e) => { if (e.target === e.currentTarget) requestClose(); });
+    // Échap : le <dialog> émet `cancel`. On le retient pour passer par
+    // requestClose (retrait de l'entrée d'historique). Si le navigateur
+    // ferme quand même (il ignore parfois l'annulation d'un second Échap),
+    // `close` rattrape le nettoyage.
+    lightboxEl.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      requestClose();
+    });
+    lightboxEl.addEventListener('close', () => {
+      if (lightboxEl.classList.contains('open')) requestClose();
+    });
     document.addEventListener('keydown', (e) => {
       if (!lightboxEl.classList.contains('open')) return;
-      if (e.key === 'Escape') { requestClose(); return; }
       // Flèches : enchaîner les projets sans fermer la modale. Ignorées quand
       // le focus est dans le lecteur, où Vimeo s'en sert pour la lecture.
       if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.activeElement !== lightboxFrame) {
         e.preventDefault();
         step(e.key === 'ArrowLeft' ? -1 : 1);
         return;
-      }
-      // Piège à focus : maintient la tabulation à l'intérieur de la modale.
-      if (e.key === 'Tab') {
-        const focusables = [lightboxClose, lightboxPrev, lightboxNext, lightboxFrame].filter(
-          (el) => !el.hidden
-        );
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault(); last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault(); first.focus();
-        }
       }
     });
 
@@ -704,11 +704,24 @@ import { applySpans } from '../lib/spans.js';
       }
     }
 
+    const fieldError = document.getElementById('fieldError');
+
+    /** aria-describedby d'un champ, avec ou sans le message d'erreur. */
+    function describedBy(field, withError) {
+      const ids = (field.getAttribute('aria-describedby') || '')
+        .split(/\s+/)
+        .filter((id) => id && id !== 'fieldError');
+      if (withError) ids.push('fieldError');
+      return ids.join(' ');
+    }
+
     /** Message nommant le champ fautif, ou null si le serveur n'en nomme pas. */
     function fieldMessage(err, field) {
       if (!err || !field) return null;
       const labelEl = contactForm.querySelector(`label[for="${field.id}"]`);
-      const label = labelEl && labelEl.textContent.trim();
+      // Premier nœud texte seulement : « Message (facultatif) » ne doit pas
+      // donner « Message (facultatif) : 5 000 caractères maximum ».
+      const label = labelEl && labelEl.firstChild && labelEl.firstChild.textContent.trim();
       if (!label) return null;
       if (err.code === 'too-long' && err.max) {
         return FIELD_ERRORS['too-long'](label, Number(err.max).toLocaleString(lang));
@@ -719,17 +732,22 @@ import { applySpans } from '../lib/spans.js';
       return null;
     }
 
+    function clearField(el) {
+      el.removeAttribute('aria-invalid');
+      el.removeAttribute('aria-errormessage');
+      const rest = describedBy(el, false);
+      if (rest) el.setAttribute('aria-describedby', rest);
+      else el.removeAttribute('aria-describedby');
+    }
     function clearInvalid() {
-      contactForm.querySelectorAll('[aria-invalid]').forEach((el) => {
-        el.removeAttribute('aria-invalid');
-        el.removeAttribute('aria-errormessage');
-      });
+      contactForm.querySelectorAll('[aria-invalid]').forEach(clearField);
+      if (fieldError) fieldError.hidden = true;
     }
     contactForm.addEventListener('input', (e) => {
       const el = e.target;
       if (el instanceof Element && el.hasAttribute('aria-invalid')) {
-        el.removeAttribute('aria-invalid');
-        el.removeAttribute('aria-errormessage');
+        clearField(el);
+        if (fieldError) fieldError.hidden = true;
       }
     });
 
@@ -792,17 +810,27 @@ import { applySpans } from '../lib/spans.js';
         })
         .catch((err) => {
           const field = err && err.field ? form.querySelector(`[name="${err.field}"]`) : null;
-          const message = fieldMessage(err, field) || (err && FORM_ERRORS[err.code]) || FORM_LABELS.error;
-          if (field) {
+          const specific = fieldMessage(err, field);
+          const message = specific || (err && FORM_ERRORS[err.code]) || FORM_LABELS.error;
+          if (field && specific && fieldError) {
+            // Message posé SOUS le champ et relié à lui : un lecteur d'écran
+            // le lit en arrivant sur le champ, pas seulement une fois en bas
+            // du formulaire (WCAG 3.3.1).
+            field.after(fieldError);
+            fieldError.textContent = message;
+            fieldError.hidden = false;
             field.setAttribute('aria-invalid', 'true');
-            field.setAttribute('aria-errormessage', 'formError');
+            field.setAttribute('aria-errormessage', 'fieldError');
+            field.setAttribute('aria-describedby', describedBy(field, true));
+          } else if (field) {
+            field.setAttribute('aria-invalid', 'true');
           }
           btn.innerHTML = FORM_LABELS.error;
           btn.classList.add('is-error');
           // Le détail va dans la région annoncée ET sous le formulaire : le
           // bouton est trop étroit pour « Vérifiez les champs obligatoires ».
           if (formStatus) formStatus.textContent = message;
-          if (formError) {
+          if (formError && !(field && specific)) {
             formError.textContent = message;
             formError.hidden = false;
           }

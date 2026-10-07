@@ -384,9 +384,16 @@ test('un champ trop long est nommé et reçoit le focus', async ({ page }) => {
   await page.goto('/fr/contact');
   await remplir(page);
   await page.locator('.form-submit').click();
-  await expect(page.locator('#formError')).toContainText(/Nom : 100 caractères maximum/, { timeout: 15_000 });
+  // Le message est posé sous le champ et relié à lui (WCAG 3.3.1).
+  const message = page.locator('#last-name + #fieldError');
+  await expect(message).toContainText(/Nom : 100 caractères maximum/, { timeout: 15_000 });
   await expect(page.locator('#last-name')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#last-name')).toHaveAttribute('aria-describedby', /fieldError/);
   await expect(page.locator('#last-name')).toBeFocused();
+  // Il disparaît dès que le champ est corrigé.
+  await page.fill('#last-name', 'Dupond');
+  await expect(message).toBeHidden();
+  await expect(page.locator('#last-name')).not.toHaveAttribute('aria-invalid', 'true');
 });
 
 test('les champs portent leur longueur maximale', async ({ page }) => {
@@ -456,4 +463,48 @@ test('la 404 reste en anglais hors de /fr', async ({ page }) => {
 test('le lien Contact du menu signale la page courante', async ({ page }) => {
   await page.goto('/fr/contact');
   await expect(page.locator('#navLinks a[href="/fr/contact"]')).toHaveAttribute('aria-current', 'page');
+});
+
+/* ── Accessibilité (A11Y-01 à A11Y-04) ──────────────────────────────── */
+
+test('le focus ne sort pas de la lightbox au clavier', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'mobile', 'pas de tabulation au doigt');
+  await page.route('**://player.vimeo.com/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' })
+  );
+  await page.goto('/fr/portfolio');
+  await page.locator('a.work-thumb-wrap').first().click();
+  await expect(page.locator('#lightbox')).toHaveClass(/open/);
+  for (let i = 0; i < 10; i++) {
+    await page.keyboard.press('Tab');
+    const dedans = await page.evaluate(() => {
+      const el = document.activeElement;
+      return !el || el === document.body || Boolean(el.closest('#lightbox'));
+    });
+    expect(dedans, `tabulation ${i + 1} : le focus a quitté la lightbox`).toBe(true);
+  }
+});
+
+test('la lightbox porte le titre du projet comme nom', async ({ page }) => {
+  await page.goto('/fr/portfolio');
+  const premier = page.locator('a.work-thumb-wrap').first();
+  const titre = (await premier.locator('.work-title').textContent()).trim();
+  await premier.click();
+  await expect(page.locator('#lightbox')).toHaveAccessibleName(titre);
+});
+
+test('le nom d’une vignette reprend son texte visible', async ({ page }) => {
+  await page.goto('/fr/portfolio');
+  const premier = page.locator('a.work-thumb-wrap').first();
+  const titre = (await premier.locator('.work-title').textContent()).trim();
+  await expect(premier).not.toHaveAttribute('aria-label', /.*/);
+  // Le nom commence par le verbe ajouté, puis reprend le titre tel qu'affiché.
+  await expect(premier).toHaveAccessibleName(/^Regarder /);
+  const nom = await premier.evaluate((el) => el.textContent.replace(/\s+/g, ' ').trim());
+  expect(nom.startsWith(`Regarder ${titre}`)).toBe(true);
+});
+
+test('le champ message est signalé comme facultatif', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('label[for="message"]')).toContainText('(facultatif)');
 });

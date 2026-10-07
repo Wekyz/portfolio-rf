@@ -4,7 +4,15 @@ import { useTranslations } from '../i18n/strings.js';
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 ---
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label={t('lb.dialog')}>
+{/* <dialog> ouvert par showModal() : le reste de la page devient inerte, le
+     focus ne peut plus s'en échapper. L'ancien piège à focus fait main
+     laissait sortir le focus vers la page derrière depuis « Projet suivant »
+     et ignorait le lien « Voir la fiche ».
+     Le nom de la modale est le titre du projet affiché (il s'annonçait
+     « Lecteur vidéo » quel que soit le projet) ; la touche Échap est donnée
+     en description. */}
+<dialog class="lightbox" id="lightbox" aria-labelledby="lightboxTitle" aria-describedby="lightboxHint">
+  <p class="visually-hidden" id="lightboxHint">{t('lb.hint')}</p>
   <div class="lightbox-inner">
     <button type="button" class="lightbox-close" id="lightboxClose" aria-label={t('lb.close')}>&times;</button>
     <div class="lightbox-spinner" id="lightboxSpinner" aria-hidden="true"></div>
@@ -24,4 +32,4 @@ const t = useTranslations(lang);
       <button type="button" class="lightbox-nav" id="lightboxNext" aria-label={t('lb.next')}>&rarr;</button>
     </div>
   </div>
-</div>
+</dialog>

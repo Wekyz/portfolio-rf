@@ -42,6 +42,14 @@ async function analyse(page, contexte, exclusions = []) {
   for (const sel of exclusions) axe = axe.exclude(sel);
   const { violations } = await axe.analyze();
   expect(violations.length, `${contexte}\n${rapport(violations)}`).toBe(0);
+
+  // `label-content-name-mismatch` (WCAG 2.5.3) est classée expérimentale par
+  // axe, donc absente des tags ci-dessus : passage dédié. C'est elle qui
+  // aurait signalé l'aria-label des vignettes (A11Y-02).
+  let nom = new AxeBuilder({ page }).withRules(['label-content-name-mismatch']);
+  for (const sel of exclusions) nom = nom.exclude(sel);
+  const { violations: ecarts } = await nom.analyze();
+  expect(ecarts.length, `${contexte} (2.5.3)\n${rapport(ecarts)}`).toBe(0);
 }
 
 test.beforeEach(async ({ page }) => {
