@@ -229,7 +229,7 @@ test('une page projet mène au portfolio par son fil d’Ariane', async ({ page 
   await expect(page.locator('h1')).toHaveText('Hanro');
   await expect(page.locator('.project-player iframe')).toBeVisible();
 
-  await page.locator('.project-crumbs a', { hasText: 'Projets' }).click();
+  await page.locator('.project-crumbs a', { hasText: 'Portfolio' }).click();
   await expect(page).toHaveURL(/\/fr\/portfolio$/);
 });
 

@@ -10,6 +10,7 @@ import { resolveThumb } from '../lib/thumb.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { useTranslations } from '../i18n/strings.js';
 import { getProjects } from '../lib/projects.js';
+import { lastModified } from '../lib/page-dates.js';
 import { IMDB_URL } from '../data/profile.js';
 import { SITE, PERSON_ID, WEBSITE_ID, SERVICE_ID, personRef, pageIds } from '../lib/schema-ids.js';
 
@@ -28,34 +29,36 @@ const {
   title,
   description,
   ogImage,
+  ogImageAlt,
+  ogType = 'website',
   videoObject,
   breadcrumb,
   dateModified,
   noindex = false,
 } = Astro.props;
 
-// Signal de fraîcheur. Les pages projet apportent leur propre date, tenue par
-// scripts/fetch-thumbs.mjs à partir du contenu réel de chaque fiche : tant
-// qu'un projet ne change pas, sa date ne change pas, quel que soit le nombre
-// de builds.
-//
-// Les pages fixes retombent sur la date du build, faute de mieux : leur
-// contenu vit dans les sources, et un dépôt cloné n'a pas d'horodatage
-// exploitable. Elles sont 13 sur 75, et ce sont celles qui bougent le moins -
-// la dilution du signal venait des 62 autres.
-const buildDate = new Date().toISOString().slice(0, 10);
-const modified = dateModified ?? buildDate;
 const t = useTranslations(lang);
 
 const langBase = lang === 'fr' ? '/fr' : '';
 const pagePath = path ?? (page === 'home' ? '' : `/${page}`);
+
+// Signal de fraîcheur, identique au lastmod du sitemap : les deux lisent
+// src/lib/page-dates.js (date du contenu pour les fiches, date tenue à la main
+// pour les pages fixes). Seule une page absente de ce registre, la 404,
+// retombe sur la date du build.
+const modified = dateModified ?? lastModified(pagePath) ?? new Date().toISOString().slice(0, 10);
 const canonical = `${SITE}${langBase}${pagePath}` || `${SITE}/`;
 const enHref = `${SITE}${pagePath || '/'}`;
 const frHref = `${SITE}/fr${pagePath}`;
 
 const pageTitle = title ?? t(`head.${page}.title`);
 const pageDescription = description ?? t(`head.${page}.description`);
-const ogImageUrl = ogImage ?? `${SITE}/og-image.jpg`;
+// Carte par défaut dans la langue de la page : celle en anglais ("Video
+// Editor") était aussi partagée depuis /fr.
+const ogImageUrl = ogImage ?? `${SITE}/${lang === 'fr' ? 'og-image-fr.jpg' : 'og-image.jpg'}`;
+// Une fiche partage la vignette du projet : son texte alternatif est le titre
+// du projet, pas la carte générique.
+const ogAlt = ogImageAlt ?? t('head.ogImageAlt');
 
 // Pas de <meta name="keywords"> : Google l'ignore depuis 2009, Bing aussi. Six
 // variantes étaient maintenues à la main dans strings.js pour rien.
@@ -261,9 +264,9 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <meta property="og:image" content={ogImageUrl} />
   {!ogImage && <meta property="og:image:width" content="1200" />}
   {!ogImage && <meta property="og:image:height" content="630" />}
-  <meta property="og:image:alt" content={t('head.ogImageAlt')} />
+  <meta property="og:image:alt" content={ogAlt} />
   <meta property="og:url" content={canonical} />
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content={ogType} />
   <meta property="og:locale" content={t('head.ogLocale')} />
   <meta property="og:locale:alternate" content={lang === 'fr' ? 'en_US' : 'fr_FR'} />
   <meta property="og:site_name" content="Roxane Foare" />
@@ -273,6 +276,7 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={pageDescription} />
   <meta name="twitter:image" content={ogImageUrl} />
+  <meta name="twitter:image:alt" content={ogAlt} />
 
   {/* Pas de balises `geo.*` : aucun moteur majeur ne les lit, et elles
        annonçaient l'Île-de-France sur les 75 pages alors que le JSON-LD

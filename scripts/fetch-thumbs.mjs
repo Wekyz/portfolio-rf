@@ -274,6 +274,56 @@ async function ensureAppleIcon() {
   return true;
 }
 
+/**
+ * favicon.ico (16, 32 et 48 px), rendu depuis favicon.svg.
+ *
+ * Des clients le demandent à la racine sans lire les <link rel="icon">
+ * (lecteurs RSS, messageries, certains robots) : /favicon.ico répondait 404.
+ *
+ * sharp n'écrit pas le format ICO, mais un ICO peut contenir des PNG tels
+ * quels (Windows Vista et tous les navigateurs actuels) : il suffit d'un
+ * en-tête de 6 octets puis d'une entrée de 16 octets par taille.
+ *
+ * Fond blanc opaque, comme favicon.png.
+ */
+async function ensureFaviconIco() {
+  const out = join(ROOT, 'public', 'favicon.ico');
+  if (await exists(out)) return false;
+  const svg = await readFile(join(ROOT, 'public', 'favicon.svg'));
+  const sizes = [16, 32, 48];
+  const pngs = await Promise.all(
+    sizes.map((size) =>
+      sharp(svg, { density: 600 })
+        .resize(size, size, { fit: 'contain', background: '#ffffff' })
+        .flatten({ background: '#ffffff' })
+        .ensureAlpha()
+        .png({ compressionLevel: 9 })
+        .toBuffer()
+    )
+  );
+
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // réservé
+  header.writeUInt16LE(1, 2); // 1 = icône
+  header.writeUInt16LE(sizes.length, 4);
+
+  let offset = 6 + 16 * sizes.length;
+  const entries = sizes.map((size, i) => {
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(size, 0); // largeur
+    entry.writeUInt8(size, 1); // hauteur
+    entry.writeUInt16LE(1, 4); // plans de couleur
+    entry.writeUInt16LE(32, 6); // bits par pixel
+    entry.writeUInt32LE(pngs[i].length, 8);
+    entry.writeUInt32LE(offset, 12);
+    offset += pngs[i].length;
+    return entry;
+  });
+
+  await writeFile(out, Buffer.concat([header, ...entries, ...pngs]));
+  return true;
+}
+
 /** Lit les sources dans `srcDir`, écrit les densités servies dans `outDir`. */
 async function ensureBrandVariants(srcDir, outDir) {
   let files;
@@ -539,6 +589,7 @@ async function main() {
   console.log(`[srcset] ${Object.keys(local).length} image(s) locale(s), ${nCand} candidat(s) mesuré(s).`);
 
   if (await ensureAppleIcon()) console.log('[icone] apple-touch-icon.png (180x180) régénérée.');
+  if (await ensureFaviconIco()) console.log('[icone] favicon.ico (16, 32, 48) régénéré.');
 
   const bl = await ensureBrandVariants(BRANDS_SRC_DIR, BRANDS_DIR);
   console.log(`[logos] ${bl.made} variante(s) générée(s), ${bl.kept} déjà présente(s).`);

@@ -88,6 +88,7 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
 │  ├─ components/              # Nav, Hero, Work, WorkItem, ProjectDetail, About, Contact, Footer, Lightbox
 │  ├─ lib/projects.js          # getProjects() : lecture typée de videos.json, seul point d'accès
+│  ├─ lib/page-dates.js        # dates réelles par page (lastmod du sitemap, dateModified) - pages fixes à tenir à la main
 │  ├─ lib/spans.js             # pattern de grille (build + client)
 │  ├─ lib/slug.js              # slugs des pages projet (dérivés du titre, unicité garantie)
 │  ├─ lib/project-page.js      # métadonnées + JSON-LD VideoObject d'une page projet
@@ -97,7 +98,7 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ data/videos.json         # données projets (éditées via le CMS)
 │  ├─ data/profile.js          # IMDb, logiciels, productions, marques (À propos + llms-full.txt)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
-├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image
+├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image (EN) et og-image-fr
 ├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)
 ├─ tests/                      # tests fumée (node:test)
 ├─ scripts/fetch-thumbs.mjs    # résolution des miniatures Vimeo au build
@@ -144,7 +145,7 @@ clé hors `source`/`headers`/`has`/`missing`), d'où cette note. Trois politique
 | Ressource | Politique | Pourquoi |
 |---|---|---|
 | `/_astro/`, `*.woff2` | `immutable`, 1 an | Nom porteur d'une empreinte de contenu : un changement produit un nouveau nom. |
-| `/live/`, `/brands/`, favicons, `og-image.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
+| `/live/`, `/brands/`, favicons, `og-image.jpg`, `og-image-fr.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
 | HTML | `max-age=0, must-revalidate` (défaut Vercel) | Le contenu change à chaque publication CMS. L'edge Vercel le met **déjà** en cache de lui-même (`X-Vercel-Cache: HIT`), il n'y a donc rien à ajouter côté CDN. |
 
 Sans la règle `/brands/`, les 93 fichiers de logos étaient revalidés à chaque

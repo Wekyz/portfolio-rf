@@ -193,7 +193,11 @@ export const ui = {
     // Nav
     'nav.sub': 'Monteuse vidéo',
     'nav.home': 'Accueil',
-    'nav.work': 'Projets',
+    // « Portfolio » et non « Projets » : c'est le mot de l'URL, du <title> et
+    // du bouton de l'accueil, et il se cherche aussi en français. La page
+    // s'appelait « Projets » dans le menu et le H1, « Portfolio » partout
+    // ailleurs.
+    'nav.work': 'Portfolio',
     'nav.about': 'À propos',
     'nav.contact': 'Contact',
     'nav.langLabel': 'EN',
@@ -212,7 +216,7 @@ export const ui = {
     'featured.all': 'Voir tous les projets',
 
     // Work
-    'work.title': 'Projets',
+    'work.title': 'Portfolio',
     'work.location': 'Paris · Angers · Monde',
     'work.filterAria': 'Filtrer les projets par catégorie',
     'work.watch': 'Voir',

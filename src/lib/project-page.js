@@ -16,7 +16,7 @@
 import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
 import { useTranslations, catGender } from '../i18n/strings.js';
 import { SITE, personRef, pageIds } from './schema-ids.js';
-import contentDates from '../data/content-dates.json' with { type: 'json' };
+import { lastModified } from './page-dates.js';
 
 /** URL absolue de la miniature (le CDN Vimeo en sert déjà une). */
 function absThumb(p) {
@@ -124,12 +124,17 @@ export function buildProjectMeta(project, slug, lang) {
     title: `${p.title} - ${t('project.titleSuffix')}`,
     description,
     ogImage: absThumb(p),
+    ogImageAlt: p.title,
+    // Type Open Graph des pages dont le sujet est une vidéo. Les fiches
+    // partageaient `website` avec le reste du site.
+    ogType: 'video.other',
     videoObject,
     // Date de dernière modification réelle du contenu de ce projet, tenue par
-    // scripts/fetch-thumbs.mjs (voir `updateContentDates`). Sans elle,
-    // `dateModified` valait la date du build sur les 75 pages : republier pour
-    // une virgule faisait passer tout le site pour modifié le même jour.
-    dateModified: contentDates[slug]?.date,
+    // scripts/fetch-thumbs.mjs (voir `updateContentDates`) et lue via
+    // page-dates.js, comme le lastmod du sitemap. Sans elle, `dateModified`
+    // valait la date du build sur les 75 pages : republier pour une virgule
+    // faisait passer tout le site pour modifié le même jour.
+    dateModified: lastModified(path),
   };
 }
 
