@@ -88,7 +88,9 @@ collections:
                 label: "Année"
                 widget: string
                 required: false
-                pattern: ['^\d{4}(-\d{4})?$', "Une année (2024) ou une période (2018-2022)"]
+                # Sveltia teste le motif même sur un champ vide : le groupe
+                # facultatif `(...)?` laisse passer la valeur vide.
+                pattern: ['^(\d{4}(-\d{4})?)?$', "Une année (2024) ou une période (2018-2022)"]
                 hint: "ex : 2024  ou  2018-2022. Laisser vide si l'année n'est pas sûre : elle s'affiche sur la grille, la fiche et dans les données lues par Google."
 
               - name: id
@@ -160,7 +162,8 @@ collections:
                 label: "Identifiant d'URL"
                 widget: string
                 required: false
-                pattern: ["^[a-z0-9]+(-[a-z0-9]+)*$", "Minuscules, chiffres et tirets uniquement"]
+                # Même remarque que pour `year` : vide autorisé par le `?` final.
+                pattern: ["^([a-z0-9]+(-[a-z0-9]+)*)?$", "Minuscules, chiffres et tirets uniquement"]
                 hint: "Laisser vide : l'adresse est déduite du titre. À remplir uniquement pour figer une adresse déjà en ligne avant de renommer le projet."
 
               - name: noClick
