@@ -102,8 +102,8 @@ test('budget de poids : la feuille de style inlinée reste raisonnable', { skip 
   const html = readFileSync(join(DIST, 'index.html'), 'utf8');
   const styles = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('');
   const ko = Buffer.byteLength(styles) / 1024;
-  // 28 -> 30 Ko : le thème sombre (UI-06), le compteur et l'adresse copiable
-  // du formulaire ont ajouté environ 1 Ko brut, hausse assumée.
+  // 28 -> 30 Ko : le compteur et l'adresse copiable du formulaire, et un
+  // thème sombre depuis retiré, avaient ajouté environ 1 Ko brut.
   assert.ok(ko <= 30, `CSS inlinée : ${ko.toFixed(1)} Ko brut, budget 30 Ko.`);
 });
 

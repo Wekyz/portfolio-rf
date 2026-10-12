@@ -66,9 +66,6 @@ export const ui = {
     // Commandes du showreel. Le libellé du bouton dit l'action à venir, pas
     // l'état courant : c'est ce qu'attend un lecteur d'écran sur une commande
     // de lecture (voir aussi about.brandsPause/Play, même convention).
-    'hero.pause': 'Pause the showreel',
-    'hero.play': 'Play the showreel',
-    'hero.seek': 'Showreel position',
     'featured.title': 'Selected work',
     'featured.all': 'See all projects',
 
@@ -238,9 +235,6 @@ export const ui = {
     'hero.ctaPortfolio': 'Voir le portfolio',
     'hero.ctaAbout': 'À propos',
     'hero.showreelLabel': 'Showreel',
-    'hero.pause': 'Mettre le showreel en pause',
-    'hero.play': 'Reprendre le showreel',
-    'hero.seek': 'Position dans le showreel',
     'featured.title': 'Sélection',
     'featured.all': 'Voir tous les projets',
 

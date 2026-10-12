@@ -116,17 +116,3 @@ test('accessibilité : bandeau de logos mis en pause', async ({ page }) => {
   await expect(bouton).toHaveAttribute('aria-pressed', 'true');
   await analyse(page, 'bandeau de logos en pause');
 });
-
-// Thème sombre (UI-06) : mêmes pages, palette inversée. Les jetons sont
-// déjà vérifiés par tests/contrast.test.mjs ; ce passage attrape ce que les
-// jetons ne voient pas (une couleur écrite en dur, un texte posé sur un fond
-// qui ne s'inverse pas).
-test.describe('thème sombre', () => {
-  test.use({ colorScheme: 'dark' });
-  for (const [nom, url, exclusions] of PAGES) {
-    test(`accessibilité (sombre) : ${nom}`, async ({ page }) => {
-      await page.goto(url);
-      await analyse(page, `${nom} (${url}), thème sombre`, exclusions);
-    });
-  }
-});

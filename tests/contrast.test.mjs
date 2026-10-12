@@ -4,7 +4,7 @@
  *
  * Ces ratios ne sont couverts par rien d'autre. axe-core mesure bien le
  * contraste du TEXTE, mais il ne vérifie pas 1.4.11 - la limite d'un champ de
- * saisie, le contour d'un bouton, la piste d'un curseur - et c'est précisément
+ * saisie, le contour d'un bouton - et c'est précisément
  * là que le site était en défaut : `--gray-light` sur le fond du site ne donne
  * que 1,18:1, pour un minimum de 3:1.
  *
@@ -23,13 +23,6 @@ function token(nom, css = CSS) {
   assert.ok(m, `jeton --${nom} introuvable dans styles.css`);
   return m[1];
 }
-
-/** Bloc du thème sombre : ses jetons redéfinissent ceux de :root. */
-const DARK = (() => {
-  const start = CSS.indexOf('@media (prefers-color-scheme: dark)');
-  assert.ok(start !== -1, 'bloc prefers-color-scheme: dark introuvable');
-  return CSS.slice(start, CSS.indexOf('\n}', start));
-})();
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
@@ -58,8 +51,8 @@ test('le ratio est calculé correctement (repères connus)', () => {
 });
 
 test('1.4.11 : le contour des commandes atteint 3:1 sur le fond du site', () => {
-  // Champs du formulaire de contact, boutons ronds pause/lecture, piste du
-  // curseur du showreel. `--gray-light` (1,18:1) y était utilisé à tort.
+  // Champs du formulaire de contact, bouton rond pause/lecture du bandeau
+  // de logos. `--gray-light` (1,18:1) y était utilisé à tort.
   const r = ratio(token('border-ui'), BLANC);
   assert.ok(r >= 3, `--border-ui sur --white : ${r.toFixed(2)}:1, minimum 3:1`);
 });
@@ -102,39 +95,14 @@ test('--gray-light reste réservé aux filets décoratifs', () => {
   const commandes = [
     /\.media-toggle\s*\{[^}]*border:[^;]*--gray-light/,
     /\.form-group input,\s*\.form-group textarea\s*\{[^}]*border-bottom:[^;]*--gray-light/,
-    /::-(?:webkit-slider-runnable|moz-range)-track\s*\{[^}]*background:\s*var\(--gray-light\)/,
   ];
   for (const re of commandes) {
     assert.ok(!re.test(CSS), `--gray-light est réutilisé sur une commande : ${re}`);
   }
 });
 
-/* ── Thème sombre (UI-06) ───────────────────────────────────────────── */
-
-test('thème sombre : chaque texte et chaque commande tient son seuil', () => {
-  const fond = token('white', DARK);
-  const seuils = {
-    black: 4.5, // texte courant
-    'gray-dark': 4.5,
-    'gray-mid': 4.5,
-    'accent-text': 4.5,
-    'error-text': 4.5,
-    'border-ui': 3, // 1.4.11, contour des commandes
-  };
-  for (const [nom, min] of Object.entries(seuils)) {
-    const r = ratio(token(nom, DARK), fond);
-    assert.ok(r >= min, `--${nom} sur le fond sombre : ${r.toFixed(2)}:1, minimum ${min}:1`);
-  }
-});
-
-test('thème sombre : --gray-light reste un filet, sous 3:1', () => {
-  const r = ratio(token('gray-light', DARK), token('white', DARK));
-  assert.ok(r < 3, `--gray-light sombre : ${r.toFixed(2)}:1`);
-});
-
-test('le texte posé sur les images ne suit pas le thème', () => {
-  // Les vignettes et la lightbox gardent un fond sombre dans les deux thèmes :
-  // --white y deviendrait un texte sombre sur fond sombre.
-  assert.ok(!/--on-media\s*:/.test(DARK), '--on-media ne doit pas être redéfini en sombre');
+test('le texte posé sur les images utilise --on-media', () => {
+  // --white est le fond de page ; sur une vignette, le texte clair a son
+  // propre jeton.
   assert.ok(!/\.work-title\s*\{[^}]*color:\s*var\(--white\)/.test(CSS), '.work-title doit utiliser --on-media');
 });
