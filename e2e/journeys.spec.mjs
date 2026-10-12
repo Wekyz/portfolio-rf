@@ -70,11 +70,10 @@ test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }, t
   await expect(modale).toHaveClass(/open/);
   await expect(page.locator('#lightboxTitle')).toHaveText(titreVignette.trim());
   await expect(page.locator('#lightboxMeta')).not.toBeEmpty();
-  await expect(page.locator('#lightboxSheet')).toHaveAttribute('href', /^\/fr\/portfolio\//);
 
   // Le clic simple n'a pas chargé de page, mais l'adresse est celle de la
   // fiche : elle se partage telle quelle.
-  const fiche = await page.locator('#lightboxSheet').getAttribute('href');
+  const fiche = await premier.getAttribute('href');
   expect(new URL(page.url()).pathname).toBe(fiche);
 
   await page.locator('#lightboxNext').click();
@@ -85,6 +84,26 @@ test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }, t
   await page.keyboard.press('Escape');
   await expect(modale).not.toHaveClass(/open/);
   await expect(page).toHaveURL(/\/fr\/portfolio$/);
+});
+
+test('la lightbox propose le lien externe du projet, et lui seul', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
+  await page.goto('/fr/portfolio');
+  // Aucun projet n'a aujourd'hui à la fois une vidéo et un lien externe : on
+  // en fabrique un à partir de la première vignette.
+  const premier = page.locator('.work-item[data-id]:not([data-id=""])').first();
+  await premier.evaluate((el) => {
+    el.dataset.external = 'https://www.primevideo.com/detail/exemple';
+  });
+  await premier.locator('a.work-thumb-wrap').click();
+  const lien = page.locator('#lightboxExt');
+  await expect(lien).toBeVisible();
+  await expect(lien).toHaveAttribute('href', 'https://www.primevideo.com/detail/exemple');
+  await expect(lien).toHaveAttribute('target', '_blank');
+
+  // Projet suivant, sans lien externe : le lien disparaît.
+  await page.locator('#lightboxNext').click();
+  await expect(lien).toBeHidden();
 });
 
 test('le bouton Retour ferme la vidéo au lieu de quitter le portfolio', async ({ page }, testInfo) => {
