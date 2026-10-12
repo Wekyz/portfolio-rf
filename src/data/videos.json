@@ -195,9 +195,12 @@
     {
       "cat": "doc",
       "title": "La France qui innove",
-      "production": "26 min",
+      "production": "",
       "director": "",
-      "format": null,
+      "format": {
+        "fr": "26 min",
+        "en": "26 min"
+      },
       "role": "",
       "year": "",
       "id": "1235061701",
