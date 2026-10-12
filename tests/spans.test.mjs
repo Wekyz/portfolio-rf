@@ -105,7 +105,7 @@ test('toutes les classes produites figurent dans ALL_GRID_CLASSES', () => {
   }
 });
 
-test('le rendu des 36 projets réels est figé', () => {
+test('le rendu des projets réels est figé', () => {
   const data = JSON.parse(
     readFileSync(new URL('../src/data/videos.json', import.meta.url), 'utf8')
   );
@@ -119,7 +119,8 @@ test('le rendu des 36 projets réels est figé', () => {
   assert.equal(placements.length, projects.length);
   assert.equal(
     empreinte,
-    '1ee31a91c24ca14a',
+    // 37 projets depuis l'ajout de « La France qui innove » (octobre 2026).
+    '7d7aa2e12a3510fa',
     'la disposition de la grille a changé. Si c’est voulu (nouveau projet, ' +
       'catégorie réordonnée, pattern modifié), remplacer cette empreinte ; ' +
       'sinon, c’est une régression de computeSpans.'

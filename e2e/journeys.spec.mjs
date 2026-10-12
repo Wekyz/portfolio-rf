@@ -31,6 +31,10 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
 
   const total = await page.locator('.work-item').count();
   expect(total).toBeGreaterThan(10);
+  // Compté dans la page plutôt qu'écrit en dur : la monteuse ajoute des
+  // projets depuis le CMS.
+  const docs = await page.locator('.work-item[data-cat="doc"]').count();
+  expect(docs).toBeGreaterThan(0);
 
   // Les boutons sont masqués sur mobile au profit du menu déroulant.
   if (testInfo.project.use.isMobile) {
@@ -40,7 +44,7 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   }
 
   const visibles = page.locator('.work-item:not(.hidden)');
-  await expect(visibles).toHaveCount(3);
+  await expect(visibles).toHaveCount(docs);
   for (const el of await visibles.all()) {
     await expect(el).toHaveAttribute('data-cat', 'doc');
   }
