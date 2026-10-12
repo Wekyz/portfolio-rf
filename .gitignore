@@ -6,8 +6,8 @@ dist/
 playwright-report/
 test-results/
 
-# Les caches de src/data/ (vimeo-thumbs, local-images, brands, content-dates)
-# sont générés par
+# Les caches de src/data/ (vimeo-thumbs, content-dates, showreel) sont générés
+# par
 # scripts/fetch-thumbs.mjs mais VERSIONNÉS, volontairement, pour deux raisons :
 #
 #  1. `npm run check` s'exécute avant `npm run build` en CI, donc avant que
@@ -55,3 +55,6 @@ env.local
 
 # Logs
 *.log
+
+# Lighthouse CI : rapports locaux (voir lighthouserc.cjs)
+.lighthouseci/

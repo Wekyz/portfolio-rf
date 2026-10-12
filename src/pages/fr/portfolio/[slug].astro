@@ -7,23 +7,28 @@
 import Base from '../../../layouts/Base.astro';
 import ProjectDetail from '../../../components/ProjectDetail.astro';
 import Contact from '../../../components/Contact.astro';
-import data from '../../../data/videos.json';
 import { projectRoutes } from '../../../lib/slug.js';
-import { buildProjectMeta, relatedProjects, buildBreadcrumb } from '../../../lib/project-page.js';
-import type { Project } from '../../../lib/types';
+import { localImages } from '../../../lib/images.js';
+import { getProjects } from '../../../lib/projects.js';
+import { buildProjectMeta, relatedProjects, siblingProjects, buildBreadcrumb } from '../../../lib/project-page.js';
 
 export function getStaticPaths() {
-  const routes = projectRoutes((data.videos || data) as Project[]);
+  const routes = projectRoutes(getProjects());
   return routes.map(({ project, slug }) => ({
     params: { slug },
-    props: { project, slug, related: relatedProjects(project, routes) },
+    props: {
+      project,
+      slug,
+      related: relatedProjects(project, routes),
+      siblings: siblingProjects(project, routes),
+    },
   }));
 }
 
-const { project, slug, related } = Astro.props;
-const meta = buildProjectMeta(project, slug, 'fr');
+const { project, slug, related, siblings } = Astro.props;
+const meta = buildProjectMeta(project, slug, 'fr', { local: localImages });
 ---
 <Base lang="fr" page="project" {...meta} breadcrumb={buildBreadcrumb(project, 'fr', slug)}>
-  <ProjectDetail project={project} related={related} lang="fr" />
+  <ProjectDetail project={project} related={related} siblings={siblings} lang="fr" />
   <Contact lang="fr" />
 </Base>

@@ -1,0 +1,107 @@
+---
+/**
+ * Sélection privée (AME-05) : une page par entrée de src/data/reviews.json,
+ * éditée dans le CMS (« Sélections privées »).
+ *
+ * Non indexée (noindex ici, X-Robots-Tag dans vercel.json), absente du
+ * sitemap et de llms.txt, liée de nulle part : l'adresse, qui contient un
+ * identifiant aléatoire, n'est connue que de qui l'a reçue. Ce n'est pas un
+ * contrôle d'accès, seulement une adresse impossible à deviner : les vidéos
+ * restent celles du portfolio, privées sur Vimeo et lisibles seulement
+ * depuis ce domaine.
+ *
+ * Une seule langue par page, choisie dans le CMS. `path=""` : le sélecteur de
+ * langue mène à l'accueil de l'autre langue, la page n'ayant pas d'équivalent.
+ */
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n/strings.js';
+import { activeReviews } from '../../lib/reviews.js';
+import { embedUrl } from '../../lib/project-page.js';
+import { creditLine } from '../../lib/credits.js';
+
+export function getStaticPaths() {
+  return activeReviews().map((review) => {
+    if (review.missing.length) {
+      console.warn(`[review] ${review.id} : projets introuvables (renommés ?) : ${review.missing.join(', ')}`);
+    }
+    return { params: { id: review.id }, props: { review } };
+  });
+}
+
+const { review } = Astro.props;
+const lang = review.lang;
+const t = useTranslations(lang);
+const base = lang === 'fr' ? '/fr' : '';
+// Découpage fait ici et non dans le template (même raison que dans
+// ProjectDetail.astro : `{2,}` y serait lu comme une expression).
+const paragraphs = (review.intro || '')
+  .split(/\n{2,}/)
+  .map((s) => s.trim())
+  .filter(Boolean);
+---
+<Base
+  lang={lang}
+  page="review"
+  title={`${review.title} - Roxane Foare`}
+  description={t('review.description')}
+  noindex
+  path=""
+>
+  <article class="review">
+    <p class="review-kicker">{t('review.kicker')}</p>
+    <h1 class="review-title">{review.title}</h1>
+    {paragraphs.length > 0 && (
+      <div class="review-intro">
+        {paragraphs.map((para) => <p>{para}</p>)}
+      </div>
+    )}
+
+    <ol class="review-list">
+      {review.items.map(({ project, slug }) => (
+        <li class="review-item">
+          <h2 class="review-item-title">{project.title}</h2>
+          <p class="review-item-meta">
+            {[creditLine(project, lang), project.year].filter(Boolean).join(' · ')}
+          </p>
+          <div class="project-player">
+            <iframe
+              src={embedUrl(project)}
+              title={`${project.title} - ${t('project.playerTitle')}`}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+          {slug && (
+            <a class="review-item-sheet" href={`${base}/portfolio/${slug}`}>{t('review.sheet')} &rarr;</a>
+          )}
+        </li>
+      ))}
+    </ol>
+
+    <p class="review-contact">
+      <a class="hero-cta-btn hero-cta-primary" href={`${base}/contact`}>{t('review.contact')}</a>
+    </p>
+  </article>
+</Base>
+
+<style>
+  /* Styles propres à cette page, et non dans styles.css : la feuille globale
+     est inlinée dans chacune des 75 pages, celle-ci ne sert qu'ici. */
+  .review { padding: 56px 56px 104px; max-width: 1180px; margin: 0 auto; }
+  .review-kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-text); }
+  .review-title {
+    font-family: var(--font-hennessy); font-weight: 400;
+    font-size: clamp(32px, 5vw, 56px); line-height: 1.1; margin: 12px 0 24px;
+  }
+  .review-intro { max-width: 680px; font-family: var(--font-hennessy); font-size: 17px; line-height: 1.7; color: var(--gray-dark); }
+  .review-intro p + p { margin-top: 1em; }
+  .review-list { list-style: none; display: flex; flex-direction: column; gap: 72px; margin-top: 64px; }
+  .review-item-title { font-family: var(--font-hennessy); font-weight: 400; font-size: 26px; }
+  .review-item-meta { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-mid); margin: 6px 0 16px; }
+  .review-item-sheet { display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--black); }
+  .review-contact { margin-top: 80px; }
+  @media (max-width: 900px) {
+    .review { padding-left: 24px; padding-right: 24px; }
+  }
+</style>

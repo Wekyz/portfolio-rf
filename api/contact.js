@@ -8,6 +8,8 @@
  *   RESEND_FROM               expéditeur vérifié, ex. "Portfolio <noreply@roxane-foare.com>"
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir ci-dessous) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
+ *   ALERT_WEBHOOK_URL         alerte immédiate en cas d'échec - optionnel,
+ *                             voir sendAlert dans _lib/observe.js
  *
  * Le `from` doit appartenir à un domaine vérifié dans Resend (SPF/DKIM).
  *
@@ -29,9 +31,11 @@
  * protégé par le honeypot + délai anti-bot déjà en place côté client).
  */
 import { createLimiter, clientIp, countRejection } from './_lib/limiter.js';
-import { verifyToken } from './_lib/form-token.js';
+import { verifyToken, consumeToken, releaseToken } from './_lib/form-token.js';
+import { suspicionReasons } from './_lib/spam.js';
 import { verifyTurnstile } from './_lib/turnstile.js';
 import { reportError, countSent, stashFailedMessage } from './_lib/observe.js';
+import { CONTACT_LIMITS } from '../src/lib/contact-limits.js';
 
 /**
  * Neutralise les retours à la ligne. Le sujet d'un email est un en-tête :
@@ -43,9 +47,37 @@ const headerSafe = (s) => s.replace(/[\r\n]+/g, ' ').trim();
 
 const ratelimit = createLimiter('contact-form', 5, '10 m');
 
+/**
+ * Origines autorisées à poster le formulaire. N'importe quel site pouvait
+ * jusqu'ici héberger un formulaire qui poste ici : le navigateur envoie
+ * l'en-tête Origin avec chaque POST, il suffit de le lire.
+ *
+ * Le domaine du site, et les adresses du déploiement en cours (previews de
+ * PR), que Vercel expose dans VERCEL_URL et VERCEL_BRANCH_URL. En dehors de
+ * la production, localhost aussi (`vercel dev`). Une requête SANS Origin
+ * (script serveur, outil en ligne de commande) n'est pas concernée : ce
+ * contrôle vise les formulaires tiers dans un navigateur, le reste est
+ * l'affaire du jeton, du délai et du captcha.
+ */
+export function allowedOrigin(origin, env = process.env) {
+  if (!origin) return true;
+  const allowed = new Set(['https://roxane-foare.com', 'https://www.roxane-foare.com']);
+  if (env.SITE_DOMAIN) allowed.add(env.SITE_DOMAIN.replace(/\/$/, ''));
+  for (const host of [env.VERCEL_URL, env.VERCEL_BRANCH_URL]) {
+    if (host) allowed.add(`https://${host}`);
+  }
+  if (allowed.has(origin)) return true;
+  return env.VERCEL_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!allowedOrigin(req.headers.origin)) {
+    countRejection('bad-origin');
+    return res.status(403).json({ code: 'bad-origin', error: 'Origine non autorisée.' });
   }
 
   if (ratelimit) {
@@ -76,20 +108,31 @@ export default async function handler(req, res) {
 
   // Longueurs maximales. Il n'y en avait aucune : un prénom de 100 000
   // caractères partait tel quel dans le sujet de l'email.
-  const TOO_LONG = [
-    firstName.length > 100,
-    lastName.length > 100,
-    email.length > 254, // RFC 5321
-    message.length > 5000,
-  ].some(Boolean);
-  if (TOO_LONG) {
+  //
+  // `field` nomme le champ fautif (attribut `name`) : le client le signale et
+  // y place le focus, au lieu d'un « un des champs » à deviner.
+  const values = { 'first-name': firstName, 'last-name': lastName, email, message };
+  const tooLong = Object.keys(CONTACT_LIMITS).find((name) => values[name].length > CONTACT_LIMITS[name]);
+  if (tooLong) {
     countRejection('too-long');
-    return res.status(413).json({ code: 'too-long', error: 'Un des champs dépasse la longueur autorisée.' });
+    return res.status(413).json({
+      code: 'too-long',
+      field: tooLong,
+      max: CONTACT_LIMITS[tooLong],
+      error: 'Un des champs dépasse la longueur autorisée.',
+    });
   }
 
-  if (!firstName || !lastName || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+  const invalid = !firstName
+    ? 'first-name'
+    : !lastName
+      ? 'last-name'
+      : !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+        ? 'email'
+        : null;
+  if (invalid) {
     countRejection('invalid-fields');
-    return res.status(400).json({ code: 'invalid-fields', error: 'Champs requis manquants ou email invalide.' });
+    return res.status(400).json({ code: 'invalid-fields', field: invalid, error: 'Champs requis manquants ou email invalide.' });
   }
 
   // Délai anti-bot vérifié côté serveur : le contrôle des 3 secondes vivait
@@ -121,8 +164,22 @@ export default async function handler(req, res) {
   // le captcha en silence, sans que personne ne puisse le constater.
   if (captcha === 'unreachable') {
     countRejection('captcha-unreachable');
-    reportError('turnstile-unreachable', 'envoi accepté sans vérification');
+    await reportError('turnstile-unreachable', 'envoi accepté sans vérification');
   }
+
+  // Jeton à usage unique, consommé seulement maintenant que tout le reste est
+  // validé : un refus plus haut (champ manquant, captcha) ne le brûle pas.
+  // Le client, sur `bad-token`, en redemande un et renvoie une fois (app.js).
+  if (tokenState === 'ok' && !(await consumeToken(body.formToken))) {
+    countRejection('token-reused');
+    return res.status(400).json({ code: 'bad-token', error: 'Ce formulaire a déjà été envoyé.' });
+  }
+  // Rend le jeton en cas d'échec d'envoi : le visiteur doit pouvoir réessayer.
+  const release = () => (tokenState === 'ok' ? releaseToken(body.formToken) : Promise.resolve());
+
+  // Indices de spam : signalés, jamais rejetés (voir _lib/spam.js).
+  const suspect = suspicionReasons({ firstName, lastName, email, message });
+  if (suspect.length) countRejection('suspect');
 
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_EMAIL;
@@ -130,8 +187,9 @@ export default async function handler(req, res) {
   if (!apiKey || !to) {
     // Panne silencieuse la plus probable : une variable d'environnement
     // supprimée ou expirée. Rien ne cassait au build, donc rien ne prévenait.
-    reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
+    await reportError('config-missing', !apiKey ? 'RESEND_API_KEY' : 'CONTACT_EMAIL');
     stashFailedMessage({ firstName, lastName, email, message });
+    await release();
     return res.status(500).json({ code: 'unavailable', error: 'Service email non configuré.' });
   }
 
@@ -146,22 +204,26 @@ export default async function handler(req, res) {
         from,
         to: [to],
         reply_to: email,
-        subject: headerSafe(`Nouveau message - ${firstName} ${lastName}`),
-        text: `De : ${firstName} ${lastName} <${email}>\n\n${message || '(aucun message)'}`,
+        subject: headerSafe(`${suspect.length ? '[suspect] ' : ''}Nouveau message - ${firstName} ${lastName}`),
+        text:
+          `De : ${firstName} ${lastName} <${email}>\n\n${message || '(aucun message)'}` +
+          (suspect.length ? `\n\n-- \nMarqué suspect par le site : ${suspect.join(', ')}. Envoyé quand même, au cas où.` : ''),
       }),
     });
     if (!r.ok) {
       // Quota atteint, clé révoquée, domaine dévérifié : Resend le dit par un
       // code HTTP que personne ne lisait.
-      reportError('resend-http', `HTTP ${r.status}`);
+      await reportError('resend-http', `HTTP ${r.status}`);
       stashFailedMessage({ firstName, lastName, email, message });
+      await release();
       return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
     }
     countSent();
     return res.status(200).json({ ok: true });
   } catch (err) {
-    reportError('resend-network', err?.message || 'fetch échoué');
+    await reportError('resend-network', err?.message || 'fetch échoué');
     stashFailedMessage({ firstName, lastName, email, message });
+    await release();
     return res.status(502).json({ code: 'send-failed', error: 'Envoi impossible.' });
   }
 }

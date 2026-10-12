@@ -1,0 +1,31 @@
+---
+/**
+ * Image de vignette ou de logo. Quand lib/images.js fournit des variantes
+ * AVIF (images locales de src/assets/), l'image est enveloppée d'un <picture>
+ * qui les propose en premier ; le navigateur qui ne lit pas l'AVIF prend le
+ * <img> en WebP. Les vignettes Vimeo n'en ont pas : rendu identique à un
+ * simple <img>.
+ *
+ * Tous les attributs autres que `avifSrcset` sont posés sur le <img> (class,
+ * alt, loading, dimensions...), si bien que les sélecteurs CSS existants
+ * (.work-thumb, .brand-logo img) s'appliquent sans changement. Le <picture>
+ * est neutralisé en mise en page (display: contents, voir styles.css).
+ */
+interface Props {
+  src: string;
+  srcset?: string;
+  avifSrcset?: string;
+  sizes?: string;
+  [attr: string]: unknown;
+}
+
+const { avifSrcset, sizes, ...rest } = Astro.props;
+---
+{avifSrcset ? (
+  <picture>
+    <source type="image/avif" srcset={avifSrcset} sizes={sizes} />
+    <img sizes={sizes} {...rest} />
+  </picture>
+) : (
+  <img sizes={sizes} {...rest} />
+)}

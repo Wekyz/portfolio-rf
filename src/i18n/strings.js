@@ -49,6 +49,7 @@ export const ui = {
 
     // Nav
     'nav.sub': 'Video Editor',
+    'nav.aria': 'Main navigation',
     'nav.home': 'Home',
     'nav.work': 'Portfolio',
     'nav.about': 'About',
@@ -94,11 +95,26 @@ export const ui = {
     // Pages projet (/portfolio/[slug])
     'project.breadcrumb': 'Breadcrumb',
     'project.production': 'Production',
+    'project.director': 'Director',
+    'project.format': 'Format',
+    'project.role': 'Role',
+    // Séparateur libellé/valeur : pas d'espace avant les deux-points en
+    // anglais, une espace en français.
+    'ui.colon': ': ',
     'project.year': 'Year',
     'project.duration': 'Duration',
     'project.category': 'Category',
     'project.watchFull': 'Watch the full film',
     'project.related': 'More in this category',
+    'review.kicker': 'Private selection',
+    'review.description': 'A selection of projects edited by Roxane Foare.',
+    'review.sheet': 'Project page',
+    'review.contact': 'Get in touch',
+    'project.prev': 'Previous project',
+    'project.next': 'Next project',
+    'project.pagerAria': 'Other projects in this category',
+    'project.copyLink': 'Copy link',
+    'project.copied': 'Link copied',
     'project.playerTitle': 'Video player',
     'project.awards': 'Awards',
     'project.titleSuffix': 'Roxane Foare, Video Editor',
@@ -143,18 +159,30 @@ export const ui = {
     'contact.lastName': 'Last name',
     'contact.email': 'Email',
     'contact.message': 'Message',
+    'contact.optional': 'optional',
     'contact.firstNamePh': 'Marie',
     'contact.lastNamePh': 'Dupont',
     'contact.emailPh': 'marie@studio.com',
     'contact.messagePh': 'Tell me about your project…',
     'contact.send': 'Send',
     'contact.honeypot': "Don't fill this out:",
+    'contact.copy': 'Copy',
+    'contact.copied': 'Copied',
+    'contact.copyAria': 'Copy the email address',
+    'contact.sent': 'Message sent.',
+    'contact.sentSub': "Thank you, I'll get back to you shortly.",
+    'contact.again': 'Write another message',
     'contactPage.title': 'Contact - Roxane Foare, Video Editor',
     'contactPage.description': 'Get in touch with Roxane Foare, freelance video editor based in Paris & Angers. Contact form, email and practical details.',
     'contactPage.area': 'Working area',
     'contactPage.languages': 'Languages',
     'contactPage.languagesValue': 'French, English',
     'contactPage.elsewhere': 'Elsewhere',
+    'contactPage.turnaround': 'Turnaround',
+    'contactPage.remote': 'Workplace',
+    'contactPage.deliverables': 'Deliverables',
+    'contactPage.review': 'Review tools',
+    'contactPage.travel': 'Travel',
 
     // Footer
     'footer.rights': 'All rights reserved',
@@ -164,7 +192,7 @@ export const ui = {
     'footer.legalAria': 'Legal pages',
 
     // Lightbox
-    'lb.dialog': 'Video player - press Escape to close',
+    'lb.hint': 'Video player. Press Escape to close.',
     'lb.close': 'Close video',
     'lb.frameTitle': 'Vimeo video player',
     'lb.prev': 'Previous project',
@@ -192,8 +220,13 @@ export const ui = {
 
     // Nav
     'nav.sub': 'Monteuse vidéo',
+    'nav.aria': 'Navigation principale',
     'nav.home': 'Accueil',
-    'nav.work': 'Projets',
+    // « Portfolio » et non « Projets » : c'est le mot de l'URL, du <title> et
+    // du bouton de l'accueil, et il se cherche aussi en français. La page
+    // s'appelait « Projets » dans le menu et le H1, « Portfolio » partout
+    // ailleurs.
+    'nav.work': 'Portfolio',
     'nav.about': 'À propos',
     'nav.contact': 'Contact',
     'nav.langLabel': 'EN',
@@ -212,7 +245,7 @@ export const ui = {
     'featured.all': 'Voir tous les projets',
 
     // Work
-    'work.title': 'Projets',
+    'work.title': 'Portfolio',
     'work.location': 'Paris · Angers · Monde',
     'work.filterAria': 'Filtrer les projets par catégorie',
     'work.watch': 'Voir',
@@ -234,11 +267,24 @@ export const ui = {
     // Pages projet (/portfolio/[slug])
     'project.breadcrumb': "Fil d'Ariane",
     'project.production': 'Production',
+    'project.director': 'Réalisation',
+    'project.format': 'Format',
+    'project.role': 'Rôle',
+    'ui.colon': ' : ',
     'project.year': 'Année',
     'project.duration': 'Durée',
     'project.category': 'Catégorie',
     'project.watchFull': 'Voir le film complet',
     'project.related': 'Dans la même catégorie',
+    'review.kicker': 'Sélection privée',
+    'review.description': 'Une sélection de projets montés par Roxane Foare.',
+    'review.sheet': 'Voir la fiche',
+    'review.contact': 'Prendre contact',
+    'project.prev': 'Projet précédent',
+    'project.next': 'Projet suivant',
+    'project.pagerAria': 'Autres projets de la catégorie',
+    'project.copyLink': 'Copier le lien',
+    'project.copied': 'Lien copié',
     'project.playerTitle': 'Lecteur vidéo',
     'project.awards': 'Distinctions',
     'project.titleSuffix': 'Roxane Foare, Monteuse vidéo',
@@ -280,12 +326,16 @@ export const ui = {
     'contact.lastName': 'Nom',
     'contact.email': 'Email',
     'contact.message': 'Message',
+    'contact.optional': 'facultatif',
     'contact.firstNamePh': 'Marie',
     'contact.lastNamePh': 'Dupont',
     'contact.emailPh': 'marie@studio.com',
     'contact.messagePh': 'Parlez-moi de votre projet…',
     'contact.send': 'Envoyer',
     'contact.honeypot': 'Ne remplissez pas ce champ :',
+    'contact.copy': 'Copier',
+    'contact.copied': 'Copié',
+    'contact.copyAria': "Copier l'adresse e-mail",
     'contact.sent': 'Message envoyé.',
     'contact.sentSub': 'Merci - je vous réponds au plus vite.',
     'contact.again': 'Écrire un autre message',
@@ -295,6 +345,11 @@ export const ui = {
     'contactPage.languages': 'Langues',
     'contactPage.languagesValue': 'Français, anglais',
     'contactPage.elsewhere': 'Ailleurs',
+    'contactPage.turnaround': 'Délais',
+    'contactPage.remote': 'Lieu de travail',
+    'contactPage.deliverables': 'Formats livrés',
+    'contactPage.review': 'Validation',
+    'contactPage.travel': 'Déplacements',
 
     // Footer
     'footer.rights': 'Tous droits réservés',
@@ -304,7 +359,7 @@ export const ui = {
     'footer.legalAria': 'Pages légales',
 
     // Lightbox
-    'lb.dialog': 'Lecteur vidéo - appuyez sur Échap pour fermer',
+    'lb.hint': 'Lecteur vidéo. Appuyez sur Échap pour fermer.',
     'lb.close': 'Fermer la vidéo',
     'lb.frameTitle': 'Lecteur vidéo Vimeo',
     'lb.prev': 'Projet précédent',
@@ -315,11 +370,23 @@ export const ui = {
 
 /**
  * Renvoie une fonction de traduction pour la langue donnee (repli sur l'anglais).
+ *
+ * Une clé absente des deux dictionnaires était rendue telle quelle : la
+ * confirmation d'envoi du formulaire affichait "contact.sent" à tout visiteur
+ * anglophone, sans que le build ne dise rien. Elle fait désormais échouer le
+ * build de production, et reste un simple avertissement en développement
+ * (et dans les tests, où `import.meta.env` n'existe pas).
+ *
  * @param {'en'|'fr'} lang
  */
 export function useTranslations(lang) {
   const dict = ui[lang] || ui[defaultLang];
   return function t(key) {
-    return dict[key] ?? ui[defaultLang][key] ?? key;
+    const value = dict[key] ?? ui[defaultLang][key];
+    if (value !== undefined) return value;
+    const message = `[i18n] clé de traduction absente : "${key}" (${lang})`;
+    if (import.meta.env?.PROD) throw new Error(message);
+    globalThis.console.warn(message);
+    return key;
   };
 }

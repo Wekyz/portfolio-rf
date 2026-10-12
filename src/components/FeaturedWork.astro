@@ -18,9 +18,11 @@
  */
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
 import { buildSlugMap } from '../lib/slug.js';
-import data from '../data/videos.json';
-import type { Project } from '../lib/types';
+import { getProjects } from '../lib/projects.js';
+import { creditLine } from '../lib/credits.js';
 
 interface Props {
   lang?: 'en' | 'fr';
@@ -31,7 +33,7 @@ const t = useTranslations(lang);
 const langBase = lang === 'fr' ? '/fr' : '';
 
 const LIMIT = 3;
-const projects = (data.videos || data) as Project[];
+const projects = getProjects();
 const slugMap = buildSlugMap(projects);
 
 const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, LIMIT);
@@ -45,15 +47,16 @@ const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, L
 
     <ul class="featured-grid">
       {featured.map((p, i) => {
-        const { src, srcset } = resolveThumb(p);
+        const { src, srcset, avifSrcset } = resolveThumb(p, { local: localImages });
         return (
           <li>
             <a href={`${langBase}/portfolio/${slugMap.get(p)}`}>
               {src && (
-                <img
+                <Thumb
                   src={src}
                   srcset={srcset}
-                  sizes="(max-width: 900px) 100vw, 33vw"
+                  avifSrcset={avifSrcset}
+                  sizes="(max-width: 900px) 100vw, calc((100vw - 160px) / 3)"
                   alt={p.title}
                   loading={i === 0 ? 'eager' : 'lazy'}
                   decoding="async"
@@ -63,7 +66,7 @@ const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, L
               )}
               <span class="featured-name">{p.title}</span>
               <span class="featured-meta">
-                {[p.credit, p.year].filter(Boolean).join(' · ')}
+                {[creditLine(p, lang), p.year].filter(Boolean).join(' · ')}
               </span>
             </a>
           </li>

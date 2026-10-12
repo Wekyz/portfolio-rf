@@ -7,7 +7,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/contact.js';
+import handler, { allowedOrigin } from '../api/contact.js';
 import { issueToken } from '../api/_lib/form-token.js';
 
 // Clé de signature explicite, posée avant toute fabrication de jeton : sans
@@ -207,6 +207,17 @@ test('un champ démesuré est refusé en 413, sans rien envoyer', async () => {
 test('un message de plus de 5000 caractères est refusé', async () => {
   const { res } = await withResend(valid({ message: 'x'.repeat(5001) }));
   assert.equal(res.statusCode, 413);
+  // Le champ et la limite sont nommés : le client les affiche (UX-02).
+  assert.equal(res.body.field, 'message');
+  assert.equal(res.body.max, 5000);
+});
+
+test('un refus de validation désigne le champ en cause', async () => {
+  const sansNom = await withResend(valid({ 'last-name': '' }));
+  assert.equal(sansNom.res.statusCode, 400);
+  assert.equal(sansNom.res.body.field, 'last-name');
+  const mauvaisEmail = await withResend(valid({ email: 'pas-un-email' }));
+  assert.equal(mauvaisEmail.res.body.field, 'email');
 });
 
 test('une adresse de plus de 254 caractères est refusée', async () => {
@@ -285,4 +296,38 @@ test('jeton périmé au-delà de deux heures : refusé', async () => {
     delete process.env.RESEND_API_KEY;
   }
   assert.equal(res.statusCode, 400);
+});
+
+/* ── Origine (SEC-08) ───────────────────────────────────────────────── */
+
+test('un formulaire hébergé sur un autre site est refusé en 403', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { origin: 'https://site-tiers.example' }, body: '{}' }, res);
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.code, 'bad-origin');
+});
+
+test('origines autorisées : le site, le déploiement en cours, localhost hors production', () => {
+  const env = { VERCEL_URL: 'portfolio-rf-abc123.vercel.app', VERCEL_ENV: 'preview' };
+  assert.ok(allowedOrigin('https://roxane-foare.com', env));
+  assert.ok(allowedOrigin('https://portfolio-rf-abc123.vercel.app', env));
+  assert.ok(allowedOrigin('http://localhost:3000', env));
+  assert.ok(allowedOrigin(undefined, env), 'sans en-tête Origin : pas concerné');
+  assert.ok(!allowedOrigin('https://autre-projet.vercel.app', env));
+  assert.ok(!allowedOrigin('http://localhost:3000', { VERCEL_ENV: 'production' }));
+  assert.ok(!allowedOrigin('https://roxane-foare.com.example', env));
+});
+
+/* ── Indices de spam (ANT-03) ───────────────────────────────────────── */
+
+test('un message suspect part quand même, marqué dans le sujet et le texte', async () => {
+  const { res, sent } = await withResend(valid({ message: 'Cheap SEO and backlinks for your site' }));
+  assert.equal(res.statusCode, 200);
+  assert.match(sent.subject, /^\[suspect\] /);
+  assert.match(sent.text, /mots-cles/);
+});
+
+test('un message ordinaire n’est pas marqué', async () => {
+  const { sent } = await withResend(valid());
+  assert.doesNotMatch(sent.subject, /suspect/);
 });

@@ -2,6 +2,7 @@
 // Section Accueil : showreel Vimeo en boucle (format cinéma 1920×803) + CTA
 // vers les pages Portfolio et About.
 import { useTranslations } from '../i18n/strings.js';
+import { SHOWREEL } from '../data/profile.js';
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const base = lang === 'fr' ? '/fr' : '';
@@ -27,20 +28,47 @@ const base = lang === 'fr' ? '/fr' : '';
 // `background=1` le lecteur Vimeo n'affiche aucune commande, s'y arrêter ne
 // mènerait nulle part - les commandes sont posées à côté, en HTML (voir
 // `.showreel-controls` plus bas), et ce sont elles qui reçoivent le focus.
-const VIMEO_ID = '1211961310';
-const VIMEO_HASH = '33632a8dbb';
-const embedSrc = `https://player.vimeo.com/video/${VIMEO_ID}?h=${VIMEO_HASH}&background=1&autoplay=1&loop=1&muted=1`;
+//
+// Chargement différé (façade) : le lecteur pesait 1,4 Mo sur les 1,44 Mo de
+// la page, téléchargés dès l'arrivée et en concurrence avec tout le reste.
+// L'iframe est rendue SANS `src` : app.js l'injecte une fois la page chargée,
+// pendant un temps mort du navigateur. En attendant, une image tirée de la
+// miniature Vimeo occupe le cadre (générée par scripts/fetch-thumbs.mjs) et
+// devient l'élément LCP, en 16 Ko. Le lecteur apparaît en fondu au début de
+// la lecture ; s'il ne démarre jamais (bloqueur, réseau), l'image reste.
+// `dnt=1` : pas de cookie de mesure d'audience Vimeo (voir embedUrl dans
+// lib/project-page.js).
+const embedSrc = `https://player.vimeo.com/video/${SHOWREEL.id}?h=${SHOWREEL.hash}&background=1&autoplay=1&loop=1&muted=1&dnt=1`;
 ---
 <section id="hero" class="hero">
-  <div class="showreel">
+  <div class="showreel" id="showreel">
+    <img
+      class="showreel-poster"
+      src="/showreel/poster-1920.webp"
+      srcset="/showreel/poster-960.webp 960w, /showreel/poster-1920.webp 1920w"
+      sizes="100vw"
+      alt=""
+      width="1920"
+      height="803"
+      fetchpriority="high"
+    />
     <iframe
       class="showreel-frame"
-      src={embedSrc}
+      data-src={embedSrc}
       title={t('hero.showreelLabel')}
       allow="autoplay; fullscreen"
-      loading="eager"
       tabindex="-1"
     ></iframe>
+    {/* Sans JavaScript, le lecteur est chargé directement, comme avant. */}
+    <noscript>
+      <iframe
+        class="showreel-frame showreel-frame-static"
+        src={embedSrc}
+        title={t('hero.showreelLabel')}
+        allow="autoplay; fullscreen"
+        tabindex="-1"
+      ></iframe>
+    </noscript>
   </div>
 
   {/* Commandes du showreel. WCAG 2.2.2 : un contenu animé lancé

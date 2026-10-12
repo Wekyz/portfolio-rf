@@ -17,6 +17,7 @@
  * devraient pas partager la même origine.
  */
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { redis as sharedRedis } from './limiter.js';
 
 const MIN_AGE_MS = 3_000;
 const MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 h : au-delà, l'onglet a dormi
@@ -59,4 +60,34 @@ export function verifyToken(token, now = Date.now()) {
   if (age < MIN_AGE_MS) return 'too-fast';
   if (age > MAX_AGE_MS) return 'expired';
   return 'ok';
+}
+
+/**
+ * Usage unique (ANT-02). Un jeton restait valable deux heures pour autant
+ * d'envois qu'on voulait : seul Turnstile, lui-même à usage unique, empêchait
+ * un robot de répéter un envoi avec un seul jeton. Si le captcha est un jour
+ * désactivé, ce verrou tient seul.
+ *
+ * La signature est marquée « consommée » (SET NX, durée de vie égale à celle
+ * du jeton) au moment où l'envoi est accepté. Sans Upstash, rien n'est
+ * vérifié : comme pour le limiteur, un formulaire qui fonctionne vaut mieux
+ * qu'un formulaire bloqué.
+ *
+ * @returns {Promise<boolean>} false si le jeton a déjà servi
+ */
+export async function consumeToken(token, redis = sharedRedis) {
+  if (!redis || typeof token !== 'string') return true;
+  const sig = token.slice(token.indexOf('.') + 1);
+  try {
+    const first = await redis.set(`formtoken:${sig}`, 1, { nx: true, ex: MAX_AGE_MS / 1000 });
+    return first !== null;
+  } catch {
+    return true;
+  }
+}
+
+/** Rend un jeton réutilisable quand l'envoi a échoué : le visiteur réessaie. */
+export async function releaseToken(token, redis = sharedRedis) {
+  if (!redis || typeof token !== 'string') return;
+  await redis.del(`formtoken:${token.slice(token.indexOf('.') + 1)}`).catch(() => {});
 }

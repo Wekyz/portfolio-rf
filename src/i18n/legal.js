@@ -112,10 +112,17 @@ export const legalPages = {
         'Traitement des données personnelles au sens du Règlement général sur la protection des données (RGPD).',
       sections: [
         {
-          title: 'Aucun cookie',
+          title: 'Cookies',
           paragraphs: [
-            "Ce site ne dépose aucun cookie et n'utilise aucun traceur publicitaire. Aucune bannière de consentement n'est donc nécessaire.",
-            "La mesure d'audience repose sur Vercel Web Analytics, qui fonctionne sans cookie et sans identifiant persistant. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
+            "Ce site ne dépose lui-même aucun cookie et n'utilise aucun traceur publicitaire. Le seul cookie possible vient du lecteur vidéo (voir ci-dessous) et il est strictement nécessaire : aucune bannière de consentement n'est donc requise.",
+            "La mesure d'audience repose sur Vercel Web Analytics, et la mesure de la vitesse d'affichage des pages sur Vercel Speed Insights. Les deux fonctionnent sans cookie et sans identifiant persistant. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
+          ],
+        },
+        {
+          title: 'Lecteur vidéo Vimeo',
+          paragraphs: [
+            "Les vidéos sont lues par le lecteur de Vimeo, intégré à l'accueil, au portfolio et aux pages des projets, et leurs images sont servies par Vimeo. Le lecteur est configuré pour ne pas suivre les visiteurs : il ne dépose pas le cookie de mesure d'audience de Vimeo. Il peut déposer un cookie technique de sécurité, __cf_bm, posé par Cloudflare pour le compte de Vimeo pour une durée de 30 minutes, strictement nécessaire à la diffusion des vidéos.",
+            "Pour vous servir les vidéos et leurs images, Vimeo reçoit votre adresse IP et des données techniques relatives à votre navigateur. Vimeo, Inc. est établie aux États-Unis : ce transfert est encadré par le Data Privacy Framework UE-États-Unis, auquel Vimeo adhère. La base légale est l'intérêt légitime de l'éditrice à présenter ses réalisations.",
           ],
         },
         ...captchaSection(true),
@@ -196,10 +203,17 @@ export const legalPages = {
         'Processing of personal data under the General Data Protection Regulation (GDPR).',
       sections: [
         {
-          title: 'No cookies',
+          title: 'Cookies',
           paragraphs: [
-            'This site sets no cookies and uses no advertising trackers. No consent banner is therefore required.',
-            'Audience measurement relies on Vercel Web Analytics, which works without cookies and without persistent identifiers. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
+            'This site sets no cookies of its own and uses no advertising trackers. The only possible cookie comes from the video player (see below) and is strictly necessary, so no consent banner is required.',
+            'Audience measurement relies on Vercel Web Analytics, and page speed measurement on Vercel Speed Insights. Both work without cookies and without persistent identifiers. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
+          ],
+        },
+        {
+          title: 'Vimeo video player',
+          paragraphs: [
+            'Videos are played by the Vimeo player, embedded on the home page, the portfolio and the project pages, and their images are served by Vimeo. The player is set not to track visitors: it does not set Vimeo’s audience measurement cookie. It may set a technical security cookie, __cf_bm, placed by Cloudflare on Vimeo’s behalf for 30 minutes and strictly necessary to deliver the videos.',
+            'To serve the videos and their images, Vimeo receives your IP address and technical data about your browser. Vimeo, Inc. is established in the United States: this transfer is governed by the EU-U.S. Data Privacy Framework, in which Vimeo participates. The legal basis is the publisher’s legitimate interest in presenting her work.',
           ],
         },
         ...captchaSection(false),

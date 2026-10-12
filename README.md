@@ -83,19 +83,25 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ pages/fr/portfolio.astro # Portfolio FR (/fr/portfolio)
 │  ├─ pages/fr/portfolio/[slug].astro # Pages projet FR (/fr/portfolio/<slug>)
 │  ├─ pages/fr/about.astro     # About FR (/fr/about)
+│  ├─ pages/review/[id].astro  # sélections privées (/review/<id>, noindex, éditées dans le CMS)
 │  ├─ pages/sitemap.xml.js     # sitemap généré au build (pages fixes + pages projet)
 │  ├─ layouts/Base.astro       # document complet + <head> (SEO, OG, JSON-LD), paramétré par langue + page
 │  ├─ i18n/strings.js          # dictionnaire de traductions EN / FR
 │  ├─ components/              # Nav, Hero, Work, WorkItem, ProjectDetail, About, Contact, Footer, Lightbox
+│  ├─ lib/projects.js          # getProjects() : lecture typée de videos.json, seul point d'accès
+│  ├─ lib/page-dates.js        # dates réelles par page (lastmod du sitemap, dateModified) - pages fixes à tenir à la main
 │  ├─ lib/spans.js             # pattern de grille (build + client)
 │  ├─ lib/slug.js              # slugs des pages projet (dérivés du titre, unicité garantie)
 │  ├─ lib/project-page.js      # métadonnées + JSON-LD VideoObject d'une page projet
 │  ├─ lib/thumb.js             # résolution src/srcset miniature (Vimeo CDN ou override local)
+│  ├─ lib/images.js            # images locales (src/assets/live, src/assets/brands) déclinées par astro:assets, WebP + AVIF
+│  ├─ assets/                  # sources de ces images (vignettes posées dans le CMS, logos)
 │  ├─ scripts/app.js           # interactivité client (filtres, lightbox, form)
 │  ├─ styles/styles.css        # feuille de style du site
 │  ├─ data/videos.json         # données projets (éditées via le CMS)
+│  ├─ data/profile.js          # IMDb, logiciels, productions, marques (À propos + llms-full.txt)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
-├─ public/                     # live/, admin/ (CMS + redeploy.html), polices, favicons, og-image
+├─ public/                     # admin/ (CMS + redeploy.html), polices, favicons, icônes, og-image (EN) et og-image-fr, showreel/ (image d'ouverture, générée)
 ├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)
 ├─ tests/                      # tests fumée (node:test)
 ├─ scripts/fetch-thumbs.mjs    # résolution des miniatures Vimeo au build
@@ -142,11 +148,12 @@ clé hors `source`/`headers`/`has`/`missing`), d'où cette note. Trois politique
 | Ressource | Politique | Pourquoi |
 |---|---|---|
 | `/_astro/`, `*.woff2` | `immutable`, 1 an | Nom porteur d'une empreinte de contenu : un changement produit un nouveau nom. |
-| `/live/`, `/brands/`, favicons, `og-image.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
+| `/showreel/`, favicons, icônes, `og-image.jpg`, `og-image-fr.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
 | HTML | `max-age=0, must-revalidate` (défaut Vercel) | Le contenu change à chaque publication CMS. L'edge Vercel le met **déjà** en cache de lui-même (`X-Vercel-Cache: HIT`), il n'y a donc rien à ajouter côté CDN. |
 
-Sans la règle `/brands/`, les 93 fichiers de logos étaient revalidés à chaque
-visite de la page À propos.
+Les vignettes posées à la main et les logos ne sont plus dans `public/` : ils
+passent par astro:assets (`src/assets/`, voir `src/lib/images.js`) et sortent
+sous `/_astro/`, avec empreinte et cache d'un an, en WebP et en AVIF.
 
 ## Déploiement
 
@@ -154,17 +161,33 @@ visite de la page À propos.
 le déploiement** (Root Directory = racine du dépôt, framework Astro,
 `npm run build`, sortie `dist/`). Les headers/CSP/cache sont définis dans
 [`vercel.json`](vercel.json) et les fonctions serverless dans [`api/`](api/).
-La CI (`.github/workflows/ci.yml`) fait build + tests + `npm audit` sur chaque
-push/PR vers `main`.
+La CI (`.github/workflows/ci.yml`) tourne sur chaque push/PR vers `main` :
+lint, types, build, validation HTML (`npm run validate:html`), tests unitaires
+(dont liens internes et JSON-LD sur `dist/`), parcours Playwright et axe sur
+Chromium, audit npm bloquant pour les dépendances de production. Chaque lundi
+s'y ajoutent Safari iOS (WebKit) et les liens externes (lychee, non bloquant).
+Actions épinglées par SHA.
+
+Chaque déploiement Vercel (preview ou production) est contrôlé par
+`.github/workflows/deployment.yml` : en-têtes, redirections, fonctions
+(`scripts/check-deployment.mjs`, lançable à la main sur n'importe quelle URL)
+et Lighthouse CI sur trois pages (`lighthouserc.cjs`). Si la protection des
+previews est active, ajouter le secret de dépôt
+`VERCEL_AUTOMATION_BYPASS_SECRET`.
 
 Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
 `CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`, `DEPLOY_HOOK_URL`,
-**`REDEPLOY_TOKEN`**. Rate limiting du formulaire et du bouton de
+**`REDEPLOY_TOKEN`** (32 caractères minimum, sinon l'administration reste
+fermée ; 5 essais ratés par heure et par IP). Rate limiting du formulaire et du bouton de
 redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
 `UPSTASH_REDIS_REST_TOKEN` (intégration Vercel Marketplace Upstash).
 Signature du jeton anti-bot du formulaire (recommandé) : `FORM_SECRET` - à
 défaut, la clé se dérive de `RESEND_API_KEY`, de toute façon nécessaire pour
 que le formulaire fonctionne (voir `api/_lib/form-token.js`).
+Alerte immédiate quand un envoi échoue (optionnel) : `ALERT_WEBHOOK_URL`, une
+adresse ntfy.sh (ex. `https://ntfy.sh/un-sujet-difficile-a-deviner`, puis
+s'abonner à ce sujet dans l'application ntfy), ou un webhook Discord ou Slack
+(voir `sendAlert` dans `api/_lib/observe.js`).
 
 **Version de Node.** `engines.node` (`package.json`) fait autorité : la
 documentation Vercel précise qu'il **prime sur le réglage Node.js du projet**.
@@ -201,8 +224,16 @@ Trois couches, de la plus discrète à la plus visible :
 
 Chaque rejet incrémente un compteur mensuel dans Upstash, sous
 `abuse:AAAA-MM:<motif>` (`honeypot`, `rate-limit`, `too-fast`, `bad-token`,
-`too-long`, `invalid-fields`, `captcha-*`). Sans ça, aucune trace ne permettait
-de savoir si le dispositif était surdimensionné ou déjà dépassé.
+`token-reused`, `too-long`, `invalid-fields`, `captcha-*`, `bad-origin`,
+`suspect`), conservé 400 jours. Sans ça, aucune trace ne permettait de savoir
+si le dispositif était surdimensionné ou déjà dépassé.
+
+Le jeton du formulaire ne sert qu'une fois (rendu si l'envoi échoue). Les
+messages qui ressemblent à du spam (plus de deux liens, alphabet cyrillique
+ou chinois/japonais/coréen, prénom identique au nom, démarchage SEO ou
+crypto) ne sont **pas** rejetés : ils arrivent avec `[suspect]` en tête du
+sujet et les motifs en bas du texte (`api/_lib/spam.js`). Un filtre Gmail
+sur ce préfixe suffit à les ranger.
 
 ### Mise à jour du CMS (Sveltia)
 
@@ -214,16 +245,54 @@ comme n'importe quelle dépendance.
 `tests/cms-version.test.mjs` fait échouer la CI tant que
 `public/admin/index.html` n'a pas suivi une montée de version - version **et**
 empreinte, recalculée depuis le paquet npm (vérifié identique octet pour octet
-au fichier servi par unpkg). La montée reste donc un geste conscient, à faire
-avec le CMS testé.
+au fichier servi par unpkg), ainsi que la CSP de `/admin/` dans `vercel.json`,
+qui n'autorise que le dossier de cette version. La montée reste donc un geste
+conscient, à faire avec le CMS testé : Sveltia est exclu de la fusion
+automatique des PR Dependabot.
+
+Une montée touche trois endroits : `package.json` (`npm install -D
+@sveltia/cms@x.y.z`), la balise et son `integrity` dans
+`public/admin/index.html` (le test donne la nouvelle empreinte), et les deux
+`@sveltia/cms@x.y.z/` de la CSP dans `vercel.json`.
+
+### Mises à jour des dépendances
+
+Dependabot ouvre ses PR le lundi. Les outils de build et de test (mineures et
+correctifs, hors Astro et Sveltia) sont fusionnés automatiquement quand la CI
+est verte (`.github/workflows/dependabot.yml`). Le reste se relit : dépendances
+de production, actions GitHub (une PR groupée), Astro, Sveltia, versions
+majeures. Prévoir un passage mensuel d'une demi-heure.
+
+Calendrier : Node 24 entre en maintenance fin octobre 2026 et reste supporté
+jusqu'en avril 2028, passage à Node 26 courant 2027. TypeScript 7 reste
+bloqué tant que `@astrojs/check` ne le prend pas en charge (voir
+`.github/dependabot.yml`).
+
+## Services tiers
+
+Ce qui tourne en production et chez qui. Les colonnes « Compte » et
+« Offre » sont à tenir à jour : c'est ce qu'il faut savoir le jour d'une panne
+ou d'une passation.
+
+| Service | Rôle | Compte | Offre / quota |
+|---|---|---|---|
+| Vercel | Hébergement, fonctions `api/`, Web Analytics, Speed Insights, deploy hook | à compléter | à compléter |
+| GitHub | Dépôt `Wekyz/portfolio-rf`, CI, Dependabot, commits du CMS | Wekyz (admin), RFoare (écriture) | à compléter |
+| Namecheap | Domaine `roxane-foare.com` et DNS | à compléter | à compléter |
+| Vimeo | Vidéos (privées, limitées au domaine), lecteur, vignettes, oEmbed au build | à compléter | à compléter |
+| Resend | Envoi des messages du formulaire (DKIM sur `send.`) | à compléter | à compléter |
+| Upstash Redis | Limitation de débit, compteurs, jetons à usage unique, messages en échec | à compléter | Gratuit (limite de commandes) |
+| Cloudflare Turnstile | Captcha du formulaire | à compléter | Gratuit |
+| Cloudflare Workers | Relais OAuth du CMS (`sveltia-cms-auth.wekyz.workers.dev`) | Wekyz | à compléter |
+| unpkg, jsDelivr | Script, traductions et polices du CMS (CDN publics, sans compte) | - | - |
 
 ## Édition du contenu (monteuse)
 
 Via le CMS **Sveltia** sur `/admin/` (auth **GitHub OAuth**). La config
 (`public/admin/config.yml`) pointe sur :
 - `file: src/data/videos.json`
-- `media_folder: public/live` (overrides manuels uniquement - les miniatures
-  viennent du CDN Vimeo, voir plus bas)
+- `media_folder: src/assets/live` (overrides manuels uniquement - les
+  miniatures viennent du CDN Vimeo, voir plus bas)
 - `backend: github` (repo + branche `main`) + `base_url` du relais OAuth
 
 Pour une nouvelle vidéo, il suffit de l'**ID Vimeo** (+ hash si privée) : la
@@ -233,6 +302,16 @@ image à produire.
 Tout enregistrement dans le CMS crée un commit GitHub, ce qui déclenche
 automatiquement un nouveau build Vercel (donc une résolution fraîche des
 miniatures Vimeo) - **aucune action supplémentaire à faire** dans ce cas.
+
+### Sélections privées
+
+Collection **« Sélections privées »** du CMS (`src/data/reviews.json`) : une
+page `roxane-foare.com/review/<identifiant>` par sélection, avec un titre, un
+mot d'accompagnement et les projets choisis, pour répondre à une production
+précise. L'identifiant est généré au hasard ; la page n'est ni indexée
+(`noindex` + `X-Robots-Tag`), ni dans le sitemap, ni liée depuis le site. Ce
+n'est pas un contrôle d'accès : quiconque a le lien voit la page. Une date de
+fin facultative la retire au déploiement suivant.
 
 ### Redéployer sans passer par le CMS
 
@@ -269,8 +348,9 @@ est publique et contient l'appel en clair, le secret ne peut donc pas y être
   depuis l'URL de base Vimeo (voir `src/lib/thumb.js`, utilisé par
   `WorkItem.astro` et `Base.astro`).
 - Le champ `thumb` reste un **override manuel** prioritaire (affiche de film,
-  image live) - fichier local sous `public/`, avec ses propres variantes
-  `-640`/`-1280` générées par `sharp` (voir `public/live/`).
+  image live) - fichier de `src/assets/live/`, décliné en 640 / 960 / 1280 et
+  en WebP + AVIF par astro:assets (voir `src/lib/images.js`). Un chemin sans
+  fichier correspondant n'affiche pas d'image plutôt qu'une image cassée.
 - Régénérer manuellement : `npm run thumbs`.
 - `sharp` est en **`devDependencies`** : il ne sert qu'à ce script, au build.
   Les fonctions serverless de `api/` n'en font aucun usage. Vercel installe les

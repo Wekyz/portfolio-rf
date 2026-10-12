@@ -7,6 +7,10 @@
 
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
+import { creditLine } from '../lib/credits.js';
+import { gridSizes } from '../lib/spans.js';
 
 const { project, placement, priority = false, lang = 'en', href } = Astro.props;
 const t = useTranslations(lang);
@@ -27,9 +31,16 @@ const fetchpriority = priority ? 'high' : undefined;
 // nécessaire pour garantir l'unicité des slugs).
 const external = !p.id && p.externalLink;
 const interactive = !p.noClick && href;
-const prod = p.credit || t(`cat.${p.cat}`) || p.cat;
+const prod = creditLine(p, lang) || t(`cat.${p.cat}`) || p.cat;
 
-const { src: thumbSrc, srcset: thumbSrcset, responsive, width, height } = resolveThumb(p);
+const {
+  src: thumbSrc,
+  srcset: thumbSrcset,
+  avifSrcset: thumbAvif,
+  responsive,
+  width,
+  height,
+} = resolveThumb(p, { local: localImages });
 
 // Les deux cadres fixes de la grille (16/10 et 2/3) recadrent l'image : les
 // dimensions déclarées ne servent qu'à en donner le ratio. La vignette
@@ -39,9 +50,7 @@ const { src: thumbSrc, srcset: thumbSrcset, responsive, width, height } = resolv
 const imgWidth = p.poster ? (width ?? 1280) : p.portrait ? 600 : 1280;
 const imgHeight = p.poster ? (height ?? 1280) : p.portrait ? 900 : 800;
 const spanN = placement?.span ?? 6;
-const sizes = responsive
-  ? `(max-width: 900px) 100vw, ${Math.round((spanN / 12) * 100)}vw`
-  : undefined;
+const sizes = responsive ? gridSizes(p, spanN) : undefined;
 ---
 
 <div
@@ -58,17 +67,17 @@ const sizes = responsive
     <a
       href={href}
       class="work-thumb-wrap"
-      aria-label={`${t('work.watchAria')} - ${p.title}`}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
     >
       {thumbSrc && (
-        <img
+        <Thumb
           class="work-thumb"
           src={thumbSrc}
           srcset={thumbSrcset}
+          avifSrcset={thumbAvif}
           sizes={sizes}
-          alt={p.title}
+          alt=""
           loading={loading}
           fetchpriority={fetchpriority}
           decoding="async"
@@ -95,6 +104,13 @@ const sizes = responsive
           )}
         </div>
         <div class="work-info">
+          {/* Nom accessible = texte visible (WCAG 2.5.3). Le lien portait un
+               aria-label « Watch - Hanro » alors qu'on y lit « Hanro,
+               Production : WBA, 2024 » : une commande vocale « cliquer sur
+               Hanro, Production » ne trouvait rien. Le verbe est ajouté pour
+               les lecteurs d'écran, l'image passe en décorative (alt vide)
+               pour que le titre ne soit pas lu deux fois. */}
+          <span class="visually-hidden">{t('work.watchAria')} </span>
           <div class="work-title">{p.title}</div>
           <div class="work-meta">
             <span class="work-prod">{prod}</span>
@@ -107,10 +123,11 @@ const sizes = responsive
   ) : (
     <div class="work-thumb-wrap">
       {thumbSrc && (
-        <img
+        <Thumb
           class="work-thumb"
           src={thumbSrc}
           srcset={thumbSrcset}
+          avifSrcset={thumbAvif}
           sizes={sizes}
           alt={p.title}
           loading={loading}

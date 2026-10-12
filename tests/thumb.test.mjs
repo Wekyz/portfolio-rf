@@ -97,9 +97,11 @@ test('une seule taille disponible : pas de srcset du tout', () => {
   assert.equal(r.responsive, false);
 });
 
-test('image absente du cache : servie telle quelle, sans variantes inventées', () => {
-  const r = resolveThumb({ thumb: '/live/pas-encore-buildee.webp' }, caches);
-  assert.equal(r.src, '/live/pas-encore-buildee.webp');
+test('chemin sans fichier dans src/assets/live : pas d’image plutôt qu’une image cassée', () => {
+  // Les images ne sont plus servies depuis public/ : un chemin inconnu
+  // mènerait à une 404. La vignette garde son cadre et son titre.
+  const r = resolveThumb({ thumb: '/live/pas-encore-deposee.webp' }, caches);
+  assert.equal(r.src, undefined);
   assert.equal(r.srcset, undefined);
   assert.equal(r.responsive, false);
 });
@@ -109,10 +111,26 @@ test('un chemin sans slash initial est normalisé', () => {
   assert.equal(r.src, '/live/live5.webp');
 });
 
-test('miniature non webp : aucune variante', () => {
-  const r = resolveThumb({ thumb: '/live/affiche.jpg' }, caches);
-  assert.equal(r.src, '/live/affiche.jpg');
-  assert.equal(r.responsive, false);
+test('les variantes AVIF sont proposées quand elles existent', () => {
+  const avec = {
+    '/live/affiche.jpg': {
+      width: 1280,
+      height: 800,
+      candidates: [
+        { src: '/_astro/affiche.a.webp', width: 640 },
+        { src: '/_astro/affiche.b.webp', width: 1280 },
+      ],
+      avifCandidates: [
+        { src: '/_astro/affiche.a.avif', width: 640 },
+        { src: '/_astro/affiche.b.avif', width: 1280 },
+      ],
+    },
+  };
+  const r = resolveThumb({ thumb: 'live/affiche.jpg' }, { vimeo: VIMEO, local: avec });
+  assert.equal(r.avifSrcset, '/_astro/affiche.a.avif 640w, /_astro/affiche.b.avif 1280w');
+  assert.equal(r.src, '/_astro/affiche.b.webp', 'le repli reste en WebP');
+  // Sans AVIF (fixtures plus anciennes), rien n'est annoncé.
+  assert.equal(resolveThumb({ thumb: '/live/live5.webp' }, caches).avifSrcset, undefined);
 });
 
 test('projet sans id ni thumb : rien à résoudre', () => {

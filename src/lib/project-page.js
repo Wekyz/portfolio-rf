@@ -15,20 +15,34 @@
  */
 import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
 import { useTranslations, catGender } from '../i18n/strings.js';
-import { personRef, pageIds } from './schema-ids.js';
-import contentDates from '../data/content-dates.json' with { type: 'json' };
+import { SITE, personRef, pageIds } from './schema-ids.js';
+import { lastModified } from './page-dates.js';
+import { creditLine } from './credits.js';
 
-const SITE = 'https://roxane-foare.com';
-
-/** URL absolue de la miniature (le CDN Vimeo en sert déjà une). */
-function absThumb(p) {
-  const { src } = resolveThumb(p);
+/**
+ * URL absolue de la miniature (le CDN Vimeo en sert déjà une). `local` : les
+ * images de src/assets/live/ traitées au build (lib/images.js), passées par
+ * l'appelant pour que ce module reste chargeable sous Node.
+ */
+function absThumb(p, local) {
+  const { src } = resolveThumb(p, { local });
   if (!src) return undefined;
   return src.startsWith('/') ? `${SITE}${src}` : src;
 }
 
+/**
+ * Adresse du lecteur Vimeo d'un projet.
+ *
+ * `dnt=1` (« do not track ») : sans lui, le lecteur dépose `vuid`, un cookie
+ * de mesure d'audience de Vimeo, dès le chargement de chaque fiche - alors que
+ * la politique de confidentialité annonce un site sans cookie, et qu'un
+ * cookie d'audience tiers exige un consentement selon la CNIL. Avec lui, il
+ * ne reste que `__cf_bm`, cookie de sécurité de Cloudflare (le CDN de Vimeo),
+ * strictement nécessaire et donc exempté. Même paramètre pour le showreel
+ * (Hero.astro) et la lightbox (app.js).
+ */
 export function embedUrl(p) {
-  return `https://player.vimeo.com/video/${p.id}${p.hash ? `?h=${p.hash}` : ''}`;
+  return `https://player.vimeo.com/video/${p.id}?${p.hash ? `h=${p.hash}&` : ''}dnt=1`;
 }
 
 /**
@@ -74,7 +88,7 @@ export function buildBreadcrumb(project, lang, slug) {
   };
 }
 
-export function buildProjectMeta(project, slug, lang) {
+export function buildProjectMeta(project, slug, lang, { local = {} } = {}) {
   const t = useTranslations(lang);
   const p = project;
   const catLabel = t(`cat.${p.cat}`);
@@ -88,7 +102,8 @@ export function buildProjectMeta(project, slug, lang) {
   // texte libre saisi dans le CMS, lui, peut être long - il alimente la page
   // et le VideoObject, pas la balise meta.
   const bits = [p.title];
-  if (p.credit) bits.push(p.credit);
+  const credit = creditLine(p, lang);
+  if (credit) bits.push(credit);
   const head = bits.join(' - ') + (p.year ? ` (${p.year})` : '');
   // Le suffixe s'accorde avec la catégorie qui le précède : « Publicité
   // montée par », « Documentaire monté par ». Voir `catGender` dans
@@ -104,7 +119,7 @@ export function buildProjectMeta(project, slug, lang) {
     '@id': pageIds(canonical).video,
     name: p.title,
     description: richDescription,
-    thumbnailUrl: absThumb(p),
+    thumbnailUrl: absThumb(p, local),
     // Date d'upload réelle résolue au build depuis Vimeo (fetch-thumbs.mjs) ;
     // repli sur le 1er janvier de `year` en UTC complet si indisponible.
     uploadDate:
@@ -115,7 +130,7 @@ export function buildProjectMeta(project, slug, lang) {
     inLanguage: lang,
     editor: personRef(),
     genre: catLabel,
-    // Les distinctions vivaient dans le champ `credit`, mélangées à la
+    // Les distinctions vivaient dans l'ancien champ `credit`, mélangées à la
     // réalisation : elles n'étaient donc déclarées nulle part comme telles,
     // et gonflaient la meta description à 245 caractères.
     award: p.awards?.length ? p.awards : undefined,
@@ -125,13 +140,18 @@ export function buildProjectMeta(project, slug, lang) {
     path,
     title: `${p.title} - ${t('project.titleSuffix')}`,
     description,
-    ogImage: absThumb(p),
+    ogImage: absThumb(p, local),
+    ogImageAlt: p.title,
+    // Type Open Graph des pages dont le sujet est une vidéo. Les fiches
+    // partageaient `website` avec le reste du site.
+    ogType: 'video.other',
     videoObject,
     // Date de dernière modification réelle du contenu de ce projet, tenue par
-    // scripts/fetch-thumbs.mjs (voir `updateContentDates`). Sans elle,
-    // `dateModified` valait la date du build sur les 75 pages : republier pour
-    // une virgule faisait passer tout le site pour modifié le même jour.
-    dateModified: contentDates[slug]?.date,
+    // scripts/fetch-thumbs.mjs (voir `updateContentDates`) et lue via
+    // page-dates.js, comme le lastmod du sitemap. Sans elle, `dateModified`
+    // valait la date du build sur les 75 pages : republier pour une virgule
+    // faisait passer tout le site pour modifié le même jour.
+    dateModified: lastModified(path),
   };
 }
 
@@ -139,6 +159,23 @@ export function buildProjectMeta(project, slug, lang) {
  * Jusqu'à `limit` autres projets de la même catégorie, pour le maillage
  * interne en bas de page (et pour qu'aucune page projet ne soit orpheline).
  */
+/**
+ * Projets précédent et suivant dans la même catégorie, dans l'ordre du
+ * portfolio, en bouclant aux extrémités comme la lightbox. Une fiche ne se
+ * quittait que par le fil d'Ariane ou les trois vignettes liées, toujours les
+ * trois premières de la catégorie : impossible de parcourir une catégorie de
+ * fiche en fiche. `null` quand le projet est seul dans sa catégorie.
+ */
+export function siblingProjects(project, routes) {
+  const list = routes.filter((r) => r.project.cat === project.cat);
+  const i = list.findIndex((r) => r.project === project);
+  if (i === -1 || list.length < 2) return null;
+  return {
+    prev: list[(i - 1 + list.length) % list.length],
+    next: list[(i + 1) % list.length],
+  };
+}
+
 export function relatedProjects(project, routes, limit = 3) {
   return routes
     .filter((r) => r.project !== project && r.project.cat === project.cat)

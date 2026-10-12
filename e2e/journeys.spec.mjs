@@ -33,7 +33,7 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   expect(total).toBeGreaterThan(10);
 
   // Les boutons sont masqués sur mobile au profit du menu déroulant.
-  if (testInfo.project.name === 'mobile') {
+  if (testInfo.project.use.isMobile) {
     await page.selectOption('#filterSelect', 'doc');
   } else {
     await page.locator('.filter-btn[data-filter="doc"]').click();
@@ -46,7 +46,7 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   }
 
   // Retour à « tous ».
-  if (testInfo.project.name === 'mobile') {
+  if (testInfo.project.use.isMobile) {
     await page.selectOption('#filterSelect', 'all');
   } else {
     await page.locator('.filter-btn[data-filter="all"]').click();
@@ -54,7 +54,8 @@ test('filtrer par catégorie ne laisse que les projets concernés', async ({ pag
   await expect(page.locator('.work-item:not(.hidden)')).toHaveCount(total);
 });
 
-test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }) => {
+test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
   await page.goto('/fr/portfolio');
 
   const premier = page.locator('a.work-thumb-wrap').first();
@@ -67,22 +68,38 @@ test('la lightbox s’ouvre, informe, enchaîne et se ferme', async ({ page }) =
   await expect(page.locator('#lightboxMeta')).not.toBeEmpty();
   await expect(page.locator('#lightboxSheet')).toHaveAttribute('href', /^\/fr\/portfolio\//);
 
-  // Le clic simple ne doit pas avoir navigué.
-  expect(new URL(page.url()).pathname).toBe('/fr/portfolio');
+  // Le clic simple n'a pas chargé de page, mais l'adresse est celle de la
+  // fiche : elle se partage telle quelle.
+  const fiche = await page.locator('#lightboxSheet').getAttribute('href');
+  expect(new URL(page.url()).pathname).toBe(fiche);
 
   await page.locator('#lightboxNext').click();
   await expect(page.locator('#lightboxTitle')).not.toHaveText(titreVignette.trim());
   await expect(modale).toHaveClass(/open/);
+  expect(new URL(page.url()).pathname).not.toBe(fiche);
 
   await page.keyboard.press('Escape');
   await expect(modale).not.toHaveClass(/open/);
+  await expect(page).toHaveURL(/\/fr\/portfolio$/);
+});
+
+test('le bouton Retour ferme la vidéo au lieu de quitter le portfolio', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
+  await page.goto('/fr/portfolio');
+  await page.locator('a.work-thumb-wrap').first().click();
+  await expect(page.locator('#lightbox')).toHaveClass(/open/);
+
+  await page.goBack();
+  await expect(page.locator('#lightbox')).not.toHaveClass(/open/);
+  await expect(page).toHaveURL(/\/fr\/portfolio$/);
+  await expect(page.locator('#workGrid')).toBeVisible();
 });
 
 test('ctrl+clic sur une vignette ouvre la page projet au lieu de la modale', async ({
   page,
   browserName,
 }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'pas de clic modifié au doigt');
+  test.skip(Boolean(testInfo.project.use.isMobile), 'pas de clic modifié au doigt');
   await page.goto('/fr/portfolio');
   const modificateur = browserName === 'webkit' ? 'Meta' : 'Control';
   await page.locator('a.work-thumb-wrap').first().click({ modifiers: [modificateur] });
@@ -90,7 +107,7 @@ test('ctrl+clic sur une vignette ouvre la page projet au lieu de la modale', asy
 });
 
 test('le menu mobile s’ouvre et mène à une autre page', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile', 'le burger n’existe qu’en dessous de 900 px');
+  test.skip(!testInfo.project.use.isMobile, 'le burger n’existe qu’en dessous de 900 px');
   await page.goto('/fr');
 
   const burger = page.locator('#navBurger');
@@ -211,7 +228,7 @@ test('un second message repart avec un jeton captcha neuf', async ({ page }) => 
 
 test('la bascule de langue conserve la page courante', async ({ page }, testInfo) => {
   const ouvrirMenu = async () => {
-    if (testInfo.project.name === 'mobile') await page.locator('#navBurger').click();
+    if (testInfo.project.use.isMobile) await page.locator('#navBurger').click();
   };
 
   await page.goto('/about');
@@ -229,7 +246,7 @@ test('une page projet mène au portfolio par son fil d’Ariane', async ({ page 
   await expect(page.locator('h1')).toHaveText('Hanro');
   await expect(page.locator('.project-player iframe')).toBeVisible();
 
-  await page.locator('.project-crumbs a', { hasText: 'Projets' }).click();
+  await page.locator('.project-crumbs a', { hasText: 'Portfolio' }).click();
   await expect(page).toHaveURL(/\/fr\/portfolio$/);
 });
 
@@ -237,8 +254,8 @@ test('une URL inexistante affiche la page 404 du site', async ({ page }) => {
   // `astro preview` ne sert pas 404.html automatiquement : on la vise
   // directement, l'objet du test étant son contenu, pas le routage de Vercel.
   await page.goto('/404.html');
-  await expect(page.locator('h1')).toBeVisible();
-  await expect(page.locator('.notfound-links a')).toHaveCount(3);
+  await expect(page.locator('h1:visible')).toHaveCount(1);
+  await expect(page.locator('.notfound:visible .notfound-links a')).toHaveCount(3);
 });
 
 test('un refus du serveur est expliqué, pas résumé à « Erreur »', async ({ page }) => {
@@ -302,7 +319,7 @@ test('le filtre de catégorie vit dans l’URL', async ({ page }, testInfo) => {
   //
   // Les deux commandes doivent produire le même effet : sous 900 px, les
   // boutons cèdent la place à un menu déroulant (voir la media query).
-  const mobile = testInfo.project.name === 'mobile';
+  const mobile = Boolean(testInfo.project.use.isMobile);
   const choisir = (v) =>
     mobile ? page.selectOption('#filterSelect', v) : page.locator(`.filter-btn[data-filter="${v}"]`).click();
 
@@ -329,4 +346,182 @@ test('un ?cat= inconnu retombe sur « toutes » sans effacer l’URL', async ({ 
   // L'URL n'est pas réécrite : un paramètre erroné qui disparaît tout seul est
   // plus déroutant qu'un filtre qui ne s'applique pas.
   await expect(page).toHaveURL(/cat=nimportequoi/);
+});
+
+/* ── Audit UX (UX-01 à UX-07) ───────────────────────────────────────── */
+
+const jetonFactice = (route) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: '{"token":"1700000000000.sig"}' });
+
+async function remplir(page) {
+  await page.fill('#first-name', 'Marie');
+  await page.fill('#last-name', 'Dupont');
+  await page.fill('#email', 'marie@studio.com');
+  await page.fill('#message', 'Bonjour, un projet à discuter.');
+}
+
+test('la confirmation d’envoi est rédigée en anglais sur la version anglaise', async ({ page }) => {
+  await page.route('**/api/form-token', jetonFactice);
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' })
+  );
+  await page.goto('/contact');
+  await remplir(page);
+  await page.locator('.form-submit').click();
+  const fait = page.locator('#formDone');
+  await expect(fait).toBeVisible({ timeout: 15_000 });
+  await expect(fait).toContainText('Message sent.');
+  await expect(fait).not.toContainText('contact.');
+});
+
+test('un champ trop long est nommé et reçoit le focus', async ({ page }) => {
+  await page.route('**/api/form-token', jetonFactice);
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({
+      status: 413,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'too-long', field: 'last-name', max: 100, error: 'trop long' }),
+    })
+  );
+  await page.goto('/fr/contact');
+  await remplir(page);
+  await page.locator('.form-submit').click();
+  // Le message est posé sous le champ et relié à lui (WCAG 3.3.1).
+  const message = page.locator('#last-name + #fieldError');
+  await expect(message).toContainText(/Nom : 100 caractères maximum/, { timeout: 15_000 });
+  await expect(page.locator('#last-name')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#last-name')).toHaveAttribute('aria-describedby', /fieldError/);
+  await expect(page.locator('#last-name')).toBeFocused();
+  // Il disparaît dès que le champ est corrigé.
+  await page.fill('#last-name', 'Dupond');
+  await expect(message).toBeHidden();
+  await expect(page.locator('#last-name')).not.toHaveAttribute('aria-invalid', 'true');
+});
+
+test('les champs portent leur longueur maximale', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('#first-name')).toHaveAttribute('maxlength', '100');
+  await expect(page.locator('#email')).toHaveAttribute('maxlength', '254');
+  await expect(page.locator('#message')).toHaveAttribute('maxlength', '5000');
+});
+
+test('un jeton expiré est renouvelé sans perdre le message', async ({ page }) => {
+  let jetons = 0;
+  let envois = 0;
+  await page.route('**/api/form-token', (route) => {
+    jetons++;
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ token: `jeton-${jetons}` }),
+    });
+  });
+  await page.route('**/api/contact', (route) => {
+    envois++;
+    const { formToken } = JSON.parse(route.request().postData() || '{}');
+    return formToken === 'jeton-1'
+      ? route.fulfill({ status: 400, contentType: 'application/json', body: '{"code":"bad-token"}' })
+      : route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+  });
+  await page.goto('/fr/contact');
+  await remplir(page);
+  await page.locator('.form-submit').click();
+  await expect(page.locator('#formDone')).toBeVisible({ timeout: 20_000 });
+  expect(jetons).toBe(2);
+  expect(envois).toBe(2);
+});
+
+test('l’adresse e-mail est écrite à côté du lien, avec un bouton pour la copier', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('#contactAddress')).toContainText('@');
+  await expect(page.locator('#copyEmail')).toBeVisible();
+});
+
+test('une adresse française inexistante affiche la 404 en français', async ({ page }) => {
+  // Même limite que plus haut : `astro preview` ne sert pas 404.html. On
+  // le sert à la place d'une adresse /fr inexistante, comme le fait Vercel.
+  const html = await (await page.request.get('/404.html')).text();
+  await page.route('**/fr/page-inexistante', (route) =>
+    route.fulfill({ status: 404, contentType: 'text/html; charset=utf-8', body: html })
+  );
+  const erreursCsp = [];
+  page.on('console', (msg) => {
+    if (/Content Security Policy/i.test(msg.text())) erreursCsp.push(msg.text());
+  });
+  await page.goto('/fr/page-inexistante');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  await expect(page.locator('h1:visible')).toHaveText("Cette page n'existe pas");
+  await expect(page.locator('#notfoundFr .notfound-links a').first()).toHaveAttribute('href', '/fr/portfolio');
+  await expect(page.locator('footer')).toContainText('Mentions légales');
+  expect(erreursCsp).toEqual([]);
+});
+
+test('la 404 reste en anglais hors de /fr', async ({ page }) => {
+  await page.goto('/404.html');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('h1:visible')).toHaveText('This page does not exist');
+});
+
+test('le lien Contact du menu signale la page courante', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('#navLinks a[href="/fr/contact"]')).toHaveAttribute('aria-current', 'page');
+});
+
+/* ── Accessibilité (A11Y-01 à A11Y-04) ──────────────────────────────── */
+
+test('le focus ne sort pas de la lightbox au clavier', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'pas de tabulation au doigt');
+  await page.route('**://player.vimeo.com/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' })
+  );
+  await page.goto('/fr/portfolio');
+  await page.locator('a.work-thumb-wrap').first().click();
+  await expect(page.locator('#lightbox')).toHaveClass(/open/);
+  for (let i = 0; i < 10; i++) {
+    await page.keyboard.press('Tab');
+    // Même convention que plus haut : le document vient de l'élément reçu.
+    const dedans = await page.locator('#lightbox').evaluate((box) => {
+      const doc = box.ownerDocument;
+      const el = doc.activeElement;
+      return !el || el === doc.body || box.contains(el);
+    });
+    expect(dedans, `tabulation ${i + 1} : le focus a quitté la lightbox`).toBe(true);
+  }
+});
+
+test('la lightbox porte le titre du projet comme nom', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
+  await page.goto('/fr/portfolio');
+  const premier = page.locator('a.work-thumb-wrap').first();
+  const titre = (await premier.locator('.work-title').textContent()).trim();
+  await premier.click();
+  await expect(page.locator('#lightbox')).toHaveAccessibleName(titre);
+});
+
+test('le nom d’une vignette reprend son texte visible', async ({ page }) => {
+  await page.goto('/fr/portfolio');
+  const premier = page.locator('a.work-thumb-wrap').first();
+  const titre = (await premier.locator('.work-title').textContent()).trim();
+  await expect(premier).not.toHaveAttribute('aria-label', /.*/);
+  // Le nom commence par le verbe ajouté, puis reprend le titre tel qu'affiché.
+  await expect(premier).toHaveAccessibleName(/^Regarder /);
+  const nom = await premier.evaluate((el) => el.textContent.replace(/\s+/g, ' ').trim());
+  expect(nom.startsWith(`Regarder ${titre}`)).toBe(true);
+});
+
+test('le champ message est signalé comme facultatif', async ({ page }) => {
+  await page.goto('/fr/contact');
+  await expect(page.locator('label[for="message"]')).toContainText('(facultatif)');
+});
+
+test('sur écran tactile, une vignette ouvre la fiche du projet', async ({ page }, testInfo) => {
+  // MOB-04 : en portrait, la lightbox ne donnait au lecteur qu'un tiers de
+  // l'écran. La fiche offre un lecteur pleine largeur et le plein écran natif.
+  test.skip(!testInfo.project.use.isMobile, 'comportement propre aux écrans tactiles');
+  await page.goto('/fr/portfolio');
+  const premier = page.locator('a.work-thumb-wrap[href^="/fr/portfolio/"]').first();
+  const fiche = await premier.getAttribute('href');
+  await premier.tap();
+  await expect(page).toHaveURL(new RegExp(`${fiche}$`));
+  await expect(page.locator('.project-player iframe')).toBeVisible();
 });

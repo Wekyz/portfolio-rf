@@ -1,0 +1,53 @@
+name: Dependabot
+
+# Fusion automatique des mises à jour sans risque (MAJ-02). Les PR Dependabot
+# s'empilaient tant que personne ne les regardait : jusqu'à six ouvertes en
+# même temps, dont une force-poussée plusieurs fois.
+#
+# Seul le groupe `dev-minor-and-patch` (outils de build et de test, mineures
+# et correctifs, hors Astro et Sveltia CMS : voir .github/dependabot.yml) est
+# fusionné sans relecture. Tout le reste (production, actions, Astro, Sveltia,
+# majeures) reste en PR à relire.
+#
+# Pourquoi `workflow_run` et non la fusion automatique de GitHub : celle-ci
+# exige une protection de `main` avec contrôles obligatoires, qui bloquerait
+# aussi les enregistrements du CMS - Sveltia commite directement sur `main`
+# au nom de la monteuse. Ce workflow attend donc lui-même la fin de la CI sur
+# la PR et ne fusionne que si elle est entièrement verte. Aucun code de la PR
+# n'est exécuté ici : seuls le nom de branche et l'auteur sont lus.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    name: Fusion des outils de développement après CI verte
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/npm_and_yarn/dev-minor-and-patch-')
+
+    steps:
+      - name: Merge the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          pr=$(gh pr list --repo "$REPO" --head "$BRANCH" --state open --json number,author,headRefOid \
+            --jq '.[] | select(.author.login == "app/dependabot") | "\(.number) \(.headRefOid)"')
+          if [ -z "$pr" ]; then echo "Aucune PR Dependabot ouverte sur $BRANCH."; exit 0; fi
+          set -- $pr
+          # La CI verte doit porter sur le dernier commit de la PR : si
+          # Dependabot a poussé entre-temps, on attend la CI suivante.
+          if [ "$2" != "$SHA" ]; then echo "La PR #$1 a avancé depuis cette CI, fusion reportée."; exit 0; fi
+          gh pr merge "$1" --repo "$REPO" --squash --match-head-commit "$SHA"

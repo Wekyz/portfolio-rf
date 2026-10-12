@@ -42,6 +42,14 @@ async function analyse(page, contexte, exclusions = []) {
   for (const sel of exclusions) axe = axe.exclude(sel);
   const { violations } = await axe.analyze();
   expect(violations.length, `${contexte}\n${rapport(violations)}`).toBe(0);
+
+  // `label-content-name-mismatch` (WCAG 2.5.3) est classée expérimentale par
+  // axe, donc absente des tags ci-dessus : passage dédié. C'est elle qui
+  // aurait signalé l'aria-label des vignettes (A11Y-02).
+  let nom = new AxeBuilder({ page }).withRules(['label-content-name-mismatch']);
+  for (const sel of exclusions) nom = nom.exclude(sel);
+  const { violations: ecarts } = await nom.analyze();
+  expect(ecarts.length, `${contexte} (2.5.3)\n${rapport(ecarts)}`).toBe(0);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -85,7 +93,8 @@ for (const [nom, url, exclusions] of PAGES) {
   });
 }
 
-test('accessibilité : lightbox ouverte', async ({ page }) => {
+test('accessibilité : lightbox ouverte', async ({ page }, testInfo) => {
+  test.skip(Boolean(testInfo.project.use.isMobile), 'écran tactile : la vignette mène à la fiche, pas à la lightbox');
   await page.goto('/fr/portfolio');
   await page.locator('a.work-thumb-wrap').first().click();
   await expect(page.locator('#lightbox')).toHaveClass(/open/);
@@ -93,7 +102,7 @@ test('accessibilité : lightbox ouverte', async ({ page }) => {
 });
 
 test('accessibilité : menu mobile déplié', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile', 'Le menu burger n’existe qu’en mobile.');
+  test.skip(!testInfo.project.use.isMobile, 'Le menu burger n’existe qu’en mobile.');
   await page.goto('/fr');
   await page.locator('#navBurger').click();
   await expect(page.locator('#navBurger')).toHaveAttribute('aria-expanded', 'true');
@@ -106,4 +115,18 @@ test('accessibilité : bandeau de logos mis en pause', async ({ page }) => {
   await bouton.click();
   await expect(bouton).toHaveAttribute('aria-pressed', 'true');
   await analyse(page, 'bandeau de logos en pause');
+});
+
+// Thème sombre (UI-06) : mêmes pages, palette inversée. Les jetons sont
+// déjà vérifiés par tests/contrast.test.mjs ; ce passage attrape ce que les
+// jetons ne voient pas (une couleur écrite en dur, un texte posé sur un fond
+// qui ne s'inverse pas).
+test.describe('thème sombre', () => {
+  test.use({ colorScheme: 'dark' });
+  for (const [nom, url, exclusions] of PAGES) {
+    test(`accessibilité (sombre) : ${nom}`, async ({ page }) => {
+      await page.goto(url);
+      await analyse(page, `${nom} (${url}), thème sombre`, exclusions);
+    });
+  }
 });

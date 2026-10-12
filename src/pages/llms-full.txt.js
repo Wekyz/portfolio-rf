@@ -6,20 +6,21 @@
  * matière brute : un moteur de réponse ne peut recommander que ce qu'il peut
  * citer, et la bio n'existait jusqu'ici que noyée dans du HTML de mise en page.
  */
-import data from '../data/videos.json';
+import { getProjects } from '../lib/projects.js';
 import { projectRoutes } from '../lib/slug.js';
+import { SITE } from '../lib/schema-ids.js';
+import { SOFTWARE, PRODUCTIONS, BRANDS, PRACTICAL } from '../data/profile.js';
 import { ui } from '../i18n/strings.js';
 import { LEGAL } from '../data/legal.js';
 import { getDuration } from '../lib/thumb.js';
 import { formatDuration } from '../lib/project-page.js';
-
-const SITE = 'https://roxane-foare.com';
+import { creditParts } from '../lib/credits.js';
 
 /** La bio contient du balisage (<em>) : inutile hors HTML. */
 const stripTags = (s) => String(s).replace(/<[^>]*>/g, '');
 
 export function GET() {
-  const projects = /** @type {import('../lib/types').Project[]} */ (data.videos || data);
+  const projects = getProjects();
   const routes = projectRoutes(projects);
   const bySlug = new Map(routes.map((r) => [r.project, r.slug]));
 
@@ -27,7 +28,7 @@ export function GET() {
     const slug = bySlug.get(p);
     const duree = formatDuration(getDuration(p));
     const facts = [
-      p.credit && `production: ${p.credit}`,
+      ...creditParts(p, 'en').map(({ key, value }) => `${key}: ${value}`),
       p.year && `year: ${p.year}`,
       `category: ${p.cat}`,
       duree && `duration: ${duree}`,
@@ -36,6 +37,15 @@ export function GET() {
     ].filter(Boolean);
     return `- ${p.title}\n  ${facts.join(' | ')}`;
   });
+
+  // Conditions de travail : seules les entrées renseignées par Roxane.
+  const practicalLines = [
+    `- Working area: ${ui.en['work.location']}`,
+    `- Languages: ${ui.en['contactPage.languagesValue']}`,
+    ...Object.entries(PRACTICAL)
+      .filter(([, value]) => value)
+      .map(([key, value]) => `- ${ui.en[`contactPage.${key}`]}: ${value.en}`),
+  ];
 
   const body = `# Roxane Foare - full profile
 
@@ -56,22 +66,21 @@ ${ui.fr['about.introParagraphs'].map(stripTags).join('\n\n')}
 
 ## Software
 
-Editing: Adobe Premiere Pro, DaVinci Resolve, Avid Media Composer.
-Live: TriCaster, XPression by Ross, LSM by EVS, Blackmagic ATEM.
+Editing: ${SOFTWARE.editing.join(', ')}.
+Live: ${SOFTWARE.live.join(', ')}.
+
+## Practical details
+
+${practicalLines.join('\n')}
+- Contact: ${SITE}/contact
 
 ## Productions worked with
 
-Atelier B, B&A, Bandits, Big Bang prod, Blacklemon, Bricolo Factory, Cap TV,
-Evrox, France TV, Hawlssen Production, Liik, Publicis Live, Studios Paris Sud,
-Trimaran, Way of Live, West Indies Production, Wild Buzz Agency.
+${PRODUCTIONS.join(', ')}.
 
 ## Brands worked for
 
-Accor, BNP Paribas, Bosch, Carolina Herrera, Carrefour, Celio, Chaumet,
-Davidoff, Estée Lauder, Fabio Salsa, Fiat, Givenchy, Hennessy, Ioma,
-JP Morgan, Lacoste, L'Oréal, Louboutin, MAIF, Meetic, Messika, OL,
-Paris Games Week, PSG, Ricard, Sanofi, Siemens, Société Générale, Square Enix,
-Waffle Factory, Yves Rocher.
+${BRANDS.map((b) => b.name).join(', ')}.
 
 ## All projects
 

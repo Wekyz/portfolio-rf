@@ -3,17 +3,18 @@
     {
       "cat": "pub",
       "title": "Estée Lauder - Made for more",
-      "credit": "Production : WBA",
+      "production": "WBA",
       "year": "2026",
       "id": "1173276934",
       "hash": "174d0b33b9",
       "thumb": "",
-      "externalLink": ""
+      "externalLink": "",
+      "featured": true
     },
     {
       "cat": "pub",
       "title": "Hanro",
-      "credit": "Director : Thomas Gérard",
+      "director": "Thomas Gérard",
       "year": "2024",
       "id": "902943514",
       "hash": "df22c458c9",
@@ -23,7 +24,7 @@
     {
       "cat": "pub",
       "title": "Niwel London's calling",
-      "credit": "Production : Atelier B",
+      "production": "Atelier B",
       "year": "2024",
       "id": "920113816",
       "hash": "c999756c9e",
@@ -33,7 +34,7 @@
     {
       "cat": "pub",
       "title": "Smashbox",
-      "credit": "Production : Kleber",
+      "production": "Kleber",
       "year": "2024",
       "id": "877098126",
       "hash": "6c8d689aa1",
@@ -43,7 +44,7 @@
     {
       "cat": "pub",
       "title": "Vestiaire Collective",
-      "credit": "Production : WBA",
+      "production": "WBA",
       "year": "2024",
       "id": "1172168401",
       "hash": "d5714ea441",
@@ -53,7 +54,7 @@
     {
       "cat": "pub",
       "title": "Château de la Viaudière - Les 4 Saisons",
-      "credit": "Production : Evrox",
+      "production": "Evrox",
       "year": "2024",
       "id": "1173332929",
       "hash": "90ed61fcab",
@@ -63,7 +64,7 @@
     {
       "cat": "pub",
       "title": "Waffle Factory - Café",
-      "credit": "Production : Atelier B",
+      "production": "Atelier B",
       "year": "2024",
       "id": "1172176515",
       "hash": "495aa7e6ef",
@@ -73,7 +74,7 @@
     {
       "cat": "pub",
       "title": "Ioma",
-      "credit": "Production : Atelier B",
+      "production": "Atelier B",
       "year": "2024",
       "id": "854983877",
       "hash": "1a6502120e",
@@ -83,7 +84,7 @@
     {
       "cat": "film",
       "title": "En mille morceaux",
-      "credit": "Director : Véronique Mériadec",
+      "director": "Véronique Mériadec",
       "awards": [
         "Best Editing Award - Cyprus International Film Festival",
         "Best Editing Award - Athens International Film Festival"
@@ -94,22 +95,30 @@
       "thumb": "live/en-mille-morceaux.webp",
       "fullWidth": false,
       "poster": true,
-      "externalLink": "https://www.primevideo.com/detail/0H4GC8Y15YDVFT6M1ST0JZC9UB/ref=atv_sr_fle_c_sr64ce3f_pvsearchresults_1_1"
+      "externalLink": "https://www.primevideo.com/detail/0H4GC8Y15YDVFT6M1ST0JZC9UB/ref=atv_sr_fle_c_sr64ce3f_pvsearchresults_1_1",
+      "featured": true
     },
     {
       "cat": "doc",
       "title": "A Day of L.O.V.",
-      "credit": "Episodes of 30 min",
+      "format": {
+        "fr": "Épisodes de 30 min",
+        "en": "Episodes of 30 min"
+      },
       "year": "2024",
       "id": "1173335845",
       "hash": "4029a668f5",
       "thumb": "",
-      "externalLink": ""
+      "externalLink": "",
+      "featured": true
     },
     {
       "cat": "doc",
       "title": "Handicap et santé",
-      "credit": "5 episodes of 14 min",
+      "format": {
+        "fr": "5 épisodes de 14 min",
+        "en": "5 episodes of 14 min"
+      },
       "year": "2024",
       "id": "1174771532",
       "hash": "2dd70bd0ba",
@@ -119,7 +128,10 @@
     {
       "cat": "doc",
       "title": "Breathe",
-      "credit": "30 min",
+      "format": {
+        "fr": "30 min",
+        "en": "30 min"
+      },
       "year": "2024",
       "id": "1174806302",
       "hash": "308304ae14",
@@ -129,7 +141,7 @@
     {
       "cat": "corpo",
       "title": "Accor vision",
-      "credit": "Production : Bandits",
+      "production": "Bandits",
       "year": "2024",
       "id": "902959218",
       "hash": "612c4ee7b7",
@@ -139,7 +151,7 @@
     {
       "cat": "corpo",
       "title": "Axima Nucléaire",
-      "credit": "Production : Atelier B",
+      "production": "Atelier B",
       "year": "2024",
       "id": "1173273537",
       "hash": "e2e8c741cd",
@@ -149,7 +161,7 @@
     {
       "cat": "corpo",
       "title": "Estée Lauder X Messika",
-      "credit": "Production : Bandits",
+      "production": "Bandits",
       "year": "2024",
       "id": "902946797",
       "hash": "8175836a1a",
@@ -159,7 +171,7 @@
     {
       "cat": "corpo",
       "title": "Hennessy",
-      "credit": "Production : Blacklemon",
+      "production": "Blacklemon",
       "year": "2024",
       "id": "873374381",
       "hash": "29d0333ab7",
@@ -169,7 +181,7 @@
     {
       "cat": "corpo",
       "title": "Société Générale - Culture du dialogue",
-      "credit": "Production : Atelier B",
+      "production": "Atelier B",
       "year": "2024",
       "id": "1173377959",
       "hash": "424783e62c",
@@ -179,7 +191,7 @@
     {
       "cat": "corpo",
       "title": "LBP Risques maîtrisés",
-      "credit": "Production : B&A",
+      "production": "B&A",
       "year": "2024",
       "id": "927956912",
       "hash": "0c411b2e86",
@@ -189,7 +201,7 @@
     {
       "cat": "event",
       "title": "Givenchy l'Interdit",
-      "credit": "Production : Blacklemon",
+      "production": "Blacklemon",
       "year": "2024",
       "id": "851335889",
       "hash": "ff317a086e",
@@ -199,7 +211,7 @@
     {
       "cat": "event",
       "title": "Masters Lacoste Athletes inside",
-      "credit": "Production : Publicis Live",
+      "production": "Publicis Live",
       "year": "2024",
       "id": "902957262",
       "hash": "84c55e82b5",
@@ -209,7 +221,7 @@
     {
       "cat": "event",
       "title": "Jean-Paul Gaultier Maroc",
-      "credit": "Production : WBA",
+      "production": "WBA",
       "year": "2024",
       "id": "1173327915",
       "hash": "cb2f2fc51d",
@@ -219,7 +231,7 @@
     {
       "cat": "event",
       "title": "Davidoff Cool Water",
-      "credit": "Production : Blacklemon",
+      "production": "Blacklemon",
       "year": "2024",
       "id": "1173318583",
       "hash": "c8e3752e22",
@@ -229,7 +241,7 @@
     {
       "cat": "event",
       "title": "10 years BL9CK PARTY",
-      "credit": "Production : Blacklemon",
+      "production": "Blacklemon",
       "year": "2024",
       "id": "1173323990",
       "hash": "15131951a4",
@@ -239,7 +251,7 @@
     {
       "cat": "event",
       "title": "Escada Miami blossom",
-      "credit": "Production : Blacklemon",
+      "production": "Blacklemon",
       "year": "2024",
       "id": "920107244",
       "hash": "eb4f4d9bff",
@@ -249,7 +261,7 @@
     {
       "cat": "event",
       "title": "Article 1 Campus d'été",
-      "credit": "Production : Evrox",
+      "production": "Evrox",
       "year": "2024",
       "id": "1173324146",
       "hash": "10e3edc6c1"
@@ -257,7 +269,7 @@
     {
       "cat": "teaser",
       "title": "CNL Teaser",
-      "credit": "Production : Sixième étage",
+      "production": "Sixième étage",
       "year": "2024",
       "id": "864380329",
       "hash": "985b51facb"
@@ -265,7 +277,7 @@
     {
       "cat": "teaser",
       "title": "Seconde Zone Trailer",
-      "credit": "Production : Echtra Films",
+      "production": "Echtra Films",
       "year": "2024",
       "id": "902960775",
       "hash": "3c0a8cd49d"
@@ -273,7 +285,7 @@
     {
       "cat": "teaser",
       "title": "Final Cut Teaser",
-      "credit": "Production : WBA",
+      "production": "WBA",
       "year": "2024",
       "id": "1173388014",
       "hash": "699f9c5d33"
@@ -281,7 +293,7 @@
     {
       "cat": "teaser",
       "title": "Ricard Tour",
-      "credit": "Production : WBA",
+      "production": "WBA",
       "year": "2024",
       "id": "1173316428",
       "hash": "66eb5544bc"
@@ -289,7 +301,7 @@
     {
       "cat": "live",
       "title": "PSG Football",
-      "credit": "Synth Operator",
+      "role": "Synth Operator",
       "year": "2016-2022",
       "id": "",
       "hash": "",
@@ -299,7 +311,7 @@
     {
       "cat": "live",
       "title": "PSG Handball",
-      "credit": "Director",
+      "role": "Director",
       "year": "2018-2022",
       "id": "",
       "hash": "",
@@ -309,7 +321,7 @@
     {
       "cat": "live",
       "title": "Municipales France Info",
-      "credit": "Shoot Effect + Operator",
+      "role": "Shoot Effect + Operator",
       "year": "2020-2026",
       "id": "",
       "hash": "",
@@ -319,7 +331,7 @@
     {
       "cat": "live",
       "title": "Présidentielles France 2",
-      "credit": "Shoot Effect + Operator",
+      "role": "Shoot Effect + Operator",
       "year": "2022",
       "id": "",
       "hash": "",
@@ -329,7 +341,7 @@
     {
       "cat": "live",
       "title": "CEV Eurovolley 2019",
-      "credit": "Director",
+      "role": "Director",
       "year": "2019",
       "id": "1212339231",
       "hash": "cfe042ff2c",
@@ -340,7 +352,7 @@
     {
       "cat": "live",
       "title": "Volleyball World Cup",
-      "credit": "Director",
+      "role": "Director",
       "year": "2018",
       "id": "",
       "hash": "",
@@ -350,7 +362,7 @@
     {
       "cat": "live",
       "title": "OL TV",
-      "credit": "LSM Operator",
+      "role": "LSM Operator",
       "year": "",
       "id": "1212032849",
       "hash": "281105bdda",

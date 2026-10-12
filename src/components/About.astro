@@ -1,64 +1,30 @@
 ---
-// Section About - Bio, outils, productions & marques (contenu statique)
+// Section About - Bio, outils, productions & marques. Les listes viennent de
+// data/profile.js, partagé avec llms-full.txt.
 import { useTranslations } from '../i18n/strings.js';
+import { SOFTWARE, PRODUCTIONS, BRANDS } from '../data/profile.js';
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const introParagraphs = t('about.introParagraphs');
 
-// Logos clients (bandeau défilant) - fichiers pré-détourés/redimensionnés
-// (voir public/brands/, générés depuis le dossier "Logos RF" fourni par la
-// monteuse). Les originaux font 160 px de haut pour un affichage à 32 px
-// (.brand-logo img dans styles.css) : le build en tire deux densités, 64 px
-// et 96 px, et le srcset laisse le navigateur prendre celle qu'il lui faut.
-// Les dimensions viennent de brands.json (mesurées au build, voir
-// scripts/fetch-thumbs.mjs) : elles fixent le ratio et évitent un saut de
-// mise en page pendant le chargement.
-import brandSizes from '../data/brands.json';
+// Logos clients (bandeau défilant) - fichiers pré-détourés fournis par la
+// monteuse (dossier "Logos RF"), dans src/assets/brands/. Les originaux font
+// 160 px de haut pour un affichage à 32 px : astro:assets en tire deux
+// densités, 64 et 96 px, en WebP et en AVIF (voir lib/images.js). Les
+// dimensions fixent le ratio et évitent un saut de mise en page.
+import { brandImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
 
 const summary =
   lang === 'fr'
     ? `Monteuse vidéo freelance depuis plus de dix ans, basée à Paris et Angers et disponible partout ailleurs. Publicité, long métrage, documentaire, corporate, événementiel, teaser et captation live. Deux prix du meilleur montage. Travail en français et en anglais.`
     : `Freelance video editor for over ten years, based in Paris and Angers and available anywhere else. Commercials, feature films, documentaries, corporate films, events, teasers and live broadcast. Two Best Editing Awards. Works in French and English.`;
 
-const brandImg = (slug: string) => ({
-  src: `/brands/${slug}-64.webp`,
-  srcset: `/brands/${slug}-64.webp 2x, /brands/${slug}-96.webp 3x`,
-  width: brandSizes[slug as keyof typeof brandSizes]?.width,
-  height: brandSizes[slug as keyof typeof brandSizes]?.height,
-});
-const BRANDS = [
-  { slug: 'accor', name: 'Accor' },
-  { slug: 'bnp', name: 'BNP Paribas' },
-  { slug: 'bosch', name: 'Bosch' },
-  { slug: 'carolina-herrera', name: 'Carolina Herrera' },
-  { slug: 'carrefour', name: 'Carrefour' },
-  { slug: 'celio', name: 'Celio' },
-  { slug: 'chaumet', name: 'Chaumet' },
-  { slug: 'davidoff', name: 'Davidoff' },
-  { slug: 'estee-lauder', name: 'Estée Lauder' },
-  { slug: 'fabio-salsa', name: 'Fabio Salsa' },
-  { slug: 'fiat', name: 'Fiat' },
-  { slug: 'givenchy', name: 'Givenchy' },
-  { slug: 'hennessy', name: 'Hennessy' },
-  { slug: 'ioma', name: 'Ioma' },
-  { slug: 'jp-morgan', name: 'JP Morgan' },
-  { slug: 'lacoste', name: 'Lacoste' },
-  { slug: 'loreal', name: "L'Oréal" },
-  { slug: 'louboutin', name: 'Louboutin' },
-  { slug: 'maif', name: 'MAIF' },
-  { slug: 'meetic', name: 'Meetic' },
-  { slug: 'messika', name: 'Messika' },
-  { slug: 'ol', name: 'OL' },
-  { slug: 'pgw', name: 'Paris Games Week' },
-  { slug: 'psg', name: 'PSG' },
-  { slug: 'ricard', name: 'Ricard' },
-  { slug: 'sanofi', name: 'Sanofi' },
-  { slug: 'siemens', name: 'Siemens' },
-  { slug: 'soge', name: 'Société Générale' },
-  { slug: 'square', name: 'Square Enix' },
-  { slug: 'waffle', name: 'Waffle Factory' },
-  { slug: 'yves-rocher', name: 'Yves Rocher' },
-];
+const brandImg = (slug: string) => {
+  const img = brandImages[slug];
+  if (!img) throw new Error(`Logo introuvable : src/assets/brands/${slug}.webp (voir BRANDS dans data/profile.js)`);
+  return img;
+};
 ---
 <section id="about">
   <div class="about-left">
@@ -73,13 +39,7 @@ const BRANDS = [
       {introParagraphs.map((p: string) => <p set:html={p} />)}
     </div>
     <div class="tools-list">
-      <span class="tool-tag">Adobe Premiere Pro</span>
-      <span class="tool-tag">DaVinci Resolve</span>
-      <span class="tool-tag">Avid Media Composer</span>
-      <span class="tool-tag">TriCaster</span>
-      <span class="tool-tag">XPression by Ross</span>
-      <span class="tool-tag">LSM by EVS</span>
-      <span class="tool-tag">Blackmagic ATEM</span>
+      {[...SOFTWARE.editing, ...SOFTWARE.live].map((tool) => <span class="tool-tag">{tool}</span>)}
     </div>
 
     <!-- DISTINCTIONS -->
@@ -97,12 +57,7 @@ const BRANDS = [
     <div class="credits-block">
       <h2 class="credits-heading">{t('about.productions')}</h2>
       <ul class="prod-list">
-        <li>Atelier B</li><li>B&amp;A</li><li>Bandits</li>
-        <li>Big Bang prod</li><li>Blacklemon</li><li>Bricolo Factory</li>
-        <li>Cap TV</li><li>Evrox</li><li>France TV</li>
-        <li>Hawlssen Production</li><li>Liik</li><li>Publicis Live</li>
-        <li>Studios Paris Sud</li><li>Trimaran</li><li>Way of Live</li>
-        <li>West Indies Production</li><li>Wild Buzz Agency</li>
+        {PRODUCTIONS.map((name) => <li>{name}</li>)}
       </ul>
     </div>
 
@@ -147,14 +102,14 @@ const BRANDS = [
           <div class="brand-marquee-group">
             {BRANDS.map((b) => (
               <span class="brand-logo">
-                <img {...brandImg(b.slug)} alt={b.name} loading="lazy" decoding="async" />
+                <Thumb {...brandImg(b.slug)} alt={b.name} loading="lazy" decoding="async" />
               </span>
             ))}
           </div>
           <div class="brand-marquee-group" aria-hidden="true">
             {BRANDS.map((b) => (
               <span class="brand-logo">
-                <img {...brandImg(b.slug)} alt="" loading="lazy" decoding="async" />
+                <Thumb {...brandImg(b.slug)} alt="" loading="lazy" decoding="async" />
               </span>
             ))}
           </div>

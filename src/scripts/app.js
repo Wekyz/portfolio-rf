@@ -52,6 +52,22 @@ import { applySpans } from '../lib/spans.js';
     },
   }[lang];
 
+  // Quand le serveur nomme le champ fautif (`field`), le message le nomme
+  // aussi, avec le libellé affiché à l'écran. « L'un des champs est trop
+  // long » laissait chercher lequel.
+  const FIELD_ERRORS = {
+    en: {
+      'too-long': (label, max) => `${label}: ${max} characters maximum.`,
+      missing: (label) => `${label} is required.`,
+      email: 'Please check your email address.',
+    },
+    fr: {
+      'too-long': (label, max) => `${label} : ${max} caractères maximum.`,
+      missing: (label) => `${label} : champ obligatoire.`,
+      email: 'Vérifiez votre adresse e-mail.',
+    },
+  }[lang];
+
   // ── Menu burger (mobile) - présent sur les 3 pages ────────────
   if (navBurger && navLinks) {
     const closeMenu = () => {
@@ -105,9 +121,10 @@ import { applySpans } from '../lib/spans.js';
   // À noter, l'événement s'appelle `playProgress` et non `timeupdate` : le
   // pont postMessage brut n'expose pas les mêmes noms que le SDK. Il porte
   // `seconds`, `percent` et `duration`, ce qui dispense d'interroger la durée.
-  const showreel = document.querySelector('.showreel-frame');
+  const showreel = document.querySelector('.showreel-frame[data-src]');
   const showreelControls = document.getElementById('showreelControls');
   if (showreel && showreelControls) {
+    const showreelBox = document.getElementById('showreel');
     const showreelToggle = document.getElementById('showreelToggle');
     const seek = document.getElementById('showreelSeek');
     const VIMEO_ORIGIN = 'https://player.vimeo.com';
@@ -191,6 +208,12 @@ import { applySpans } from '../lib/spans.js';
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) post('pause');
       }
 
+      // Première image réellement jouée : le lecteur prend la place de
+      // l'image d'ouverture, en fondu (voir .showreel-frame).
+      if (msg.event === 'play' || (msg.event === 'playProgress' && msg.data && msg.data.seconds > 0)) {
+        showreelBox.classList.add('is-playing');
+      }
+
       if (msg.event === 'play') setPaused(false);
       else if (msg.event === 'pause') setPaused(true);
       else if (msg.event === 'playProgress' && msg.data) {
@@ -208,24 +231,43 @@ import { applySpans } from '../lib/spans.js';
       }
     });
 
-    // L'iframe peut avoir fini de charger avant ce script comme après, et le
-    // lecteur ne met pas les souscriptions en file d'attente : on s'abonne
-    // tout de suite, encore au `load`, puis on réessaie jusqu'à la première
-    // réponse.
+    // Le lecteur ne met pas les souscriptions en file d'attente : on
+    // s'abonne dès l'injection, encore au `load`, puis on réessaie jusqu'à la
+    // première réponse.
     const subscribe = () => {
       post('addEventListener', 'playProgress');
       post('addEventListener', 'play');
       post('addEventListener', 'pause');
     };
-    subscribe();
-    showreel.addEventListener('load', subscribe);
-    subscribeTimer = setInterval(() => {
-      if (ready) clearInterval(subscribeTimer);
-      else subscribe();
-    }, 600);
-    // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister et les
-    // commandes restent cachées, ce qui est la bonne façon d'échouer ici.
-    setTimeout(() => clearInterval(subscribeTimer), 15000);
+
+    // Injection différée du lecteur (voir Hero.astro) : après le `load` de la
+    // page, au premier temps mort, au plus tard deux secondes après.
+    // `location.replace` plutôt que `src` : aucune entrée ajoutée à
+    // l'historique (même raison que pour la lightbox).
+    const startPlayer = () => {
+      const src = showreel.dataset.src;
+      try {
+        showreel.contentWindow.location.replace(src);
+      } catch {
+        showreel.src = src;
+      }
+      subscribe();
+      showreel.addEventListener('load', subscribe);
+      subscribeTimer = setInterval(() => {
+        if (ready) clearInterval(subscribeTimer);
+        else subscribe();
+      }, 600);
+      // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister, les
+      // commandes restent cachées et l'image d'ouverture reste en place,
+      // ce qui est la bonne façon d'échouer ici.
+      setTimeout(() => clearInterval(subscribeTimer), 15000);
+    };
+    const whenIdle = () =>
+      'requestIdleCallback' in window
+        ? window.requestIdleCallback(startPlayer, { timeout: 2000 })
+        : setTimeout(startPlayer, 200);
+    if (document.readyState === 'complete') whenIdle();
+    else window.addEventListener('load', whenIdle, { once: true });
   }
 
   // ── Retour en haut (Portfolio / About) ────────────────────────
@@ -279,6 +321,38 @@ import { applySpans } from '../lib/spans.js';
     let currentItem = null; // vignette en cours d'affichage, pour prev/suivant
 
     /**
+     * Adresse de la fiche d'une vignette, ou null (lien externe, pas de fiche).
+     *
+     * Ouvrir une vidéo ne changeait pas l'URL : copier l'adresse donnait la
+     * grille, et le bouton Retour quittait la page Portfolio au lieu de fermer
+     * la vidéo. L'URL passe désormais à celle de la fiche (pushState) : elle
+     * se partage, et l'ouvrir dans un autre onglet mène à la page projet, qui
+     * montre la même vidéo. Retour la referme.
+     */
+    /**
+     * Charge une adresse dans le lecteur SANS toucher à l'historique.
+     *
+     * Changer `src` d'un iframe ajoute une entrée à l'historique de la page :
+     * chaque vidéo ouverte, puis chaque fermeture (src vide), en empilait une.
+     * Le bouton Retour reculait donc dans le lecteur au lieu de fermer la
+     * vidéo ou de quitter la page. `location.replace` sur la fenêtre de
+     * l'iframe navigue sans rien empiler ; c'est l'un des rares accès qu'un
+     * navigateur autorise vers une fenêtre d'une autre origine.
+     */
+    function frameGo(url) {
+      try {
+        lightboxFrame.contentWindow.location.replace(url);
+      } catch {
+        lightboxFrame.src = url;
+      }
+    }
+
+    function sheetHref(item) {
+      const link = item.querySelector('a.work-thumb-wrap');
+      return link && link.target !== '_blank' ? link.getAttribute('href') : null;
+    }
+
+    /**
      * Projets navigables : ceux qui ont une vidéo et qui sont visibles.
      * Recalculé à chaque ouverture parce que le filtre de catégorie change la
      * liste - enchaîner dans « Documentaire » ne doit pas ramener une pub.
@@ -315,13 +389,26 @@ import { applySpans } from '../lib/spans.js';
       if (trigger !== undefined) lastFocused = trigger || document.activeElement;
       currentItem = item;
       const { id, hash } = item.dataset;
-      const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0' });
+      // `dnt=1` : pas de cookie de mesure d'audience Vimeo (voir embedUrl dans
+      // lib/project-page.js).
+      const params = new URLSearchParams({ autoplay: '1', color: 'ffffff', title: '0', byline: '0', dnt: '1' });
       if (hash) params.set('h', hash);
-      lightboxFrame.src = `https://player.vimeo.com/video/${id}?${params}`;
+      frameGo(`https://player.vimeo.com/video/${id}?${params}`);
       fillInfo(item);
       lightboxEl.classList.add('open', 'loading'); // 'loading' : affiche le spinner
+      if (!lightboxEl.open) lightboxEl.showModal();
       document.body.style.overflow = 'hidden';
       lightboxClose.focus();
+
+      // Une seule entrée d'historique par ouverture : passer au projet voisin
+      // remplace l'adresse, sinon il faudrait autant de Retour que de vidéos
+      // vues pour quitter la lightbox.
+      const href = sheetHref(item);
+      if (href) {
+        const state = { lightbox: href };
+        if (history.state && history.state.lightbox) history.replaceState(state, '', href);
+        else history.pushState(state, '', href);
+      }
     }
 
     /** Passe au projet voisin, en bouclant aux extrémités. */
@@ -338,20 +425,55 @@ import { applySpans } from '../lib/spans.js';
     lightboxNext.addEventListener('click', () => step(1));
     // Le player Vimeo a fini de charger -> on masque le spinner.
     lightboxFrame.addEventListener('load', () => lightboxEl.classList.remove('loading'));
+    /**
+     * Fermeture demandée par le visiteur (bouton, Échap, clic hors du
+     * lecteur). Si l'ouverture a ajouté une entrée d'historique, on la retire
+     * par `history.back()` : c'est `popstate` qui ferme réellement, comme
+     * pour le bouton Retour du navigateur, et l'adresse redevient celle de la
+     * grille.
+     */
+    function requestClose() {
+      if (history.state && history.state.lightbox) history.back();
+      else closeLightbox();
+    }
+
+    window.addEventListener('popstate', (e) => {
+      const target = e.state && e.state.lightbox;
+      if (!target) {
+        if (lightboxEl.classList.contains('open')) closeLightbox();
+        return;
+      }
+      // Avancer dans l'historique vers une vidéo déjà ouverte la rouvre.
+      const item = originalOrder.find((el) => sheetHref(el) === target);
+      if (item && item.dataset.id) openLightbox(item, item.querySelector('a.work-thumb-wrap'));
+    });
+
     function closeLightbox() {
+      if (!lightboxEl.classList.contains('open')) return;
       lightboxEl.classList.remove('open');
-      lightboxFrame.src = '';
+      if (lightboxEl.open) lightboxEl.close();
+      frameGo('about:blank');
       document.body.style.overflow = '';
       currentItem = null;
       // Rend le focus à la vignette qui a ouvert la modale (a11y).
       if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
       lastFocused = null;
     }
-    lightboxClose.addEventListener('click', closeLightbox);
-    lightboxEl.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeLightbox(); });
+    lightboxClose.addEventListener('click', requestClose);
+    lightboxEl.addEventListener('click', (e) => { if (e.target === e.currentTarget) requestClose(); });
+    // Échap : le <dialog> émet `cancel`. On le retient pour passer par
+    // requestClose (retrait de l'entrée d'historique). Si le navigateur
+    // ferme quand même (il ignore parfois l'annulation d'un second Échap),
+    // `close` rattrape le nettoyage.
+    lightboxEl.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      requestClose();
+    });
+    lightboxEl.addEventListener('close', () => {
+      if (lightboxEl.classList.contains('open')) requestClose();
+    });
     document.addEventListener('keydown', (e) => {
       if (!lightboxEl.classList.contains('open')) return;
-      if (e.key === 'Escape') { closeLightbox(); return; }
       // Flèches : enchaîner les projets sans fermer la modale. Ignorées quand
       // le focus est dans le lecteur, où Vimeo s'en sert pour la lecture.
       if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.activeElement !== lightboxFrame) {
@@ -359,25 +481,13 @@ import { applySpans } from '../lib/spans.js';
         step(e.key === 'ArrowLeft' ? -1 : 1);
         return;
       }
-      // Piège à focus : maintient la tabulation à l'intérieur de la modale.
-      if (e.key === 'Tab') {
-        const focusables = [lightboxClose, lightboxPrev, lightboxNext, lightboxFrame].filter(
-          (el) => !el.hidden
-        );
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault(); last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault(); first.focus();
-        }
-      }
     });
 
     // ── Clic sur une vignette ───────────────────────────────────
     // La vignette est un <a> vers sa page projet (voir WorkItem.astro). On
     // intercepte le clic simple pour ouvrir la lightbox, comportement
     // inchangé pour le visiteur ; toute autre forme de clic suit le lien.
+    const coarse = window.matchMedia('(pointer: coarse)');
     originalOrder.forEach((item) => {
       const link = item.querySelector('a.work-thumb-wrap');
       if (!link) return;
@@ -387,6 +497,11 @@ import { applySpans } from '../lib/spans.js';
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
         // Lien externe (projet sans vidéo Vimeo) : il ouvre déjà son onglet.
         if (link.target === '_blank') return;
+        // Écran tactile : le lien mène à la fiche. En portrait, le lecteur
+        // 16/9 de la lightbox n'occupait qu'un tiers de l'écran ; la fiche
+        // donne un lecteur pleine largeur, le plein écran natif du téléphone
+        // et une adresse partageable.
+        if (coarse.matches) return;
         if (!item.dataset.id) return;
         e.preventDefault();
         openLightbox(item, link);
@@ -551,6 +666,119 @@ import { applySpans } from '../lib/spans.js';
       });
     }
 
+    /**
+     * Un envoi complet : jeton, délai anti-bot, captcha, POST.
+     *
+     * Le jeton vaut deux heures. Quelqu'un qui commençait un message,
+     * s'interrompait puis revenait lisait « Ce formulaire a expiré. Rechargez
+     * la page », et le rechargement vidait les champs. Sur `bad-token`, on
+     * jette le jeton, on en demande un neuf et on renvoie une fois, sans rien
+     * demander au visiteur. Le captcha n'a pas été consommé : le serveur
+     * vérifie le jeton avant de l'interroger.
+     */
+    async function send(form) {
+      for (let attempt = 0; ; attempt++) {
+        await ensureToken();
+        // Le décompte part du jeton et non du chargement de la page : c'est
+        // son horodatage que le serveur vérifie. `ensureToken` couvre aussi le
+        // cas où la première demande a échoué (réseau), en réessayant ici.
+        const wait = Math.max(0, 3000 - (Date.now() - (tokenAt || formLoadTime)));
+        await new Promise((resolve) => setTimeout(resolve, wait));
+        await waitForCaptcha();
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // Les champs sont relus MAINTENANT et non au clic : Turnstile
+          // remplit son champ caché pendant le délai anti-bot, un instantané
+          // pris plus tôt l'aurait perdu et le serveur aurait refusé l'envoi.
+          body: JSON.stringify({
+            ...Object.fromEntries(new FormData(form).entries()),
+            formToken,
+          }),
+        });
+        if (res.ok) {
+          // Jeton à usage unique côté serveur : le prochain message en
+          // demandera un neuf au lieu d'essuyer un refus puis de réessayer.
+          formToken = null;
+          return;
+        }
+        // Le serveur nomme la cause, et parfois le champ : on les lit avant
+        // de lever.
+        const data = await res.json().catch(() => null);
+        if (data && data.code === 'bad-token' && attempt === 0) {
+          formToken = null;
+          continue;
+        }
+        const err = new Error(`HTTP ${res.status}`);
+        err.code = data && data.code;
+        err.field = data && data.field;
+        err.max = data && data.max;
+        throw err;
+      }
+    }
+
+    const fieldError = document.getElementById('fieldError');
+
+    /** aria-describedby d'un champ, avec ou sans le message d'erreur. */
+    function describedBy(field, withError) {
+      const ids = (field.getAttribute('aria-describedby') || '')
+        .split(/\s+/)
+        .filter((id) => id && id !== 'fieldError');
+      if (withError) ids.push('fieldError');
+      return ids.join(' ');
+    }
+
+    /** Message nommant le champ fautif, ou null si le serveur n'en nomme pas. */
+    function fieldMessage(err, field) {
+      if (!err || !field) return null;
+      const labelEl = contactForm.querySelector(`label[for="${field.id}"]`);
+      // Premier nœud texte seulement : « Message (facultatif) » ne doit pas
+      // donner « Message (facultatif) : 5 000 caractères maximum ».
+      const label = labelEl && labelEl.firstChild && labelEl.firstChild.textContent.trim();
+      if (!label) return null;
+      if (err.code === 'too-long' && err.max) {
+        return FIELD_ERRORS['too-long'](label, Number(err.max).toLocaleString(lang));
+      }
+      if (err.code === 'invalid-fields') {
+        return field.name === 'email' && field.value.trim() ? FIELD_ERRORS.email : FIELD_ERRORS.missing(label);
+      }
+      return null;
+    }
+
+    function clearField(el) {
+      el.removeAttribute('aria-invalid');
+      el.removeAttribute('aria-errormessage');
+      const rest = describedBy(el, false);
+      if (rest) el.setAttribute('aria-describedby', rest);
+      else el.removeAttribute('aria-describedby');
+    }
+    function clearInvalid() {
+      contactForm.querySelectorAll('[aria-invalid]').forEach(clearField);
+      if (fieldError) fieldError.hidden = true;
+    }
+    contactForm.addEventListener('input', (e) => {
+      const el = e.target;
+      if (el instanceof Element && el.hasAttribute('aria-invalid')) {
+        clearField(el);
+        if (fieldError) fieldError.hidden = true;
+      }
+    });
+
+    // Compteur du message, affiché passé 80 % de la limite. `maxlength`
+    // empêche déjà de la dépasser ; sans compteur, le texte s'arrêtait
+    // simplement de s'écrire, sans explication.
+    const messageField = contactForm.querySelector('#message');
+    const messageCount = document.getElementById('messageCount');
+    function updateCount() {
+      if (!messageField || !messageCount) return;
+      const max = Number(messageCount.dataset.max);
+      const n = messageField.value.length;
+      messageCount.hidden = n < max * 0.8;
+      messageCount.textContent = `${n.toLocaleString(lang)} / ${max.toLocaleString(lang)}`;
+      messageCount.classList.toggle('is-full', n >= max);
+    }
+    if (messageField) messageField.addEventListener('input', updateCount);
+
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -565,7 +793,7 @@ import { applySpans } from '../lib/spans.js';
 
       btn.innerHTML = FORM_LABELS.sending;
       btn.disabled = true;
-      btn.classList.remove('is-success', 'is-error');
+      btn.classList.remove('is-error');
       if (formError) formError.hidden = true;
       // Le libellé du bouton est visuel uniquement (innerHTML) : cette région
       // aria-live annonce le même statut aux lecteurs d'écran.
@@ -577,39 +805,11 @@ import { applySpans } from '../lib/spans.js';
       // qui postent directement sur l'API, et ça pénalisait l'humain le plus
       // motivé : celui qui arrive avec son texte déjà prêt. Le contrôle reste
       // actif, le visiteur voit simplement « Envoi… » un instant de plus.
-      //
-      // Le décompte part du jeton et non du chargement de la page : c'est son
-      // horodatage que le serveur vérifie. `ensureToken` couvre aussi le cas
-      // où la première demande a échoué (réseau), en réessayant à l'envoi.
-      ensureToken()
+      clearInvalid();
+      send(form)
         .then(() => {
-          const from = tokenAt || formLoadTime;
-          const wait = Math.max(0, 3000 - (Date.now() - from));
-          return new Promise((resolve) => setTimeout(resolve, wait));
-        })
-        .then(waitForCaptcha)
-        .then(() =>
-          fetch('/api/contact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // Les champs sont relus MAINTENANT et non au clic : Turnstile
-            // remplit son champ caché pendant le délai anti-bot, un instantané
-            // pris plus tôt l'aurait perdu et le serveur aurait refusé l'envoi.
-            body: JSON.stringify({
-              ...Object.fromEntries(new FormData(form).entries()),
-              formToken,
-            }),
-          })
-        )
-        .then(async (res) => {
-          if (!res.ok) {
-            // Le serveur nomme la cause : on la lit avant de lever.
-            const data = await res.json().catch(() => null);
-            const err = new Error(`HTTP ${res.status}`);
-            err.code = data && data.code;
-            throw err;
-          }
           form.reset();
+          updateCount();
           // Confirmation persistante à la place du formulaire, plutôt qu'un
           // libellé de bouton effacé au bout de quatre secondes.
           if (formDone) {
@@ -622,16 +822,33 @@ import { applySpans } from '../lib/spans.js';
           if (formStatus) formStatus.textContent = FORM_LABELS.sent;
         })
         .catch((err) => {
-          const message = (err && FORM_ERRORS[err.code]) || FORM_LABELS.error;
+          const field = err && err.field ? form.querySelector(`[name="${err.field}"]`) : null;
+          const specific = fieldMessage(err, field);
+          const message = specific || (err && FORM_ERRORS[err.code]) || FORM_LABELS.error;
+          if (field && specific && fieldError) {
+            // Message posé SOUS le champ et relié à lui : un lecteur d'écran
+            // le lit en arrivant sur le champ, pas seulement une fois en bas
+            // du formulaire (WCAG 3.3.1).
+            field.after(fieldError);
+            fieldError.textContent = message;
+            fieldError.hidden = false;
+            field.setAttribute('aria-invalid', 'true');
+            field.setAttribute('aria-errormessage', 'fieldError');
+            field.setAttribute('aria-describedby', describedBy(field, true));
+          } else if (field) {
+            field.setAttribute('aria-invalid', 'true');
+          }
           btn.innerHTML = FORM_LABELS.error;
           btn.classList.add('is-error');
           // Le détail va dans la région annoncée ET sous le formulaire : le
           // bouton est trop étroit pour « Vérifiez les champs obligatoires ».
           if (formStatus) formStatus.textContent = message;
-          if (formError) {
+          if (formError && !(field && specific)) {
             formError.textContent = message;
             formError.hidden = false;
           }
+          // Le focus va au champ à corriger : c'est là que se trouve la suite.
+          if (field) field.focus();
         })
         .finally(() => {
           // Un jeton Turnstile ne vaut qu'un envoi : Cloudflare refuse le second
@@ -650,7 +867,7 @@ import { applySpans } from '../lib/spans.js';
             // Rien à rétablir si la confirmation a pris la place du formulaire.
             if (formDone && !formDone.hidden) return;
             btn.innerHTML = originalHTML;
-            btn.classList.remove('is-success', 'is-error');
+            btn.classList.remove('is-error');
             btn.disabled = false;
             if (formStatus) formStatus.textContent = '';
           }, 4000);
@@ -661,4 +878,46 @@ import { applySpans } from '../lib/spans.js';
   // Le lien email est une ancre <a href="/api/email"> : la redirection
   // server-side (302 -> mailto:) est gérée nativement par le navigateur,
   // sans JS, ce qui rend le lien plus robuste (clic milieu, menu contextuel…).
+  //
+  // Bouton « Copier » à côté de l'adresse écrite : montré seulement si le
+  // presse-papiers est disponible (contexte sécurisé), sinon l'adresse reste
+  // sélectionnable à la main.
+  // Même principe sur les fiches projet : copier l'adresse canonique de la
+  // page, pour l'envoyer à une production sans passer par la barre d'adresse.
+  const copyLink = document.getElementById('copyLink');
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (copyLink && navigator.clipboard) {
+    copyLink.hidden = false;
+    const label = copyLink.textContent;
+    let resetTimer = null;
+    copyLink.addEventListener('click', () => {
+      navigator.clipboard
+        .writeText(canonical ? canonical.href : window.location.href)
+        .then(() => {
+          copyLink.textContent = copyLink.dataset.copied;
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => { copyLink.textContent = label; }, 2000);
+        })
+        .catch(() => { /* refus du navigateur : l'adresse reste dans la barre */ });
+    });
+  }
+
+  const copyEmail = document.getElementById('copyEmail');
+  const contactAddress = document.getElementById('contactAddress');
+  if (copyEmail && contactAddress && navigator.clipboard) {
+    copyEmail.hidden = false;
+    const label = copyEmail.textContent;
+    let resetTimer = null;
+    copyEmail.addEventListener('click', () => {
+      navigator.clipboard
+        .writeText(contactAddress.textContent.trim())
+        .then(() => {
+          copyEmail.textContent = copyEmail.dataset.copied;
+          if (formStatus) formStatus.textContent = copyEmail.dataset.copied;
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => { copyEmail.textContent = label; }, 2000);
+        })
+        .catch(() => { /* refus du navigateur : l'adresse reste lisible */ });
+    });
+  }
 })();

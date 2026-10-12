@@ -58,9 +58,9 @@ test('le fil d’Ariane est traduit et pointe vers les URL françaises', () => {
   assert.equal(b.itemListElement[1].item, 'https://roxane-foare.com/fr/portfolio');
 });
 
-test("embedUrl n'ajoute le hash que pour une vidéo privée", () => {
-  assert.equal(embedUrl({ id: '123' }), 'https://player.vimeo.com/video/123');
-  assert.equal(embedUrl({ id: '123', hash: 'abc' }), 'https://player.vimeo.com/video/123?h=abc');
+test("embedUrl n'ajoute le hash que pour une vidéo privée, et désactive toujours le suivi", () => {
+  assert.equal(embedUrl({ id: '123' }), 'https://player.vimeo.com/video/123?dnt=1');
+  assert.equal(embedUrl({ id: '123', hash: 'abc' }), 'https://player.vimeo.com/video/123?h=abc&dnt=1');
 });
 
 test('relatedProjects reste dans la catégorie et exclut le projet courant', () => {
@@ -128,7 +128,7 @@ test('les distinctions alimentent le VideoObject et non le crédit', () => {
   const p = {
     cat: 'film',
     title: 'En mille morceaux',
-    credit: 'Director : Véronique Mériadec',
+    director: 'Véronique Mériadec',
     year: '2024',
     awards: ['Best Editing Award - Cyprus International Film Festival'],
   };

@@ -18,11 +18,18 @@ import { readFileSync } from 'node:fs';
 const CSS = readFileSync(new URL('../src/styles/styles.css', import.meta.url), 'utf8');
 
 /** Valeur d'un jeton `--nom: #rrggbb;` déclaré dans :root. */
-function token(nom) {
-  const m = new RegExp(`--${nom}:\\s*(#[0-9a-fA-F]{6})`).exec(CSS);
+function token(nom, css = CSS) {
+  const m = new RegExp(`--${nom}:\\s*(#[0-9a-fA-F]{6})`).exec(css);
   assert.ok(m, `jeton --${nom} introuvable dans styles.css`);
   return m[1];
 }
+
+/** Bloc du thème sombre : ses jetons redéfinissent ceux de :root. */
+const DARK = (() => {
+  const start = CSS.indexOf('@media (prefers-color-scheme: dark)');
+  assert.ok(start !== -1, 'bloc prefers-color-scheme: dark introuvable');
+  return CSS.slice(start, CSS.indexOf('\n}', start));
+})();
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
@@ -100,4 +107,34 @@ test('--gray-light reste réservé aux filets décoratifs', () => {
   for (const re of commandes) {
     assert.ok(!re.test(CSS), `--gray-light est réutilisé sur une commande : ${re}`);
   }
+});
+
+/* ── Thème sombre (UI-06) ───────────────────────────────────────────── */
+
+test('thème sombre : chaque texte et chaque commande tient son seuil', () => {
+  const fond = token('white', DARK);
+  const seuils = {
+    black: 4.5, // texte courant
+    'gray-dark': 4.5,
+    'gray-mid': 4.5,
+    'accent-text': 4.5,
+    'error-text': 4.5,
+    'border-ui': 3, // 1.4.11, contour des commandes
+  };
+  for (const [nom, min] of Object.entries(seuils)) {
+    const r = ratio(token(nom, DARK), fond);
+    assert.ok(r >= min, `--${nom} sur le fond sombre : ${r.toFixed(2)}:1, minimum ${min}:1`);
+  }
+});
+
+test('thème sombre : --gray-light reste un filet, sous 3:1', () => {
+  const r = ratio(token('gray-light', DARK), token('white', DARK));
+  assert.ok(r < 3, `--gray-light sombre : ${r.toFixed(2)}:1`);
+});
+
+test('le texte posé sur les images ne suit pas le thème', () => {
+  // Les vignettes et la lightbox gardent un fond sombre dans les deux thèmes :
+  // --white y deviendrait un texte sombre sur fond sombre.
+  assert.ok(!/--on-media\s*:/.test(DARK), '--on-media ne doit pas être redéfini en sombre');
+  assert.ok(!/\.work-title\s*\{[^}]*color:\s*var\(--white\)/.test(CSS), '.work-title doit utiliser --on-media');
 });

@@ -10,16 +10,20 @@
  */
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb, getDuration } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
+import Thumb from './Thumb.astro';
 import { embedUrl, formatDuration } from '../lib/project-page.js';
+import { creditParts, creditLine } from '../lib/credits.js';
 import type { Project } from '../lib/types';
 
 interface Props {
   project: Project;
   related?: { project: Project; slug: string }[];
+  siblings?: { prev: { project: Project; slug: string }; next: { project: Project; slug: string } } | null;
   lang?: 'en' | 'fr';
 }
 
-const { project: p, related = [], lang = 'en' } = Astro.props;
+const { project: p, related = [], siblings = null, lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 const langBase = lang === 'fr' ? '/fr' : '';
 
@@ -27,6 +31,14 @@ const langBase = lang === 'fr' ? '/fr' : '';
 // montrée. Même remarque que l'année dans la grille : c'est une information
 // que cherchent les productions.
 const duration = formatDuration(getDuration(p));
+
+// Vignette posée derrière le lecteur. Un iframe n'est pas candidat LCP : sur
+// mobile, Lighthouse retenait la première vignette « Dans la même
+// catégorie », chargée en lazy, tout en bas de page. L'image devient
+// l'élément LCP, chargée en priorité, et sert de fond pendant que le lecteur
+// Vimeo démarre. L'iframe reste en place et par-dessus : c'est lui qui
+// conditionne l'indexation de la vidéo (voir l'en-tête de ce fichier).
+const poster = resolveThumb(p, { local: localImages });
 
 // Découpage en paragraphes fait ici et non dans le template : une regex
 // contenant `{2,}` y serait lue comme une expression JSX par le vérificateur
@@ -42,7 +54,7 @@ const paragraphs = p.description
 // catégorie à l'autre bout de la rangée. Une par ligne, la colonne reprend une
 // largeur normale et chaque prix se lit d'un coup d'œil.
 const facts: { label: string; value?: string; values?: string[] }[] = [];
-if (p.credit) facts.push({ label: t('project.production'), value: p.credit });
+for (const { label, value } of creditParts(p, lang)) facts.push({ label, value });
 if (p.year) facts.push({ label: t('project.year'), value: p.year });
 // Posées juste après l'année : ce sont les faits les plus forts d'un projet
 // qui en porte, et elles étaient jusqu'ici noyées dans le champ crédit.
@@ -68,6 +80,20 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
   </header>
 
   <div class="project-player">
+    {poster.src && (
+      <Thumb
+        class="project-player-poster"
+        src={poster.src}
+        srcset={poster.srcset}
+        avifSrcset={poster.avifSrcset}
+        sizes="(max-width: 900px) 100vw, (max-width: 1180px) calc(100vw - 112px), 1068px"
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+        width="1280"
+        height="800"
+      />
+    )}
     <iframe
       src={embedUrl(p)}
       title={`${p.title} - ${t('project.playerTitle')}`}
@@ -105,20 +131,42 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
     </p>
   )}
 
+  {/* Parcours de la catégorie fiche par fiche, et lien à copier pour
+       l'envoyer à une production. Le bouton n'apparaît que si le
+       presse-papiers est disponible (voir app.js). */}
+  <nav class="project-pager" aria-label={t('project.pagerAria')}>
+    {siblings && (
+      <a class="project-pager-link" href={`${langBase}/portfolio/${siblings.prev.slug}`} rel="prev">
+        <span class="project-pager-label">&larr; {t('project.prev')}</span>
+        <span class="project-pager-title">{siblings.prev.project.title}</span>
+      </a>
+    )}
+    <button type="button" class="project-copy" id="copyLink" data-copied={t('project.copied')} hidden>
+      {t('project.copyLink')}
+    </button>
+    {siblings && (
+      <a class="project-pager-link project-pager-next" href={`${langBase}/portfolio/${siblings.next.slug}`} rel="next">
+        <span class="project-pager-label">{t('project.next')} &rarr;</span>
+        <span class="project-pager-title">{siblings.next.project.title}</span>
+      </a>
+    )}
+  </nav>
+
   {related.length > 0 && (
     <section class="project-related">
       <h2>{t('project.related')}</h2>
       <ul>
         {related.map(({ project: r, slug }) => {
-          const { src, srcset } = resolveThumb(r);
+          const { src, srcset, avifSrcset } = resolveThumb(r, { local: localImages });
           return (
             <li>
               <a href={`${langBase}/portfolio/${slug}`}>
                 {src && (
-                  <img
+                  <Thumb
                     src={src}
                     srcset={srcset}
-                    sizes="(max-width: 900px) 100vw, 33vw"
+                    avifSrcset={avifSrcset}
+                    sizes="(max-width: 900px) 100vw, (min-width: 1180px) 340px, calc((100vw - 160px) / 3)"
                     alt={r.title}
                     loading="lazy"
                     decoding="async"
@@ -127,7 +175,7 @@ facts.push({ label: t('project.category'), value: t(`cat.${p.cat}`) });
                   />
                 )}
                 <span class="project-related-title">{r.title}</span>
-                {r.credit && <span class="project-related-credit">{r.credit}</span>}
+                {creditLine(r, lang) && <span class="project-related-credit">{creditLine(r, lang)}</span>}
               </a>
             </li>
           );

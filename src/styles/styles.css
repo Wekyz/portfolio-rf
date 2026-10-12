@@ -66,6 +66,10 @@
   /* Rouge des messages d'erreur du formulaire. Vérifié par
      tests/contrast.test.mjs au même titre que les autres. */
   --error-text: #a3311c;
+  /* Texte et commandes posés sur une image ou sur le fond de la lightbox :
+     ce fond reste sombre dans les deux thèmes, ce blanc ne s'inverse donc
+     jamais (contrairement à --white, qui est le fond de page). */
+  --on-media:   #fafaf8;
 
   --font-hennessy: 'HennessySerif1765', Georgia, serif;
   --font-dala:     'DalaFloda', Georgia, serif;
@@ -77,12 +81,38 @@
   --t-slow:  .4s;
 }
 
-/* Le site est volontairement clair. Sans cette déclaration, un système en
-   thème sombre rend les contrôles natifs en sombre - le <select> des filtres
-   sur mobile, les champs du formulaire - c'est-à-dire exactement les éléments
-   les plus fonctionnels de la page. Un vrai thème sombre serait un autre
-   chantier. */
+/* ── THÈME SOMBRE ─────────────────────────────────────────────
+   Suit le réglage du système. Toutes les couleurs passent par les jetons
+   ci-dessus : le thème se résume à un second jeu de valeurs. Malgré leurs
+   noms historiques, --white est le FOND et --black le TEXTE ; ils
+   s'inversent ici. Les contrastes de ce jeu sont vérifiés par
+   tests/contrast.test.mjs, comme ceux du thème clair.
+
+   `color-scheme` suit aussi : il règle les contrôles natifs (le <select>
+   des filtres sur mobile, les champs du formulaire, les barres de
+   défilement), qui restaient clairs sur une page sombre sinon. */
 :root { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --white:       #141412;
+    --black:       #ecebe6;
+    --gray-light:  #2c2c29;
+    --gray-mid:    #9c9b94;
+    --gray-dark:   #b9b8b1;
+    --border-ui:   #74736d;
+    --accent-text: #c8b89a;
+    --error-text:  #ec8a74;
+  }
+  /* Logos fournis en sombre sur fond transparent : inversés, sinon ils
+     disparaissent sur le fond de page. Pas de retour à la couleur au
+     survol, qui ramènerait un logo noir sur fond noir. Sélecteur renforcé :
+     la règle de base de .brand-logo img vient plus loin dans la feuille. */
+  .brand-marquee .brand-logo img,
+  .brand-marquee .brand-logo:hover img { filter: grayscale(1) invert(1); }
+  /* États du bouton d'envoi : fonds colorés fixes, texte clair fixe. */
+  .form-submit.is-error { color: var(--on-media); }
+}
 
 html { scroll-behavior: smooth; }
 body {
@@ -101,7 +131,7 @@ body {
 }
 /* Sur le fond sombre de la lightbox, un contour noir est invisible :
    l'utilisateur au clavier perdait toute trace de sa position. */
-.lightbox :focus-visible { outline-color: var(--white); }
+.lightbox :focus-visible { outline-color: var(--on-media); }
 
 /* ── A11Y : lien d'évitement ──────────────────────────────── */
 .skip-link {
@@ -111,6 +141,10 @@ body {
   transition: top var(--t-fast);
 }
 .skip-link:focus { top: 8px; }
+
+/* <picture> des images locales (Thumb.astro) : sans effet sur la mise en
+   page, le <img> qu'il contient se comporte comme avant. */
+picture { display: contents; }
 
 /* ── A11Y : contenu réservé aux lecteurs d'écran ──────────── */
 .visually-hidden {
@@ -130,6 +164,7 @@ body {
    n'en décrire qu'un. L'icône annonce l'action à venir, pas l'état courant :
    « pause » tant que ça bouge, « lecture » une fois arrêté. */
 .media-toggle {
+  position: relative;
   width: 32px; height: 32px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: none; border: 1px solid var(--border-ui); border-radius: 50%;
@@ -137,6 +172,9 @@ body {
   transition: border-color var(--t-fast) ease, color var(--t-fast) ease;
 }
 .media-toggle:hover { border-color: var(--black); color: var(--black); }
+/* Zone tactile de 44 px autour du cercle de 32 : le dessin ne change pas,
+   le doigt a de la marge. Même procédé pour .lightbox-nav. */
+.media-toggle::after { content: ''; position: absolute; inset: -7px; }
 .media-toggle .icon-play { display: none; }
 .media-toggle[aria-pressed='true'] .icon-pause { display: none; }
 .media-toggle[aria-pressed='true'] .icon-play { display: block; }
@@ -150,10 +188,15 @@ body {
 .slide-label .lbl-out,
 .slide-label .lbl-in { display: block; transition: transform var(--t-mid) var(--ease); }
 .slide-label .lbl-in { position: absolute; top: 0; left: 0; transform: translateX(-110%); color: var(--black); }
+/* `.active` pour les filtres, `aria-current` pour la navigation : les liens
+   du menu portaient bien aria-current, mais aucun style ne le lisait, la page
+   courante n'avait donc aucun repère visuel. */
 .slide-label:hover .lbl-out,
-.slide-label.active .lbl-out { transform: translateX(110%); }
+.slide-label.active .lbl-out,
+.slide-label[aria-current='page'] .lbl-out { transform: translateX(110%); }
 .slide-label:hover .lbl-in,
-.slide-label.active .lbl-in  { transform: translateX(0); }
+.slide-label.active .lbl-in,
+.slide-label[aria-current='page'] .lbl-in  { transform: translateX(0); }
 .slide-label::after {
   content: ''; position: absolute; bottom: -2px; left: 0;
   width: 100%; height: 1px; background: var(--black);
@@ -161,7 +204,8 @@ body {
   transition: transform var(--t-mid) var(--ease);
 }
 .slide-label:hover::after,
-.slide-label.active::after { transform: scaleX(1); }
+.slide-label.active::after,
+.slide-label[aria-current='page']::after { transform: scaleX(1); }
 
 /* ── NAV ──────────────────────────────────────────────────── */
 /* Scopé au > body : le sélecteur nu s'appliquait aussi au fil d'Ariane des
@@ -176,7 +220,8 @@ body > nav {
 /* Accueil : le showreel touche le bas de la nav, le filet devient un faux
    séparateur superflu au-dessus de la vidéo. */
 nav.nav-flush { border-bottom-color: transparent; }
-/* Wrapper sémantique : le H1 ne doit pas modifier l'apparence du logo. */
+/* Conteneur du logo (ce n'est plus un H1, voir Nav.astro) : neutralise les
+   marges et la typographie héritées. */
 .nav-logo-wrap { margin: 0; font-size: inherit; font-weight: inherit; line-height: 1; }
 .nav-logo {
   font-family: var(--font-dala);
@@ -207,10 +252,13 @@ nav.nav-flush { border-bottom-color: transparent; }
 .nav-lang:hover { color: var(--black) !important; border-color: var(--black); }
 
 /* Menu burger (mobile uniquement, voir media query 900px) */
+/* 44x44 px de zone tactile (recommandation Apple, WCAG 2.5.5) pour des traits
+   inchangés de 32 px : le padding porte la différence, la marge négative
+   garde le bord droit aligné sur la navigation. */
 .nav-burger {
-  display: none;
+  display: none; box-sizing: border-box;
   flex-direction: column; justify-content: center; gap: 5px;
-  width: 32px; height: 32px; padding: 0;
+  width: 44px; height: 44px; padding: 0 6px; margin-right: -6px;
   background: none; border: none; cursor: pointer;
 }
 .nav-burger span {
@@ -243,6 +291,16 @@ nav.nav-flush { border-bottom-color: transparent; }
   aspect-ratio: 1920 / 803;
   border: 0;
   transform: translate(-50%, -50%);
+  /* Invisible tant que la lecture n'a pas commencé : le lecteur Vimeo
+     affiche un cadre noir pendant son démarrage, l'image d'ouverture reste
+     donc visible dessous jusqu'à la première image de la vidéo. */
+  opacity: 0; transition: opacity .6s ease;
+}
+.showreel.is-playing .showreel-frame,
+.showreel-frame-static { opacity: 1; }
+/* Image d'ouverture (façade) : même cadre que le lecteur. */
+.showreel-poster {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
 
 /* Commandes du showreel : bouton d'arrêt + curseur de position.
@@ -305,7 +363,9 @@ nav.nav-flush { border-bottom-color: transparent; }
      mais il vient de strings.js et une retouche éditoriale un peu longue
      l'aurait fait sortir du cadre au lieu de passer à la ligne. `balance`
      répartit les lignes proprement si le cas se présente. */
-  font-size: clamp(11px, 1.1vw, 14px); text-wrap: balance;
+  /* Le minimum était de 11 px : entre 901 et 1 270 px de large, ce H1 (et
+     élément LCP) s'affichait plus petit que le texte courant (15 px). */
+  font-size: clamp(16px, 1.3vw, 19px); text-wrap: balance;
   font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
   color: var(--gray-dark); margin-bottom: 56px;
 }
@@ -460,24 +520,24 @@ nav.nav-flush { border-bottom-color: transparent; }
      suffit pas. L'ombre garantit la lisibilité sans assombrir la photo. */
   text-shadow: 0 1px 12px rgba(14, 14, 12, .55);
   font-size: 21px; font-weight: 400;
-  color: var(--white); letter-spacing: -.01em; line-height: 1.25;
+  color: var(--on-media); letter-spacing: -.01em; line-height: 1.25;
 }
 .work-meta {
   display: flex; gap: 14px; align-items: center; margin-top: 6px; flex-wrap: wrap;
 }
 .work-prod {
-  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
 }
 /* L'année était saisie dans le CMS pour chacun des 36 projets et n'apparaissait
    nulle part. Elle prend sa place dans le `gap` déjà prévu par .work-meta,
    en retrait de la production pour rester secondaire. */
 .work-year {
-  font-size: 10px; letter-spacing: .1em; color: rgba(255, 255, 255, .62);
+  font-size: 12px; letter-spacing: .1em; color: rgba(255, 255, 255, .62);
 }
 .work-badge {
   display: inline-block; margin-top: 10px;
   padding: 5px 14px; border: 1px solid rgba(255, 255, 255, .5);
-  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
   color: rgba(255, 255, 255, .85);
 }
 
@@ -512,11 +572,9 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* ── NON CLIQUABLE (ex. Live en photo) ───────────────────────
    Un item Live peut être une simple photo (non cliquable) ou une vidéo
    Vimeo (cliquable) - voir public/admin/config.yml. WorkItem.astro rend un
-   <button> pour les items cliquables et un <div> pour les autres : cibler
-   `:not(button)` désactive le curseur/l'icône play uniquement sur les
-   items réellement non interactifs, quelle que soit leur catégorie. */
-/* Vignette non cliquable (projet `noClick` : live sans lien) - rendue en
-   <div> plutôt qu'en <a>, voir WorkItem.astro. */
+   <a> pour les items cliquables et un <div> pour les autres : cibler
+   `:not(a)` désactive le curseur et l'icône play uniquement sur les items
+   réellement non interactifs, quelle que soit leur catégorie. */
 .work-thumb-wrap:not(a) { cursor: default; }
 .work-thumb-wrap:not(a) .work-play { display: none; }
 .work-thumb-wrap:not(a):hover .work-thumb { transform: none; }
@@ -560,6 +618,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   aspect-ratio: 16/9;
   background: var(--black); overflow: hidden;
 }
+.project-player-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .project-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 .project-facts {
@@ -567,7 +626,7 @@ nav.nav-flush { border-bottom-color: transparent; }
   margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--gray-light);
 }
 .project-fact dt {
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--gray-mid); margin-bottom: 6px;
 }
 .project-fact dd { font-size: 15px; color: var(--black); }
@@ -582,6 +641,27 @@ nav.nav-flush { border-bottom-color: transparent; }
   text-transform: uppercase; transition: background var(--t-fast) ease, color var(--t-fast) ease;
 }
 .project-cta a:hover { background: var(--black); color: var(--white); }
+
+/* Précédent / copier le lien / suivant. Trois colonnes : le bouton reste
+   centré même quand un seul voisin existe. */
+.project-pager {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px;
+  margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--gray-light);
+}
+.project-pager-link { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--black); min-width: 0; }
+.project-pager-next { grid-column: 3; text-align: right; }
+.project-pager-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-mid); }
+.project-pager-title { font-family: var(--font-hennessy); font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-pager-link:hover .project-pager-title { text-decoration: underline; text-underline-offset: 3px; }
+.project-copy {
+  grid-column: 2; grid-row: 1;
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--black);
+  border-bottom: 1px solid var(--border-ui);
+}
+.project-copy:hover { border-bottom-color: var(--black); }
+.project-copy[hidden] { display: none; }
 
 .project-related { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--gray-light); }
 .project-related h2 {
@@ -607,16 +687,21 @@ nav.nav-flush { border-bottom-color: transparent; }
 .contact-info {
   padding: 0 56px 104px; max-width: 1180px; margin: 0 auto;
 }
+/* Grille et non flex : avec huit entrées de longueurs inégales, le flex
+   produisait des rangées en escalier. */
 .contact-info dl {
-  display: flex; flex-wrap: wrap; gap: 48px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 36px 48px;
   padding-top: 28px; border-top: 1px solid var(--gray-light);
 }
 .contact-info dt {
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--gray-mid); margin-bottom: 8px;
 }
 .contact-info dd { font-size: 14px; display: flex; gap: 16px; }
 .contact-info dd a { color: var(--black); text-underline-offset: 3px; }
+/* Une phrase, pas une liste de liens. */
+.contact-info .contact-fact dd { display: block; line-height: 1.5; }
 
 /* ── SÉLECTION (accueil) ──────────────────────────────────── */
 .featured { padding: 96px 56px 24px; }
@@ -661,7 +746,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .work-badge-still {
   border-color: rgba(255, 255, 255, .32);
   color: rgba(255, 255, 255, .72);
-  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
 }
 
 /* ── DISTINCTIONS ─────────────────────────────────────────── */
@@ -696,7 +781,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .legal-facts { display: grid; gap: 12px; }
 .legal-fact { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: baseline; }
 .legal-fact dt {
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid);
+  font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid);
 }
 .legal-fact dd { color: var(--black); overflow-wrap: anywhere; }
 
@@ -777,9 +862,10 @@ nav.nav-flush { border-bottom-color: transparent; }
   /* Ne pas ajouter de `-webkit-mask-image` à la main : le build passe la
      feuille dans lightningcss, qui gère les préfixes selon ses cibles
      navigateurs. Il les AJOUTE tout seul quand la cible le demande, et
-     SUPPRIME ceux écrits en dur quand elle ne le demande pas (cible actuelle
-     Safari 16+, donc préfixe retiré du CSS livré). Le levier, s'il faut un
-     jour couvrir Safari < 15.4, est la cible du build, pas cette ligne. */
+     SUPPRIME ceux écrits en dur quand elle ne le demande pas. Avec la cible
+     actuelle (Safari 16.4, BROWSER_TARGET dans astro.config.mjs), il ajoute
+     `-webkit-mask-image` au CSS livré. Le levier, s'il faut changer de
+     navigateurs, est cette cible, pas cette ligne. */
   mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
 .brand-marquee-track {
@@ -844,6 +930,22 @@ nav.nav-flush { border-bottom-color: transparent; }
   display: inline-block; padding: 3px; transform: rotate(-45deg);
 }
 
+/* Adresse écrite sous le lien : le `mailto:` ne mène nulle part sur un poste
+   sans logiciel de messagerie. */
+.contact-address {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px;
+  font-size: 14px; color: var(--gray-dark); padding-left: 32px;
+  overflow-wrap: anywhere;
+}
+.contact-copy {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--black);
+  border-bottom: 1px solid var(--border-ui);
+}
+.contact-copy:hover { border-bottom-color: var(--black); }
+.contact-copy[hidden] { display: none; }
+
 .contact-form { display: flex; flex-direction: column; gap: 20px; }
 /* Même piège que `.showreel-controls` : `display: flex` d'une feuille
    d'auteur l'emporte sur le `[hidden] { display: none }` du navigateur. Sans
@@ -872,7 +974,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label {
-  font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--gray-mid);
+  font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--gray-mid);
 }
 .form-group input,
 .form-group textarea {
@@ -882,6 +984,12 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .form-group input:focus,
 .form-group textarea:focus { border-bottom-color: var(--black); }
+/* Champ désigné par le serveur (trop long, manquant, adresse invalide). */
+.form-group [aria-invalid="true"] { border-bottom-color: var(--error-text); }
+.form-count { font-size: 12px; color: var(--gray-mid); text-align: right; }
+.form-optional { text-transform: none; letter-spacing: 0; }
+.field-error { font-size: 13px; }
+.form-count.is-full { color: var(--error-text); }
 /* --gray-light sur le fond du site ne donnait que 1,18:1 (mesuré) : les
    exemples « Marie », « marie@studio.com » étaient invisibles pour une bonne
    part des visiteurs, très en dessous du minimum WCAG de 4,5:1.
@@ -904,7 +1012,6 @@ nav.nav-flush { border-bottom-color: transparent; }
 }
 .form-submit:hover { background: var(--gray-dark); gap: 22px; }
 .form-submit[disabled] { opacity: .6; cursor: progress; }
-.form-submit.is-success { background: #5a7a5a; }
 .form-submit.is-error   { background: #c0392b; }
 
 /* ── FOOTER ───────────────────────────────────────────────── */
@@ -937,11 +1044,16 @@ footer {
 .back-to-top:hover { background: var(--gray-dark); }
 
 /* ── LIGHTBOX ─────────────────────────────────────────────── */
+/* <dialog> : remise à zéro des styles du navigateur (bordure, marges,
+   largeur maximale) pour qu'il couvre tout l'écran comme l'ancien <div>. */
 .lightbox {
   display: none; position: fixed; inset: 0;
+  width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0; color: inherit;
   background: rgba(14, 14, 12, .92); z-index: 1000;
   align-items: center; justify-content: center;
 }
+.lightbox::backdrop { background: transparent; }
 .lightbox.open { display: flex; }
 /* La largeur est aussi bornée par la hauteur disponible. La modale centre le
    lecteur seul : la barre d'information, posée en dessous, sortait de l'écran
@@ -958,7 +1070,7 @@ footer {
 .lightbox-bar {
   position: absolute; top: 100%; left: 0; right: 0;
   display: flex; align-items: center; gap: 16px;
-  padding-top: 16px; color: var(--white);
+  padding-top: 16px; color: var(--on-media);
 }
 .lightbox-info { flex: 1; min-width: 0; }
 .lightbox-title {
@@ -976,21 +1088,28 @@ footer {
   color: rgba(255, 255, 255, .72); text-decoration: none; white-space: nowrap;
   transition: color var(--t-fast) ease;
 }
-.lightbox-sheet:hover { color: var(--white); }
+.lightbox-sheet:hover { color: var(--on-media); }
 .lightbox-nav {
+  position: relative;
   flex-shrink: 0; order: -1;
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
   background: none; border: 1px solid rgba(255, 255, 255, .38); border-radius: 50%;
-  color: var(--white); font-size: 15px; cursor: pointer;
+  color: var(--on-media); font-size: 15px; cursor: pointer;
   transition: border-color var(--t-fast) ease, background var(--t-fast) ease;
 }
-.lightbox-nav:hover { border-color: var(--white); background: rgba(255, 255, 255, .1); }
+.lightbox-nav::after { content: ''; position: absolute; inset: -6px; }
+.lightbox-nav:hover { border-color: var(--on-media); background: rgba(255, 255, 255, .1); }
 #lightboxNext { order: 1; }
 .lightbox-bar [hidden] { display: none; }
 .lightbox-inner iframe { width: 100%; height: 100%; border: none; }
+/* Zone de 44x44 px (cible tactile recommandée) : le "×" seul, sans
+   dimension, n'offrait qu'environ 16x28 px. Le lecteur est centré avec au
+   moins 85 px libres au-dessus (voir .lightbox-inner), le bouton y tient. */
 .lightbox-close {
-  position: absolute; top: -44px; right: 0;
+  position: absolute; top: -48px; right: -10px;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
   background: none; border: none; color: #fff;
   font-size: 28px; cursor: pointer; line-height: 1;
   opacity: .7; transition: opacity var(--t-fast);
@@ -1041,8 +1160,11 @@ footer {
   .project-facts { gap: 28px; }
   .form-row { grid-template-columns: 1fr; }
   body > nav { padding-top: 20px; padding-bottom: 20px; }
-  /* Le ratio cinéma 1920/803 devient trop fin en portrait mobile. */
-  .showreel { aspect-ratio: 4 / 3; }
+  /* Plus de cadre 4/3 sur mobile : la vidéo 2,39:1 y restait entière, avec
+     près de la moitié de la hauteur vide, et l'image d'ouverture (en cover)
+     n'y était pas cadrée comme la vidéo. Le cadre garde le ratio de la
+     vidéo ; un vrai format mobile demanderait un montage du showreel en
+     4/5 ou 1/1. */
   .hero-content { margin-top: 40px; }
   /* Le texte tenait sur une ligne en desktop (taille réduite) : sur mobile
      on revient à une taille confortable, avec retour à la ligne normal. */
@@ -1093,14 +1215,18 @@ footer {
   .work-item,
   .work-item[data-portrait='true'],
   .work-item[data-poster='true'] { grid-column: span 12 !important; }
+  /* Précédent et suivant côte à côte, le bouton de copie dessous : à trois
+     sur une ligne, les titres étaient coupés après cinq lettres. */
+  .project-pager { grid-template-columns: 1fr 1fr; }
+  .project-pager-next { grid-column: 2; }
+  .project-copy { grid-column: 1 / -1; grid-row: 2; justify-self: center; margin-top: 8px; }
+  .project-pager-title { white-space: normal; }
 }
 
 /* Très petits écrans : la nav reste sur une ligne sans déborder. */
 @media (max-width: 480px) {
   body > nav { padding-left: 16px; padding-right: 16px; }
   .nav-logo { font-size: 17px; }
-  .nav-links { gap: 18px; }
-  .nav-links a { font-size: 12px; }
 }
 
 /* ── A11Y : motion reduit ─────────────────────────────────── */

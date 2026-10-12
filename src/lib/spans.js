@@ -96,3 +96,25 @@ export function applySpans(elements) {
     if (placements[i].cls) el.classList.add(placements[i].cls);
   });
 }
+
+/**
+ * Attribut `sizes` d'une vignette de la grille, calqué sur la mise en page
+ * réelle de styles.css :
+ * - jusqu'à 600 px, une colonne : toute la largeur ;
+ * - de 601 à 900 px, deux colonnes (span 6), sauf la pleine largeur (12) et
+ *   l'affiche (8 colonnes) ;
+ * - au-delà, la largeur de son span sur 12.
+ *
+ * L'ancienne valeur annonçait 100vw jusqu'à 900 px : entre 600 et 900, le
+ * navigateur téléchargeait une image deux fois trop large pour chaque
+ * vignette (217 Kio évitables mesurés sur /portfolio). Partagée avec le
+ * préchargement de la première vignette (Base.astro), qui doit annoncer
+ * exactement la même valeur pour que le navigateur réutilise le fichier.
+ *
+ * @param {{ fullWidth?: boolean, poster?: boolean }} project
+ * @param {number} span colonnes occupées au-delà de 900 px
+ */
+export function gridSizes(project, span) {
+  const tablet = project.fullWidth ? 100 : project.poster ? 67 : 50;
+  return `(max-width: 600px) 100vw, (max-width: 900px) ${tablet}vw, ${Math.round((span / 12) * 100)}vw`;
+}

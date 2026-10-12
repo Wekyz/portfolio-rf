@@ -5,6 +5,8 @@
 // /contact. D'où le niveau de titre paramétrable : sur sa propre page elle
 // porte le H1, ailleurs elle reste une section parmi d'autres.
 import { useTranslations } from '../i18n/strings.js';
+import { CONTACT_LIMITS } from '../lib/contact-limits.js';
+import { LEGAL } from '../data/legal.js';
 
 interface Props {
   lang?: 'en' | 'fr';
@@ -36,33 +38,61 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         <span class="contact-link-arrow" aria-hidden="true"></span>
         <span>{t('contact.emailLink')}</span>
       </a>
+      {/* Le lien ouvre un `mailto:`, qui ne fait rien sur un poste sans
+           logiciel de messagerie configuré (Gmail dans le navigateur, cas
+           courant). L'adresse est donc aussi écrite, avec de quoi la copier.
+           Elle est déjà publique sur /legal : la cacher ici ne protégeait
+           de rien. */}
+      <p class="contact-address">
+        <span id="contactAddress">{LEGAL.email}</span>
+        <button
+          type="button"
+          class="contact-copy"
+          id="copyEmail"
+          aria-label={t('contact.copyAria')}
+          data-copied={t('contact.copied')}
+          hidden
+        >{t('contact.copy')}</button>
+      </p>
     </div>
   </div>
 
   <form class="contact-form" name="contact" method="POST" action="/api/contact">
     <p class="hp-field" aria-hidden="true">
-      <label>{t('contact.honeypot')} <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+      <label>{t('contact.honeypot')} <input type="text" name="bot-field" tabindex="-1" autocomplete="off" /></label>
     </p>
 
     <div class="form-row">
       <div class="form-group">
         <label for="first-name">{t('contact.firstName')}</label>
-        <input id="first-name" type="text" name="first-name" placeholder={t('contact.firstNamePh')} autocomplete="given-name" required />
+        <input id="first-name" type="text" name="first-name" placeholder={t('contact.firstNamePh')} autocomplete="given-name" maxlength={CONTACT_LIMITS['first-name']} required />
       </div>
       <div class="form-group">
         <label for="last-name">{t('contact.lastName')}</label>
-        <input id="last-name" type="text" name="last-name" placeholder={t('contact.lastNamePh')} autocomplete="family-name" required />
+        <input id="last-name" type="text" name="last-name" placeholder={t('contact.lastNamePh')} autocomplete="family-name" maxlength={CONTACT_LIMITS['last-name']} required />
       </div>
     </div>
 
     <div class="form-group">
       <label for="email">{t('contact.email')}</label>
-      <input id="email" type="email" name="email" placeholder={t('contact.emailPh')} autocomplete="email" required />
+      <input id="email" type="email" name="email" placeholder={t('contact.emailPh')} autocomplete="email" maxlength={CONTACT_LIMITS.email} required />
     </div>
 
     <div class="form-group">
-      <label for="message">{t('contact.message')}</label>
-      <textarea id="message" name="message" rows="5" placeholder={t('contact.messagePh')}></textarea>
+      {/* Seul champ facultatif, et rien ne le disait (WCAG 3.3.2). Les trois
+           autres portent `required`, annoncé par les lecteurs d'écran. */}
+      <label for="message">{t('contact.message')} <span class="form-optional">({t('contact.optional')})</span></label>
+      <textarea
+        id="message"
+        name="message"
+        rows="5"
+        placeholder={t('contact.messagePh')}
+        maxlength={CONTACT_LIMITS.message}
+        aria-describedby="messageCount"
+      ></textarea>
+      {/* Compteur affiché à l'approche de la limite seulement (voir app.js) :
+           en permanence, il ferait croire qu'un message long est attendu. */}
+      <p class="form-count" id="messageCount" data-max={CONTACT_LIMITS.message} hidden></p>
     </div>
 
     {turnstileKey && (
@@ -72,12 +102,15 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     <button type="submit" class="form-submit">
       {t('contact.send')}
       <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
-        <path d="M0 5H14M10 1L14 5L10 9" stroke="white" stroke-width="1.2"/>
+        <path d="M0 5H14M10 1L14 5L10 9" stroke="currentColor" stroke-width="1.2"/>
       </svg>
     </button>
     {/* Le détail de l'erreur, visible. `formStatus` reste la version annoncée
          aux lecteurs d'écran ; les deux portent le même texte. */}
     <p class="form-error" id="formError" hidden></p>
+    {/* Message propre à un champ : app.js le place sous le champ désigné par
+         le serveur et l'y relie (aria-describedby, aria-errormessage). */}
+    <p class="form-error field-error" id="fieldError" hidden></p>
     <p class="visually-hidden" id="formStatus" role="status" aria-live="polite"></p>
   </form>
 

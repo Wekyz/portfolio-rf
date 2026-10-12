@@ -40,7 +40,12 @@ export function createLimiter(prefix, max, window) {
   return new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(max, window),
-    analytics: true,
+    // Pas d'analytics : elles enregistrent chaque identifiant, donc chaque
+    // IP, pour le tableau de bord Upstash, sans durée limitée. La politique
+    // de confidentialité affirme que l'IP n'est « ni conservée durablement ».
+    // Les compteurs de rejet (countRejection) suffisent, et ne contiennent
+    // aucune IP. Économise aussi des commandes sur le quota gratuit.
+    analytics: false,
     prefix,
   });
 }
@@ -61,5 +66,18 @@ export function clientIp(req) {
 export function countRejection(reason) {
   if (!redis) return;
   const month = new Date().toISOString().slice(0, 7); // AAAA-MM
-  redis.incr(`abuse:${month}:${reason}`).catch(() => {});
+  incrWithTtl(`abuse:${month}:${reason}`);
+}
+
+/**
+ * Durée de vie des compteurs mensuels : 400 jours, de quoi comparer un mois
+ * à celui de l'année précédente. Ils n'en avaient aucune et s'accumulaient
+ * sans fin sur le quota gratuit d'Upstash (ANT-05).
+ */
+export const COUNTER_TTL = 400 * 24 * 3600;
+
+/** INCR puis EXPIRE, silencieux en cas d'échec (voir countRejection). */
+export function incrWithTtl(key) {
+  if (!redis) return Promise.resolve();
+  return Promise.all([redis.incr(key), redis.expire(key, COUNTER_TTL)]).catch(() => {});
 }

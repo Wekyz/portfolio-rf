@@ -1,5 +1,20 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { SITE } from './src/lib/schema-ids.js';
+
+// Cible navigateurs, écrite ici plutôt que laissée au défaut de Vite.
+// Ce sont les valeurs de `baseline-widely-available` dans Vite 8 (constante
+// ESBUILD_BASELINE_WIDELY_AVAILABLE_TARGET), recopiées pour qu'une montée de
+// Vite ou d'Astro ne puisse plus les déplacer sans qu'on le décide.
+//
+// Elles changent pourtant la feuille livrée. Laissée au défaut, la cible CSS
+// arrivait au minifieur sous la forme du mot-clé `baseline-widely-available`,
+// que lightningcss ne sait pas traduire en versions : la feuille sortait sans
+// aucune cible, donc sans préfixe. Avec des versions explicites, lightningcss
+// ajoute ce que Safari 16.4 réclame : `-webkit-user-select` (`.filter-sep`
+// était sélectionnable dans Safari), `-webkit-mask-image` et le repli de
+// `color-scheme`. Environ 200 octets de plus par page.
+const BROWSER_TARGET = ['chrome111', 'edge111', 'firefox114', 'safari16.4', 'ios16.4'];
 
 // Captcha Turnstile : entièrement conditionné à la présence de la clé
 // publique. Tant qu'elle est absente, rien n'est rendu, aucun domaine tiers
@@ -9,7 +24,9 @@ const TURNSTILE = Boolean(process.env.PUBLIC_TURNSTILE_SITE_KEY);
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://roxane-foare.com',
+  // Même constante que les URL absolues du JSON-LD, des sitemaps et des
+  // fichiers llms : une seule valeur à changer si le domaine change.
+  site: SITE,
   // Sortie 100 % statique (équivalent au site actuel) : `astro build` -> dossier `dist/`
   output: 'static',
   build: {
@@ -32,6 +49,9 @@ export default defineConfig({
   compressHTML: true,
   // Pas de télémétrie réseau pendant le build
   devToolbar: { enabled: false },
+  vite: {
+    build: { target: BROWSER_TARGET, cssTarget: BROWSER_TARGET },
+  },
   // Préchargement des pages internes au survol du lien (nav, CTA de l'accueil,
   // pied de page) : le HTML est déjà en cache quand le clic arrive, ce qui rend
   // la navigation quasi instantanée. Utile ici parce que chaque page recharge

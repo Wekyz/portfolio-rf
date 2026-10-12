@@ -5,13 +5,15 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import Lightbox from '../components/Lightbox.astro';
 import BackToTop from '../components/BackToTop.astro';
-import data from '../data/videos.json';
-import { computeSpans } from '../lib/spans.js';
+import { computeSpans, gridSizes } from '../lib/spans.js';
 import { resolveThumb } from '../lib/thumb.js';
+import { localImages } from '../lib/images.js';
 import { buildSlugMap } from '../lib/slug.js';
 import { useTranslations } from '../i18n/strings.js';
-import { PERSON_ID, WEBSITE_ID, SERVICE_ID, personRef, pageIds } from '../lib/schema-ids.js';
-import type { Project } from '../lib/types';
+import { getProjects } from '../lib/projects.js';
+import { lastModified } from '../lib/page-dates.js';
+import { IMDB_URL } from '../data/profile.js';
+import { SITE, PERSON_ID, WEBSITE_ID, SERVICE_ID, personRef, pageIds } from '../lib/schema-ids.js';
 
 // `page` détermine le head (title/description/canonical/JSON-LD) et le
 // routage - voir plus bas. 'portfolio' est la seule page à embarquer la
@@ -28,53 +30,58 @@ const {
   title,
   description,
   ogImage,
+  ogImageAlt,
+  ogType = 'website',
   videoObject,
   breadcrumb,
   dateModified,
   noindex = false,
 } = Astro.props;
 
-// Signal de fraîcheur. Les pages projet apportent leur propre date, tenue par
-// scripts/fetch-thumbs.mjs à partir du contenu réel de chaque fiche : tant
-// qu'un projet ne change pas, sa date ne change pas, quel que soit le nombre
-// de builds.
-//
-// Les pages fixes retombent sur la date du build, faute de mieux : leur
-// contenu vit dans les sources, et un dépôt cloné n'a pas d'horodatage
-// exploitable. Elles sont 13 sur 75, et ce sont celles qui bougent le moins -
-// la dilution du signal venait des 62 autres.
-const buildDate = new Date().toISOString().slice(0, 10);
-const modified = dateModified ?? buildDate;
 const t = useTranslations(lang);
 
-const SITE = 'https://roxane-foare.com';
 const langBase = lang === 'fr' ? '/fr' : '';
 const pagePath = path ?? (page === 'home' ? '' : `/${page}`);
+
+// Signal de fraîcheur, identique au lastmod du sitemap : les deux lisent
+// src/lib/page-dates.js (date du contenu pour les fiches, date tenue à la main
+// pour les pages fixes). Seule une page absente de ce registre, la 404,
+// retombe sur la date du build.
+const modified = dateModified ?? lastModified(pagePath) ?? new Date().toISOString().slice(0, 10);
 const canonical = `${SITE}${langBase}${pagePath}` || `${SITE}/`;
 const enHref = `${SITE}${pagePath || '/'}`;
 const frHref = `${SITE}/fr${pagePath}`;
 
 const pageTitle = title ?? t(`head.${page}.title`);
 const pageDescription = description ?? t(`head.${page}.description`);
-const ogImageUrl = ogImage ?? `${SITE}/og-image.jpg`;
+// Carte par défaut dans la langue de la page : celle en anglais ("Video
+// Editor") était aussi partagée depuis /fr.
+const ogImageUrl = ogImage ?? `${SITE}/${lang === 'fr' ? 'og-image-fr.jpg' : 'og-image.jpg'}`;
+// Une fiche partage la vignette du projet : son texte alternatif est le titre
+// du projet, pas la carte générique.
+const ogAlt = ogImageAlt ?? t('head.ogImageAlt');
 
 // Pas de <meta name="keywords"> : Google l'ignore depuis 2009, Bing aussi. Six
 // variantes étaient maintenues à la main dans strings.js pour rien.
 // Pas de og:logo non plus : la propriété n'existe pas dans la spécification
 // Open Graph, aucun consommateur ne la lit.
 
-const projects = (data.videos || data) as Project[];
+const projects = getProjects();
 const isPortfolio = page === 'portfolio';
+const usesVimeo = page === 'home' || page === 'portfolio' || page === 'project' || page === 'review';
 
 // - Préchargement de l'image LCP (1ʳᵉ vignette) : seulement pertinent sur la
 //   page Portfolio, où la grille est le 1er contenu visuel de la page. -
 const spans = isPortfolio ? computeSpans(projects) : [];
 const first = isPortfolio ? projects[0] : null;
-const firstThumbResolved = first ? resolveThumb(first) : null;
+const firstThumbResolved = first ? resolveThumb(first, { local: localImages }) : null;
 const firstThumb = firstThumbResolved?.src ?? null;
 const firstSrcset = firstThumbResolved?.srcset;
+// Image locale proposée en AVIF : on précharge CE fichier-là, sans quoi le
+// navigateur chargerait le WebP préchargé puis l'AVIF du <picture>.
+const firstAvif = firstThumbResolved?.avifSrcset;
 const firstSpanN = spans[0]?.span ?? 6;
-const firstSizes = `(max-width: 900px) 100vw, ${Math.round((firstSpanN / 12) * 100)}vw`;
+const firstSizes = first ? gridSizes(first, firstSpanN) : undefined;
 
 // - Données structurées de la page Portfolio -------------------------------
 // Une ItemList qui pointe vers les pages projet, et rien de plus.
@@ -131,7 +138,7 @@ const jsonLd = {
   // `sameAs` se limite à IMDb : c'est le seul profil public existant. Pas de
   // LinkedIn, pas de Vimeo public, pas de réseau social - déclarer des URL
   // mortes affaiblirait le signal au lieu de le renforcer.
-  sameAs: ['https://www.imdb.com/fr/name/nm8663077/'],
+  sameAs: [IMDB_URL],
   // Les deux prix étaient dans la bio sans être déclarés nulle part. Ce sont
   // les faits les plus forts du profil.
   award: [t('award.cyprus'), t('award.athens')],
@@ -224,7 +231,8 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#fafaf8" />
+  <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#141412" media="(prefers-color-scheme: dark)" />
 
   <title>{pageTitle}</title>
   <meta name="description" content={pageDescription} />
@@ -262,9 +270,9 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <meta property="og:image" content={ogImageUrl} />
   {!ogImage && <meta property="og:image:width" content="1200" />}
   {!ogImage && <meta property="og:image:height" content="630" />}
-  <meta property="og:image:alt" content={t('head.ogImageAlt')} />
+  <meta property="og:image:alt" content={ogAlt} />
   <meta property="og:url" content={canonical} />
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content={ogType} />
   <meta property="og:locale" content={t('head.ogLocale')} />
   <meta property="og:locale:alternate" content={lang === 'fr' ? 'en_US' : 'fr_FR'} />
   <meta property="og:site_name" content="Roxane Foare" />
@@ -274,6 +282,7 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={pageDescription} />
   <meta name="twitter:image" content={ogImageUrl} />
+  <meta name="twitter:image:alt" content={ogAlt} />
 
   {/* Pas de balises `geo.*` : aucun moteur majeur ne les lit, et elles
        annonçaient l'Île-de-France sur les 75 pages alors que le JSON-LD
@@ -287,25 +296,40 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
   <link rel="preload" as="font" type="font/woff2" href="/DalaFloda-Roman.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/DMSans-latin.woff2" crossorigin />
 
-  {/* Connexion anticipée vers Vimeo : le showreel (Accueil), la grille +
-       lightbox (Portfolio) en dépendent toutes deux. */}
-  <link rel="preconnect" href="https://i.vimeocdn.com" />
-  <link rel="preconnect" href="https://player.vimeo.com" />
+  {/* Connexion anticipée vers Vimeo, seulement là où Vimeo sert : le
+       showreel (Accueil), la grille et la lightbox (Portfolio), le lecteur
+       et les vignettes liées (fiches projet). Elle partait sur les 75 pages,
+       y compris À propos, Contact et les pages légales, qui n'en chargent
+       rien : deux connexions TLS ouvertes pour rien à chaque visite. */}
+  {usesVimeo && (
+    <Fragment>
+      <link rel="preconnect" href="https://i.vimeocdn.com" />
+      <link rel="preconnect" href="https://player.vimeo.com" />
+    </Fragment>
+  )}
 
   {/* Préchargement de l'image LCP (1ʳᵉ vignette, page Portfolio uniquement) */}
   {firstThumb && (
     <link
       rel="preload"
       as="image"
-      href={firstThumb}
-      imagesrcset={firstSrcset}
+      href={firstAvif ? undefined : firstThumb}
+      imagesrcset={firstAvif ?? firstSrcset}
       imagesizes={firstSizes}
+      type={firstAvif ? 'image/avif' : undefined}
       fetchpriority="high"
     />
   )}
 
   {/* Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) */}
   <script defer is:inline src="/_vercel/insights/script.js"></script>
+  {/* Vercel Speed Insights : Core Web Vitals mesurés chez les vrais
+       visiteurs. PageSpeed Insights n'a pas de données terrain (CrUX) pour un
+       site de ce trafic, toutes les mesures étaient donc faites en
+       laboratoire. Même origine, même absence de cookie que Web Analytics.
+       À activer dans le tableau de bord Vercel (onglet Speed Insights) : tant
+       que ce n'est pas fait, le script répond 404 et ne fait rien. */}
+  <script defer is:inline src="/_vercel/speed-insights/script.js"></script>
 
   {/* JSON-LD structured data (contenu + hash CSP calculés ci-dessus) */}
   {ldBlocks.map((block) => (

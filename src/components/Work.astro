@@ -1,5 +1,5 @@
 ---
-import data from '../data/videos.json';
+import { getProjects } from '../lib/projects.js';
 import { computeSpans } from '../lib/spans.js';
 import WorkItem from './WorkItem.astro';
 import { useTranslations } from '../i18n/strings.js';
@@ -9,7 +9,7 @@ import type { Category, Project } from '../lib/types';
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
 
-const projects = (data.videos || data) as Project[];
+const projects = getProjects();
 
 // Destination de chaque vignette. Les slugs sont calculés ici, sur la liste
 // complète : leur unicité en dépend (voir lib/slug.js). Un projet sans vidéo
@@ -63,6 +63,7 @@ const gridEntries = projects.map((p, i) => {
             boutons sans état exposé entre le rendu HTML et l'exécution du JS.
             Le script se contente désormais de les mettre à jour. */}
         <button
+          type="button"
           class:list={['filter-btn', 'slide-label', value === 'all' && 'active']}
           data-filter={value}
           aria-pressed={value === 'all' ? 'true' : 'false'}

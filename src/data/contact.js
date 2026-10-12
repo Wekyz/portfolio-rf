@@ -1,3 +1,5 @@
+import { IMDB_URL } from './profile.js';
+
 /**
  * Moyens de contact affichés sur la page /contact.
  *
@@ -24,5 +26,5 @@ export const CONTACT = {
   whatsapp: null,
 
   /** Profil IMDb - seule présence externe existante. */
-  imdb: 'https://www.imdb.com/fr/name/nm8663077/',
+  imdb: IMDB_URL,
 };

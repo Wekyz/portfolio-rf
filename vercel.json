@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/:path+/index.html", "destination": "/:path+", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -9,7 +13,7 @@
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
         { "key": "Content-Security-Policy", "value": "frame-ancestors 'self'; object-src 'none'; base-uri 'self'" }
       ]
@@ -21,9 +25,13 @@
         { "key": "Cache-Control", "value": "no-store" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' data: https://unpkg.com https://fonts.gstatic.com; img-src 'self' data: blob: https://*.githubusercontent.com https://avatars.githubusercontent.com https://*.vimeocdn.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://unpkg.com https://raw.githubusercontent.com https://sveltia-cms-auth.wekyz.workers.dev https://fonts.googleapis.com; frame-src 'self';"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com/@sveltia/cms@0.230.1/; style-src 'self' 'unsafe-inline'; font-src 'self' data: https://cdn.jsdelivr.net/fontsource/; img-src 'self' data: blob: https://*.githubusercontent.com https://avatars.githubusercontent.com https://*.vimeocdn.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.github.com https://*.githubusercontent.com https://raw.githubusercontent.com https://unpkg.com/@sveltia/cms@0.230.1/ https://unpkg.com/@sveltia/cms/package.json https://www.githubstatus.com/api/ https://sveltia-cms-auth.wekyz.workers.dev; frame-src 'self' blob:; manifest-src 'self' blob:;"
         }
       ]
+    },
+    {
+      "source": "/review/(.*)",
+      "headers": [ { "key": "X-Robots-Tag", "value": "noindex, nofollow" } ]
     },
     {
       "source": "/_astro/(.*)",
@@ -34,15 +42,11 @@
       "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ]
     },
     {
-      "source": "/live/(.*)",
+      "source": "/showreel/(.*)",
       "headers": [ { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=2592000" } ]
     },
     {
-      "source": "/brands/(.*)",
-      "headers": [ { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=2592000" } ]
-    },
-    {
-      "source": "/(favicon.png|favicon.svg|og-image.jpg|apple-touch-icon.png)",
+      "source": "/(favicon.ico|favicon.png|favicon.svg|og-image.jpg|og-image-fr.jpg|apple-touch-icon.png|icon-192.png|icon-512.png)",
       "headers": [ { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=2592000" } ]
     }
   ]

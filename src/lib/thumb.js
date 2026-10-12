@@ -3,7 +3,8 @@
  *
  * Priorité :
  *  1. `thumb` du projet, si renseigné (override manuel : affiche de film,
- *     image live) - fichier local sous public/, variantes -640/-1280/(base).
+ *     image live) - fichier de src/assets/live/, décliné par astro:assets
+ *     (voir lib/images.js), en WebP et en AVIF.
  *  2. sinon, servie directement depuis le CDN Vimeo (i.vimeocdn.com) à la
  *     largeur voulue - voir scripts/fetch-thumbs.mjs pour la résolution de
  *     l'URL de base au build.
@@ -15,10 +16,9 @@
 // surtout il rend ce module chargeable tel quel par Node - sans lui, un
 // `import` depuis node:test échouait et cette logique restait non testée.
 import vimeoThumbs from '../data/vimeo-thumbs.json' with { type: 'json' };
-import localImages from '../data/local-images.json' with { type: 'json' };
-
-// Les trois fonctions acceptent en dernier paramètre le cache à consulter, qui
-// vaut par défaut celui du build. Ça n'a aucun effet sur les appelants, mais ça
+// Les fonctions acceptent en dernier paramètre le cache à consulter, qui vaut
+// par défaut celui du build (sauf `local`, fourni par lib/images.js, que Node
+// ne peut pas charger : les composants le passent, les tests aussi). Ça n'a aucun effet sur les appelants, mais ça
 // permet aux tests de fournir leurs propres données : sans ça, ils porteraient
 // sur ce que l'API Vimeo a renvoyé le jour du dernier build, et changeraient de
 // résultat au gré des ré-uploads.
@@ -49,16 +49,15 @@ export function getDuration(p, vimeo = vimeoThumbs) {
   return `PT${h ? `${h}H` : ''}${m ? `${m}M` : ''}${s || (!h && !m) ? `${s}S` : ''}`;
 }
 
-export function resolveThumb(p, { vimeo = vimeoThumbs, local = localImages } = {}) {
+export function resolveThumb(p, { vimeo = vimeoThumbs, local = {} } = {}) {
   const localThumb = p.thumb ? (p.thumb.startsWith('/') ? p.thumb : `/${p.thumb}`) : null;
   const vimeoBase = !localThumb && p.id ? vimeo[p.id]?.thumbBase : null;
 
-  if (localThumb && localThumb.endsWith('.webp')) {
-    // Descripteurs issus des largeurs réellement mesurées au build (voir
-    // measureCandidates dans scripts/fetch-thumbs.mjs). L'ancienne version
-    // écrivait des largeurs fixes - dont un `1920w` sur toutes les images de
-    // base alors qu'une seule l'était - et le navigateur choisissait donc un
-    // fichier plus petit que promis avant de l'étirer.
+  if (localThumb) {
+    // Descripteurs issus des largeurs réellement produites au build (voir
+    // lib/images.js). Une ancienne version écrivait des largeurs fixes - dont
+    // un `1920w` sur toutes les images de base alors qu'une seule l'était - et
+    // le navigateur choisissait un fichier plus petit que promis.
     const entry = local[localThumb];
     if (entry?.candidates?.length) {
       const largest = entry.candidates[entry.candidates.length - 1];
@@ -75,12 +74,17 @@ export function resolveThumb(p, { vimeo = vimeoThumbs, local = localImages } = {
           entry.candidates.length > 1
             ? entry.candidates.map((c) => `${c.src} ${c.width}w`).join(', ')
             : undefined,
+        // Même jeu de largeurs en AVIF, proposé en <source> (voir Thumb.astro).
+        avifSrcset: entry.avifCandidates?.length
+          ? entry.avifCandidates.map((c) => `${c.src} ${c.width}w`).join(', ')
+          : undefined,
         responsive: entry.candidates.length > 1,
       };
     }
-    // Image posée après le dernier build : servie telle quelle plutôt que
-    // d'inventer des variantes qui n'existent pas encore.
-    return { src: localThumb, srcset: undefined, responsive: false };
+    // Chemin qui ne correspond à aucun fichier de src/assets/live/ (faute de
+    // frappe dans le CMS, image pas encore déposée) : pas d'image plutôt
+    // qu'une image cassée. La vignette garde son cadre et son titre.
+    return { src: undefined, srcset: undefined, responsive: false };
   }
 
   if (vimeoBase) {
