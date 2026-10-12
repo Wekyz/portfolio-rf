@@ -37,8 +37,8 @@ import { constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
-import { createHash } from 'node:crypto';
 import { buildSlugMap } from '../src/lib/slug.js';
+import { contentHash } from '../src/lib/content-hash.js';
 import { SHOWREEL } from '../src/data/profile.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -365,8 +365,9 @@ async function updateContentDates(videos, vimeoCache) {
   let changes = 0;
   for (const [project, slug] of buildSlugMap(videos)) {
     // Toute la fiche est prise en compte : le titre et le crédit s'affichent,
-    // mais `poster` ou `fullWidth` changent la page tout autant.
-    const hash = createHash('sha256').update(JSON.stringify(project)).digest('hex').slice(0, 12);
+    // mais `poster` ou `fullWidth` changent la page tout autant. Les champs
+    // vides et l'ordre des clés, eux, ne comptent pas (voir content-hash.js).
+    const hash = contentHash(project);
     const avant = previous[slug];
     if (!avant) {
       const upload = vimeoCache[project.id]?.uploadDate;

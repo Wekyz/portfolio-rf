@@ -48,8 +48,8 @@
   --gray-light: #e8e8e4;
   --gray-mid:   #6e6e68;          /* ~4.9:1 sur --white : WCAG AA (petit texte) */
   --gray-dark:  #5a5a54;
-  /* Contour des COMMANDES (champs de formulaire, boutons ronds, piste du
-     curseur du showreel). `--gray-light` n'y donnait que 1,18:1 sur le fond du
+  /* Contour des COMMANDES (champs de formulaire, boutons ronds).
+     `--gray-light` n'y donnait que 1,18:1 sur le fond du
      site, alors que WCAG 1.4.11 exige 3:1 pour ce qui permet d'identifier un
      composant d'interface et son état : la limite d'un champ de saisie en est
      l'exemple type. Mesuré à 3,22:1, même famille de gris chaud.
@@ -66,9 +66,9 @@
   /* Rouge des messages d'erreur du formulaire. Vérifié par
      tests/contrast.test.mjs au même titre que les autres. */
   --error-text: #a3311c;
-  /* Texte et commandes posés sur une image ou sur le fond de la lightbox :
-     ce fond reste sombre dans les deux thèmes, ce blanc ne s'inverse donc
-     jamais (contrairement à --white, qui est le fond de page). */
+  /* Texte et commandes posés sur une image ou sur le fond sombre de la
+     lightbox. Même valeur que --white aujourd'hui, mais un autre rôle :
+     --white est le fond de page, --on-media un texte sur fond sombre. */
   --on-media:   #fafaf8;
 
   --font-hennessy: 'HennessySerif1765', Georgia, serif;
@@ -81,38 +81,17 @@
   --t-slow:  .4s;
 }
 
-/* ── THÈME SOMBRE ─────────────────────────────────────────────
-   Suit le réglage du système. Toutes les couleurs passent par les jetons
-   ci-dessus : le thème se résume à un second jeu de valeurs. Malgré leurs
-   noms historiques, --white est le FOND et --black le TEXTE ; ils
-   s'inversent ici. Les contrastes de ce jeu sont vérifiés par
-   tests/contrast.test.mjs, comme ceux du thème clair.
+/* ── THÈME UNIQUE ─────────────────────────────────────────────
+   Le site garde sa palette claire quel que soit le réglage du système. Un
+   thème sombre a existé (octobre 2026) et a été retiré : les filets blancs
+   de la grille du portfolio n'y avaient pas de sens.
 
-   `color-scheme` suit aussi : il règle les contrôles natifs (le <select>
-   des filtres sur mobile, les champs du formulaire, les barres de
-   défilement), qui restaient clairs sur une page sombre sinon. */
-:root { color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --white:       #141412;
-    --black:       #ecebe6;
-    --gray-light:  #2c2c29;
-    --gray-mid:    #9c9b94;
-    --gray-dark:   #b9b8b1;
-    --border-ui:   #74736d;
-    --accent-text: #c8b89a;
-    --error-text:  #ec8a74;
-  }
-  /* Logos fournis en sombre sur fond transparent : inversés, sinon ils
-     disparaissent sur le fond de page. Pas de retour à la couleur au
-     survol, qui ramènerait un logo noir sur fond noir. Sélecteur renforcé :
-     la règle de base de .brand-logo img vient plus loin dans la feuille. */
-  .brand-marquee .brand-logo img,
-  .brand-marquee .brand-logo:hover img { filter: grayscale(1) invert(1); }
-  /* États du bouton d'envoi : fonds colorés fixes, texte clair fixe. */
-  .form-submit.is-error { color: var(--on-media); }
-}
+   `only light` : les contrôles natifs (le <select> des filtres, les champs
+   du formulaire, les barres de défilement) restent clairs, et les
+   navigateurs qui assombrissent d'office les pages (assombrissement
+   automatique de Chrome sur Android, Samsung Internet) sont priés de ne pas
+   le faire. */
+:root { color-scheme: only light; }
 
 html { scroll-behavior: smooth; }
 body {
@@ -157,12 +136,11 @@ picture { display: contents; }
   border: 0;
 }
 
-/* ── BOUTON PAUSE / LECTURE (factorisé showreel + bandeau) ── */
-/* Deux contenus de la page démarrent seuls et tournent en boucle : le
-   showreel de l'accueil et le bandeau de logos d'À propos. WCAG 2.2.2 exige
-   pour chacun un moyen d'arrêt, donc exactement le même bouton - autant
-   n'en décrire qu'un. L'icône annonce l'action à venir, pas l'état courant :
-   « pause » tant que ça bouge, « lecture » une fois arrêté. */
+/* ── BOUTON PAUSE / LECTURE (bandeau de logos) ─────────────── */
+/* Le bandeau de logos d'À propos démarre seul et tourne en boucle : WCAG
+   2.2.2 exige un moyen de l'arrêter. L'icône annonce l'action à venir, pas
+   l'état courant : « pause » tant que ça bouge, « lecture » une fois
+   arrêté. */
 .media-toggle {
   position: relative;
   width: 32px; height: 32px; flex-shrink: 0;
@@ -301,56 +279,6 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* Image d'ouverture (façade) : même cadre que le lecteur. */
 .showreel-poster {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-}
-
-/* Commandes du showreel : bouton d'arrêt + curseur de position.
-   Posées SOUS la vidéo, dans le flux, et non en incrustation révélée au
-   survol : WCAG 2.2.2 demande un mécanisme disponible, et le survol n'existe
-   ni au doigt ni au clavier. En dessous, elles n'ont besoin d'aucun voile de
-   contraste et ne recouvrent aucune image. */
-.showreel-controls {
-  display: flex; align-items: center; gap: 18px;
-  margin-top: 14px;
-}
-/* `display: flex` d'une feuille d'auteur l'emporte sur le `[hidden] { display:
-   none }` de la feuille du navigateur : sans cette règle, les commandes
-   s'affichent malgré l'attribut, donc y compris quand le lecteur ne répond
-   jamais - exactement ce que `hidden` devait empêcher. Même piège, même
-   remède qu'à `.lightbox-bar [hidden]` plus bas. */
-.showreel-controls[hidden] { display: none; }
-.showreel-seek {
-  flex: 1; min-width: 0;
-  -webkit-appearance: none; appearance: none;
-  background: none;
-  /* Piste de 2 px, mais 20 px de hauteur de champ : c'est la cible de clic,
-     et 2 px seraient impossibles à viser. */
-  height: 20px;
-  cursor: pointer;
-}
-/* Les pseudo-éléments de curseur natif ne se regroupent pas dans un même
-   sélecteur : un moteur qui n'en connaît qu'un jetterait toute la règle. */
-.showreel-seek::-webkit-slider-runnable-track {
-  height: 2px; background: var(--border-ui); border-radius: 2px;
-}
-.showreel-seek::-moz-range-track {
-  height: 2px; background: var(--border-ui); border-radius: 2px;
-}
-.showreel-seek::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none;
-  width: 11px; height: 11px; border-radius: 50%;
-  background: var(--black); border: 0;
-  margin-top: -4.5px; /* centre le pouce de 11 px sur une piste de 2 px */
-}
-.showreel-seek::-moz-range-thumb {
-  width: 11px; height: 11px; border-radius: 50%;
-  background: var(--black); border: 0;
-}
-/* Portion parcourue : Firefox l'expose, WebKit et Blink non - il faudrait y
-   repeindre un dégradé depuis le JS à chaque image, donc écrire un style
-   inline, que la CSP du site interdit. La position du pouce suffit à lire
-   l'avancement ; on s'en tient là plutôt que d'ouvrir la CSP pour un fard. */
-.showreel-seek::-moz-range-progress {
-  height: 2px; background: var(--black); border-radius: 2px;
 }
 
 .hero-content {
@@ -877,8 +805,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 
 /* En-tête du bandeau : titre + bouton d'arrêt (WCAG 2.2.2). */
 .brands-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-/* Le bouton lui-même est décrit une seule fois, plus haut : `.media-toggle`,
-   partagé avec les commandes du showreel. */
+/* Le bouton lui-même est décrit plus haut : `.media-toggle`. */
 /* Un groupe = une itération complète des logos. Le gap interne ET le
    padding-right (même valeur) assurent un espacement uniforme partout,
    y compris à la jointure entre les deux groupes - condition nécessaire
@@ -947,7 +874,7 @@ nav.nav-flush { border-bottom-color: transparent; }
 .contact-copy[hidden] { display: none; }
 
 .contact-form { display: flex; flex-direction: column; gap: 20px; }
-/* Même piège que `.showreel-controls` : `display: flex` d'une feuille
+/* Même piège qu'à `.lightbox-bar [hidden]` : `display: flex` d'une feuille
    d'auteur l'emporte sur le `[hidden] { display: none }` du navigateur. Sans
    cette règle, le formulaire resterait visible sous le message de
    confirmation. */

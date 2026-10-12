@@ -107,26 +107,19 @@ import { applySpans } from '../lib/spans.js';
     });
   }
 
-  // ── Showreel : arrêt, reprise, déplacement (page d'accueil) ───
-  // Même exigence que le bandeau ci-dessus (WCAG 2.2.2), sur un contenu bien
-  // plus lourd : la vidéo occupe toute la largeur et tourne indéfiniment.
+  // ── Showreel (page d'accueil) ─────────────────────────────────
+  // Le lecteur est un iframe Vimeo en `background=1`, sans commande. On lui
+  // parle par postMessage, le protocole du lecteur Vimeo, pour deux choses :
+  // savoir quand la première image est jouée (le lecteur remplace alors
+  // l'image d'ouverture, en fondu) et le mettre en pause d'emblée quand le
+  // système demande de réduire les animations. Aucun SDK chargé.
   //
-  // Le lecteur est un iframe Vimeo en `background=1` : aucune commande native,
-  // et l'iframe est hors origine, donc son DOM est inaccessible. On lui parle
-  // par postMessage, le protocole du lecteur Vimeo - qui répond bien dans ce
-  // mode (vérifié sur la production : `pause`, `play` et `setCurrentTime`
-  // aboutissent, y compris un déplacement pendant la pause). Aucun SDK n'est
-  // chargé : ce sont trois messages JSON, zéro octet tiers de plus.
-  //
-  // À noter, l'événement s'appelle `playProgress` et non `timeupdate` : le
-  // pont postMessage brut n'expose pas les mêmes noms que le SDK. Il porte
-  // `seconds`, `percent` et `duration`, ce qui dispense d'interroger la durée.
+  // À noter, l'événement de progression s'appelle `playProgress` et non
+  // `timeupdate` : le pont postMessage brut n'expose pas les mêmes noms que
+  // le SDK.
   const showreel = document.querySelector('.showreel-frame[data-src]');
-  const showreelControls = document.getElementById('showreelControls');
-  if (showreel && showreelControls) {
+  if (showreel) {
     const showreelBox = document.getElementById('showreel');
-    const showreelToggle = document.getElementById('showreelToggle');
-    const seek = document.getElementById('showreelSeek');
     const VIMEO_ORIGIN = 'https://player.vimeo.com';
 
     const post = (method, value) => {
@@ -138,52 +131,8 @@ import { applySpans } from '../lib/spans.js';
       }
     };
 
-    let duration = 0;
     let ready = false;
     let subscribeTimer = null;
-    // Fenêtre pendant laquelle les positions renvoyées par le lecteur sont
-    // ignorées : sans elle, un `playProgress` arrivé en plein glissement
-    // repousserait le pouce sous le doigt de l'utilisateur.
-    let holdUntil = 0;
-    let lastSeekSent = 0;
-
-    // Format « 1:23 », celui de tous les lecteurs vidéo : il ne demande
-    // aucune traduction, contrairement à un « 1 min 23 s » (même raisonnement
-    // que formatDuration dans lib/project-page.js).
-    const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-
-    // Un curseur annonce sa valeur brute (« 37 ») : sans ce texte, un lecteur
-    // d'écran énoncerait un nombre sans unité ni repère.
-    const describe = (seconds) => {
-      if (duration) seek.setAttribute('aria-valuetext', `${fmt(seconds)} / ${fmt(duration)}`);
-    };
-
-    const setPaused = (paused) => {
-      showreelToggle.setAttribute('aria-pressed', String(paused));
-      showreelToggle.setAttribute(
-        'aria-label',
-        showreelToggle.dataset[paused ? 'labelPlay' : 'labelPause']
-      );
-    };
-
-    showreelToggle.addEventListener('click', () => {
-      // On commande, on n'affiche rien : l'état visible suit l'événement
-      // renvoyé par le lecteur, seul à savoir ce qui se passe réellement.
-      post(showreelToggle.getAttribute('aria-pressed') === 'true' ? 'play' : 'pause');
-    });
-
-    const sendSeek = () => {
-      lastSeekSent = Date.now();
-      post('setCurrentTime', Number(seek.value));
-    };
-    seek.addEventListener('input', () => {
-      holdUntil = Date.now() + 600;
-      describe(Number(seek.value));
-      // Un glissement émet un `input` par pixel parcouru. On borne à ~7
-      // messages par seconde ; `change` garantit que le dernier arrive.
-      if (Date.now() - lastSeekSent > 150) sendSeek();
-    });
-    seek.addEventListener('change', sendSeek);
 
     window.addEventListener('message', (e) => {
       if (e.origin !== VIMEO_ORIGIN) return;
@@ -196,15 +145,10 @@ import { applySpans } from '../lib/spans.js';
       if (!msg) return;
 
       if (!ready) {
-        // Le lecteur répond : les commandes pilotent vraiment quelque chose,
-        // on peut les montrer. Un bouton de pause qui ne met rien en pause
-        // vaudrait moins que pas de bouton.
         ready = true;
-        showreelControls.hidden = false;
         if (subscribeTimer) clearInterval(subscribeTimer);
-        // La lecture automatique reste la règle. `prefers-reduced-motion` est
-        // l'exception que ce visiteur-là a posée dans son système ; il garde
-        // le bouton pour relancer quand il veut.
+        // `prefers-reduced-motion` : la vidéo ne démarre pas et l'image
+        // d'ouverture reste en place.
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) post('pause');
       }
 
@@ -212,22 +156,6 @@ import { applySpans } from '../lib/spans.js';
       // l'image d'ouverture, en fondu (voir .showreel-frame).
       if (msg.event === 'play' || (msg.event === 'playProgress' && msg.data && msg.data.seconds > 0)) {
         showreelBox.classList.add('is-playing');
-      }
-
-      if (msg.event === 'play') setPaused(false);
-      else if (msg.event === 'pause') setPaused(true);
-      else if (msg.event === 'playProgress' && msg.data) {
-        if (msg.data.duration && msg.data.duration !== duration) {
-          duration = msg.data.duration;
-          // `max` en secondes : une flèche du clavier déplace alors d'une
-          // seconde exactement, là où une échelle en pourcentage aurait rendu
-          // la navigation clavier inutilisable.
-          seek.max = String(Math.round(duration));
-        }
-        if (Date.now() >= holdUntil) {
-          seek.value = String(Math.round(msg.data.seconds));
-          describe(msg.data.seconds);
-        }
       }
     });
 
@@ -237,7 +165,6 @@ import { applySpans } from '../lib/spans.js';
     const subscribe = () => {
       post('addEventListener', 'playProgress');
       post('addEventListener', 'play');
-      post('addEventListener', 'pause');
     };
 
     // Injection différée du lecteur (voir Hero.astro) : après le `load` de la
@@ -257,9 +184,8 @@ import { applySpans } from '../lib/spans.js';
         if (ready) clearInterval(subscribeTimer);
         else subscribe();
       }, 600);
-      // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister, les
-      // commandes restent cachées et l'image d'ouverture reste en place,
-      // ce qui est la bonne façon d'échouer ici.
+      // Lecteur injoignable (bloqueur, réseau) : on cesse d'insister, l'image
+      // d'ouverture reste en place, ce qui est la bonne façon d'échouer ici.
       setTimeout(() => clearInterval(subscribeTimer), 15000);
     };
     const whenIdle = () =>
