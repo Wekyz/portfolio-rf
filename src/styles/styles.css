@@ -1009,13 +1009,13 @@ footer {
   color: rgba(255, 255, 255, .58); margin-top: 3px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.lightbox-sheet {
+.lightbox-ext {
   flex-shrink: 0;
   font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
   color: rgba(255, 255, 255, .72); text-decoration: none; white-space: nowrap;
   transition: color var(--t-fast) ease;
 }
-.lightbox-sheet:hover { color: var(--on-media); }
+.lightbox-ext:hover { color: var(--on-media); }
 .lightbox-nav {
   position: relative;
   flex-shrink: 0; order: -1;

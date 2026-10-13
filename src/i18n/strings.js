@@ -105,7 +105,6 @@ export const ui = {
     'project.related': 'More in this category',
     'review.kicker': 'Private selection',
     'review.description': 'A selection of projects edited by Roxane Foare.',
-    'review.sheet': 'Project page',
     'review.contact': 'Get in touch',
     'project.prev': 'Previous project',
     'project.next': 'Next project',
@@ -194,7 +193,6 @@ export const ui = {
     'lb.frameTitle': 'Vimeo video player',
     'lb.prev': 'Previous project',
     'lb.next': 'Next project',
-    'lb.sheet': 'Project page',
   },
 
   fr: {
@@ -272,7 +270,6 @@ export const ui = {
     'project.related': 'Dans la même catégorie',
     'review.kicker': 'Sélection privée',
     'review.description': 'Une sélection de projets montés par Roxane Foare.',
-    'review.sheet': 'Voir la fiche',
     'review.contact': 'Prendre contact',
     'project.prev': 'Projet précédent',
     'project.next': 'Projet suivant',
@@ -358,7 +355,6 @@ export const ui = {
     'lb.frameTitle': 'Lecteur vidéo Vimeo',
     'lb.prev': 'Projet précédent',
     'lb.next': 'Projet suivant',
-    'lb.sheet': 'Voir la fiche',
   },
 };
 

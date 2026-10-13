@@ -7,7 +7,7 @@ const t = useTranslations(lang);
 {/* <dialog> ouvert par showModal() : le reste de la page devient inerte, le
      focus ne peut plus s'en échapper. L'ancien piège à focus fait main
      laissait sortir le focus vers la page derrière depuis « Projet suivant »
-     et ignorait le lien « Voir la fiche ».
+     et ignorait le lien de la barre d'information.
      Le nom de la modale est le titre du projet affiché (il s'annonçait
      « Lecteur vidéo » quel que soit le projet) ; la touche Échap est donnée
      en description. */}
@@ -28,7 +28,11 @@ const t = useTranslations(lang);
         <p class="lightbox-title" id="lightboxTitle"></p>
         <p class="lightbox-meta" id="lightboxMeta"></p>
       </div>
-      <a class="lightbox-sheet" id="lightboxSheet" href="">{t('lb.sheet')} &rarr;</a>
+      {/* Lien externe du projet (film en plateforme, par exemple), affiché
+           seulement s'il existe. Il remplace le lien vers la fiche projet,
+           retiré à la demande de la monteuse le temps de définir le
+           contenu des fiches. */}
+      <a class="lightbox-ext" id="lightboxExt" href="" target="_blank" rel="noopener noreferrer" hidden>{t('project.watchFull')} &rarr;</a>
       <button type="button" class="lightbox-nav" id="lightboxNext" aria-label={t('lb.next')}>&rarr;</button>
     </div>
   </div>

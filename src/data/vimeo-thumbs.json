@@ -49,11 +49,6 @@
     "uploadDate": "2024-01-15T08:50:56Z",
     "durationSeconds": 66
   },
-  "910025380": {
-    "thumbBase": "https://i.vimeocdn.com/video/1793791881-94728d6e132f583b74af061e1fb25817d00a7529ddb8b828bcb596f34004b4aa-d",
-    "uploadDate": "2024-02-05T08:03:50Z",
-    "durationSeconds": 4
-  },
   "920107244": {
     "thumbBase": "https://i.vimeocdn.com/video/2182377046-e6cf2b9788fc99ee05d3b01562c82ae555085675e8f226b7bcbc33f8cc830743-d",
     "uploadDate": "2024-03-06T11:28:19Z",
@@ -98,11 +93,6 @@
     "thumbBase": "https://i.vimeocdn.com/video/2133512607-5a9ecbe880b8e0410d433167545684c9d96ad270fbedada14ee0f65ceac5e4ad-d",
     "uploadDate": "2026-03-13T10:49:24Z",
     "durationSeconds": 102
-  },
-  "1173323990": {
-    "thumbBase": "https://i.vimeocdn.com/video/2133519584-1f76f41b0132f2a977538c225b568451bd1a60e12adc6bc1c6d30e549d85ac15-d",
-    "uploadDate": "2026-03-13T11:05:32Z",
-    "durationSeconds": 60
   },
   "1173324146": {
     "thumbBase": "https://i.vimeocdn.com/video/2133523107-e81572d5327ad2fa3d0277957445414e3f5b44e10bc0e32a22585f67132cec91-d",
@@ -155,8 +145,13 @@
     "durationSeconds": 32
   },
   "1235061701": {
-    "thumbBase": "https://i.vimeocdn.com/video/2211217278-6e5288749ea8f2fe06e238dd3cc2bd10d7532dfe11f6e931aa4b50b1ac1b6902-d",
+    "thumbBase": "https://i.vimeocdn.com/video/2211235883-1a7bf884685a3313d1f91b04648363e7a48b393c6502f9cc1efcc84c2d004c3a-d",
     "uploadDate": "2026-10-12T09:47:32Z",
     "durationSeconds": 89
+  },
+  "1235075117": {
+    "thumbBase": "https://i.vimeocdn.com/video/2211231293-412be17c52c4a6e16ec842a9e665acdbba48c193f57e2bb5cd78392b741f4cef-d",
+    "uploadDate": "2026-10-12T10:26:27Z",
+    "durationSeconds": 53
   }
 }

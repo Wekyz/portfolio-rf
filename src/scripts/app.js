@@ -239,7 +239,7 @@ import { applySpans } from '../lib/spans.js';
     // ── Lightbox ────────────────────────────────────────────────
     const lightboxTitle = document.getElementById('lightboxTitle');
     const lightboxMeta = document.getElementById('lightboxMeta');
-    const lightboxSheet = document.getElementById('lightboxSheet');
+    const lightboxExt = document.getElementById('lightboxExt');
     const lightboxPrev = document.getElementById('lightboxPrev');
     const lightboxNext = document.getElementById('lightboxNext');
 
@@ -291,16 +291,15 @@ import { applySpans } from '../lib/spans.js';
       const title = item.querySelector('.work-title');
       const prod = item.querySelector('.work-prod');
       const year = item.querySelector('.work-year');
-      const link = item.querySelector('a.work-thumb-wrap');
       lightboxTitle.textContent = title ? title.textContent : '';
       lightboxMeta.textContent = [prod && prod.textContent, year && year.textContent]
         .filter(Boolean)
         .join(' · ');
-      // Le lien « voir la fiche » n'a de sens que vers une page projet, pas
-      // vers un site externe (qui ouvre déjà son propre onglet).
-      const href = link && link.target !== '_blank' ? link.getAttribute('href') : null;
-      lightboxSheet.hidden = !href;
-      if (href) lightboxSheet.setAttribute('href', href);
+      // Lien externe du projet (ex. le film complet sur une plateforme),
+      // quand la vignette ouvre une vidéo Vimeo ET porte un lien externe.
+      const ext = item.dataset.external;
+      lightboxExt.hidden = !ext;
+      if (ext) lightboxExt.setAttribute('href', ext);
 
       const list = playable();
       const many = list.length > 1;

@@ -57,7 +57,7 @@ const paragraphs = (review.intro || '')
     )}
 
     <ol class="review-list">
-      {review.items.map(({ project, slug }) => (
+      {review.items.map(({ project }) => (
         <li class="review-item">
           <h2 class="review-item-title">{project.title}</h2>
           <p class="review-item-meta">
@@ -72,8 +72,8 @@ const paragraphs = (review.intro || '')
               loading="lazy"
             ></iframe>
           </div>
-          {slug && (
-            <a class="review-item-sheet" href={`${base}/portfolio/${slug}`}>{t('review.sheet')} &rarr;</a>
+          {project.externalLink && (
+            <a class="review-item-ext" href={project.externalLink} target="_blank" rel="noopener noreferrer">{t('project.watchFull')} &rarr;</a>
           )}
         </li>
       ))}
@@ -99,7 +99,7 @@ const paragraphs = (review.intro || '')
   .review-list { list-style: none; display: flex; flex-direction: column; gap: 72px; margin-top: 64px; }
   .review-item-title { font-family: var(--font-hennessy); font-weight: 400; font-size: 26px; }
   .review-item-meta { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-mid); margin: 6px 0 16px; }
-  .review-item-sheet { display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--black); }
+  .review-item-ext { display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--black); }
   .review-contact { margin-top: 80px; }
   @media (max-width: 900px) {
     .review { padding-left: 24px; padding-right: 24px; }
