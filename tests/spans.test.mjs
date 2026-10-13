@@ -5,10 +5,10 @@
  * rendu au build et le filtrage côté client : une régression y déforme la
  * grille entière sans qu'aucune erreur ne soit levée.
  *
- * Le dernier test fige le rendu réel des 36 projets. Il n'a pas vocation à
- * décrire un comportement souhaitable, seulement à signaler tout changement :
- * si la grille doit évoluer, mettre à jour l'empreinte en connaissance de
- * cause.
+ * L'avant-dernier test fige le rendu d'une grille de référence. Il n'a pas
+ * vocation à décrire un comportement souhaitable, seulement à signaler tout
+ * changement : si le pattern doit évoluer, mettre à jour l'empreinte en
+ * connaissance de cause.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -105,24 +105,39 @@ test('toutes les classes produites figurent dans ALL_GRID_CLASSES', () => {
   }
 });
 
-test('le rendu des projets réels est figé', () => {
-  const data = JSON.parse(
-    readFileSync(new URL('../src/data/videos.json', import.meta.url), 'utf8')
-  );
-  const projects = data.videos || data;
-  const placements = computeSpans(projects);
+// Le rendu est figé sur une copie de la grille (tests/fixtures/grid-layout.json :
+// catégorie et options d'affichage des 37 projets d'octobre 2026), et non plus
+// sur src/data/videos.json : chaque vidéo ajoutée ou déplacée dans le CMS
+// changeait l'empreinte et faisait échouer la CI, sans aucune régression.
+// Le test garde son rôle, détecter un changement de computeSpans lui-même.
+test('le rendu d’une grille de référence est figé', () => {
+  const items = JSON.parse(readFileSync(new URL('./fixtures/grid-layout.json', import.meta.url), 'utf8'));
+  const placements = computeSpans(items);
   const empreinte = createHash('sha256')
     .update(placements.map((p) => `${p.cls || '-'}:${p.span}`).join('|'))
     .digest('hex')
     .slice(0, 16);
 
-  assert.equal(placements.length, projects.length);
   assert.equal(
     empreinte,
-    // 37 projets depuis l'ajout de « La France qui innove » (octobre 2026).
     '7d7aa2e12a3510fa',
-    'la disposition de la grille a changé. Si c’est voulu (nouveau projet, ' +
-      'catégorie réordonnée, pattern modifié), remplacer cette empreinte ; ' +
-      'sinon, c’est une régression de computeSpans.'
+    'la disposition de la grille de référence a changé : si le pattern a été ' +
+      'modifié volontairement, remplacer cette empreinte ; sinon, c’est une ' +
+      'régression de computeSpans.'
   );
+});
+
+// Sur les vraies données, on vérifie ce qui doit tenir quel que soit le
+// contenu saisi dans le CMS : un placement par projet, des classes connues,
+// des largeurs possibles.
+test('les projets réels se placent tous dans la grille', () => {
+  const data = JSON.parse(readFileSync(new URL('../src/data/videos.json', import.meta.url), 'utf8'));
+  const projects = data.videos || data;
+  const placements = computeSpans(projects);
+
+  assert.equal(placements.length, projects.length);
+  for (const [i, { cls, span }] of placements.entries()) {
+    assert.ok([4, 6, 8, 12].includes(span), `${projects[i].title} : largeur ${span}`);
+    if (cls !== null) assert.ok(Object.values(GRID_CLASSES).includes(cls), `${projects[i].title} : classe ${cls}`);
+  }
 });
