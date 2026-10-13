@@ -12,9 +12,11 @@
  * affichait une vitrine que personne n'avait choisie, indiscernable d'une
  * sélection voulue. Mieux vaut pas de section qu'une section arbitraire.
  *
- * Seuls les projets disposant d'une page (donc d'une vidéo Vimeo) sont
- * retenus : mettre en avant une vignette qui ne mène nulle part irait contre
- * le but de la section.
+ * Un projet est retenu s'il mène quelque part : sa page (donc une vidéo
+ * Vimeo) ou, à défaut, son lien externe, ouvert dans un nouvel onglet. Le
+ * long métrage n'a plus de vidéo Vimeo, seulement son lien Prime Video :
+ * coché dans le CMS, il n'apparaissait pas sur l'accueil (octobre 2026).
+ * Une vignette sans page ni lien reste écartée.
  */
 import { useTranslations } from '../i18n/strings.js';
 import { resolveThumb } from '../lib/thumb.js';
@@ -36,7 +38,7 @@ const LIMIT = 3;
 const projects = getProjects();
 const slugMap = buildSlugMap(projects);
 
-const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, LIMIT);
+const featured = projects.filter((p) => p.featured && (slugMap.has(p) || p.externalLink)).slice(0, LIMIT);
 ---
 {featured.length > 0 && (
   <section class="featured">
@@ -48,9 +50,13 @@ const featured = projects.filter((p) => p.featured && slugMap.has(p)).slice(0, L
     <ul class="featured-grid">
       {featured.map((p, i) => {
         const { src, srcset, avifSrcset } = resolveThumb(p, { local: localImages });
+        const slug = slugMap.get(p);
+        const link = slug
+          ? { href: `${langBase}/portfolio/${slug}` }
+          : { href: p.externalLink, target: '_blank', rel: 'noopener noreferrer' };
         return (
           <li>
-            <a href={`${langBase}/portfolio/${slugMap.get(p)}`}>
+            <a {...link}>
               {src && (
                 <Thumb
                   src={src}
