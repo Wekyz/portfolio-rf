@@ -57,6 +57,11 @@ export interface Project {
    * Pour une image que le cadre 16/10 de l'accueil recadrerait mal.
    */
   featuredThumb?: string;
+  /**
+   * Position dans la sélection de l'accueil (1 en premier). Vide : après les
+   * projets numérotés, dans l'ordre de la liste. Voir lib/featured.js.
+   */
+  featuredOrder?: number | string | null;
   /** Force le segment d'URL de la page projet (défaut : dérivé du titre). */
   slug?: string;
   /** Occupe les 12 colonnes de la grille. */

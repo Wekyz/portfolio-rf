@@ -6,6 +6,8 @@
  * en avant sur l'accueil » (champ `featured`). La monteuse peut donc changer
  * la vitrine quand elle veut, sans intervention technique.
  *
+ * Le choix et l'ordre des projets retenus sont dans lib/featured.js.
+ *
  * La section n'existe QUE s'il y a une sélection : tant qu'aucun projet n'est
  * coché, l'accueil se limite au showreel. Il y avait auparavant un repli sur
  * les trois premiers de la liste, pour ne jamais montrer un blanc - mais il
@@ -25,6 +27,7 @@ import Thumb from './Thumb.astro';
 import { buildSlugMap } from '../lib/slug.js';
 import { getProjects } from '../lib/projects.js';
 import { creditLine } from '../lib/credits.js';
+import { selectFeatured } from '../lib/featured.js';
 
 interface Props {
   lang?: 'en' | 'fr';
@@ -38,7 +41,7 @@ const LIMIT = 3;
 const projects = getProjects();
 const slugMap = buildSlugMap(projects);
 
-const featured = projects.filter((p) => p.featured && (slugMap.has(p) || p.externalLink)).slice(0, LIMIT);
+const featured = selectFeatured(projects, (p) => slugMap.has(p), LIMIT);
 ---
 {featured.length > 0 && (
   <section class="featured">

@@ -59,9 +59,9 @@ export const ui = {
     'nav.menuAria': 'Menu',
 
     // Hero (Accueil)
-    // Accroche sur deux lignes (retour à la ligne voulu par la monteuse).
+    // Accroche sur deux lignes, sans point final (demandes de la monteuse).
     'hero.tagline': 'Freelance video editor based in Paris & Angers',
-    'hero.taglineMore': 'Film, documentary, commercial, corporate, live and event editing.',
+    'hero.taglineMore': 'Film, documentary, commercial, corporate, live and event editing',
     'hero.ctaPortfolio': 'View portfolio',
     'hero.ctaAbout': 'About',
     'hero.showreelLabel': 'Showreel',
@@ -76,7 +76,6 @@ export const ui = {
     'work.filterAria': 'Filter projects by category',
     'work.watch': 'Watch',
     'work.watchAria': 'Watch',
-    'work.stillImage': 'Illustration photo',
 
     // Distinctions (JSON-LD `award`) - reprises de la bio, section About
     'award.cyprus': 'Best Editing Award, Cyprus International Film Festival - En mille morceaux',
@@ -227,7 +226,7 @@ export const ui = {
 
     // Hero (Accueil)
     'hero.tagline': 'Monteuse vidéo freelance à Paris & Angers',
-    'hero.taglineMore': 'Montage film, documentaire, publicité, corporate, live et événementiel.',
+    'hero.taglineMore': 'Montage film, documentaire, publicité, corporate, live et événementiel',
     'hero.ctaPortfolio': 'Voir le portfolio',
     'hero.ctaAbout': 'À propos',
     'hero.showreelLabel': 'Showreel',
@@ -240,7 +239,6 @@ export const ui = {
     'work.filterAria': 'Filtrer les projets par catégorie',
     'work.watch': 'Voir',
     'work.watchAria': 'Regarder',
-    'work.stillImage': "Photo d'illustration",
 
     // Distinctions (JSON-LD `award`) - reprises de la bio, section About
     'award.cyprus':

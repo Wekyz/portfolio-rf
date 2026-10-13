@@ -143,7 +143,16 @@ collections:
                 widget: boolean
                 default: false
                 required: false
-                hint: "Les projets cochés apparaissent sur la page d'accueil, dans l'ordre de cette liste (3 maximum). Si aucun n'est coché, la page d'accueil n'affiche pas cette section du tout."
+                hint: "Les projets cochés apparaissent sur la page d'accueil (3 maximum), dans l'ordre choisi avec le champ Position sur l'accueil juste en dessous. Si aucun n'est coché, la page d'accueil n'affiche pas cette section du tout."
+
+              - name: featuredOrder
+                label: "Position sur l'accueil"
+                widget: number
+                value_type: int
+                min: 1
+                max: 9
+                required: false
+                hint: "1 pour le premier projet de la sélection, 2 pour le deuxième, 3 pour le troisième. Laisser vide : le projet passe après ceux qui ont une position, dans l'ordre de la liste. Sans effet si la case Mettre en avant n'est pas cochée."
 
               - name: featuredThumb
                 label: "Miniature pour l'accueil (optionnel)"

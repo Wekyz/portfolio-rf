@@ -449,7 +449,11 @@ nav.nav-flush { border-bottom-color: transparent; }
 .work-thumb-wrap:focus-visible .work-overlay { background: rgba(14, 14, 12, .74); }
 
 /* Le titre reste lisible sans survol ; seuls la production, l'année et le
-   libellé « photo » se révèlent au survol. */
+   badge « Voir » se révèlent au survol. Les vignettes non cliquables (Live
+   en photo) n'ont plus de libellé « Photo d'illustration », retiré à la
+   demande de la monteuse en octobre 2026 : sans icône lecture ni curseur
+   main (voir NON CLIQUABLE plus bas), elles ne se donnent pas pour des
+   vidéos. */
 .work-info { transform: none; opacity: 1; }
 .work-meta,
 .work-badge { opacity: 0; transform: translateY(6px); transition: opacity var(--t-mid), transform var(--t-mid); }
@@ -686,13 +690,6 @@ nav.nav-flush { border-bottom-color: transparent; }
 .project-text { margin-top: 32px; max-width: 68ch; }
 .project-text p { color: var(--gray-dark); line-height: 1.8; }
 .project-text p + p { margin-top: 14px; }
-
-/* Libellé des vignettes non cliquables (photo au lieu d'une vidéo). */
-.work-badge-still {
-  border-color: rgba(255, 255, 255, .32);
-  color: rgba(255, 255, 255, .72);
-  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
-}
 
 /* ── DISTINCTIONS ─────────────────────────────────────────── */
 .award-list { list-style: none; display: grid; gap: 10px; }
