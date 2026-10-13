@@ -5,7 +5,6 @@
       "title": "Estée Lauder - Made for more",
       "production": "WBA",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2026",
       "id": "1173276934",
@@ -17,16 +16,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Hanro",
       "production": "",
       "director": "Thomas Gérard",
-      "format": null,
       "role": "",
       "year": "2024",
       "id": "902943514",
@@ -38,16 +39,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Niwel London's calling",
       "production": "Atelier B",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "920113816",
@@ -59,16 +62,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Smashbox",
       "production": "Kleber",
       "director": "",
-      "format": null,
       "role": "",
       "year": "",
       "id": "877098126",
@@ -80,16 +85,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Vestiaire Collective",
       "production": "WBA",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2026",
       "id": "1172168401",
@@ -101,16 +108,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Château de la Viaudière - Les 4 Saisons",
       "production": "Evrox",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2026",
       "id": "1173332929",
@@ -122,16 +131,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Waffle Factory - Café",
       "production": "Atelier B",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2024",
       "id": "1172176515",
@@ -143,16 +154,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "pub",
       "title": "Ioma",
       "production": "Atelier B",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "854983877",
@@ -164,6 +177,31 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
+      "externalLink": "",
+      "slug": "",
+      "noClick": false,
+      "format": null
+    },
+    {
+      "cat": "pub",
+      "title": "Estée Lauder - Lights on",
+      "production": "WBA",
+      "director": "",
+      "role": "",
+      "year": "",
+      "id": "1235343657",
+      "hash": "fdb5a7c891",
+      "thumb": "",
+      "fullWidth": false,
+      "poster": false,
+      "portrait": false,
+      "awards": [],
+      "description": "",
+      "featured": true,
+      "featuredOrder": 2,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
       "noClick": false
@@ -173,7 +211,6 @@
       "title": "En mille morceaux",
       "production": "",
       "director": "Véronique Mériadec",
-      "format": null,
       "role": "",
       "year": "",
       "id": "",
@@ -188,20 +225,18 @@
       ],
       "description": "",
       "featured": true,
+      "featuredOrder": 1,
       "featuredThumb": "live/en-mille-morceaux-accueil.webp",
       "externalLink": "https://www.primevideo.com/detail/0H4GC8Y15YDVFT6M1ST0JZC9UB/ref=atv_sr_fle_c_sr64ce3f_pvsearchresults_1_1",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "doc",
       "title": "La France qui innove",
       "production": "",
       "director": "",
-      "format": {
-        "fr": "26 min",
-        "en": "26 min"
-      },
       "role": "",
       "year": "",
       "id": "1235061701",
@@ -213,19 +248,21 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": {
+        "en": "26 min",
+        "fr": "26 min"
+      }
     },
     {
       "cat": "doc",
       "title": "A Day of L.O.V.",
       "production": "",
       "director": "",
-      "format": {
-        "fr": "Épisodes de 30 min",
-        "en": "Episodes of 30 min"
-      },
       "role": "",
       "year": "2026",
       "id": "1173335845",
@@ -237,19 +274,21 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": {
+        "en": "Episodes of 30 min",
+        "fr": "Épisodes de 30 min"
+      }
     },
     {
       "cat": "doc",
       "title": "Handicap et santé",
       "production": "",
       "director": "",
-      "format": {
-        "fr": "5 épisodes de 14 min",
-        "en": "5 episodes of 14 min"
-      },
       "role": "",
       "year": "2025",
       "id": "1174771532",
@@ -261,19 +300,21 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": {
+        "en": "5 episodes of 14 min",
+        "fr": "5 épisodes de 14 min"
+      }
     },
     {
       "cat": "doc",
       "title": "Breathe",
       "production": "",
       "director": "",
-      "format": {
-        "fr": "30 min",
-        "en": "30 min"
-      },
       "role": "",
       "year": "",
       "id": "1174806302",
@@ -285,16 +326,21 @@
       "awards": [],
       "description": "",
       "featured": true,
+      "featuredOrder": 3,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": {
+        "en": "30 min",
+        "fr": "30 min"
+      }
     },
     {
       "cat": "corpo",
       "title": "Accor vision",
       "production": "Bandits",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "902959218",
@@ -306,16 +352,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "corpo",
       "title": "Axima Nucléaire",
       "production": "Atelier B",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2025",
       "id": "1173273537",
@@ -327,16 +375,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "corpo",
       "title": "Estée Lauder X Messika",
       "production": "Bandits",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2023",
       "id": "902946797",
@@ -348,16 +398,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "corpo",
       "title": "Hennessy",
       "production": "Blacklemon",
       "director": "",
-      "format": null,
       "role": "",
       "year": "",
       "id": "873374381",
@@ -369,16 +421,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "corpo",
       "title": "Société Générale - Culture du dialogue",
       "production": "Atelier B",
       "director": "",
-      "format": null,
       "role": "",
       "year": "",
       "id": "1173377959",
@@ -390,16 +444,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "corpo",
       "title": "LBP Risques maîtrisés",
       "production": "B&A",
       "director": "",
-      "format": null,
       "role": "",
       "year": "",
       "id": "927956912",
@@ -411,16 +467,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Givenchy l'Interdit",
       "production": "Blacklemon",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2018",
       "id": "851335889",
@@ -432,16 +490,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Wingstop",
       "production": "WBA",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2026",
       "id": "1235075117",
@@ -453,16 +513,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Jean-Paul Gaultier Maroc",
       "production": "WBA",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2025",
       "id": "1173327915",
@@ -474,16 +536,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Masters Lacoste Athletes inside",
       "production": "Publicis Live",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "902957262",
@@ -495,16 +559,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Davidoff Cool Water",
       "production": "Blacklemon",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2018",
       "id": "1173318583",
@@ -516,16 +582,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Escada Miami blossom",
       "production": "Blacklemon",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2019",
       "id": "920107244",
@@ -537,16 +605,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "event",
       "title": "Article 1 Campus d'été",
       "production": "Evrox",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "1173324146",
@@ -558,16 +628,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "teaser",
       "title": "CNL Teaser",
       "production": "Sixième étage",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "864380329",
@@ -579,16 +651,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "teaser",
       "title": "Seconde Zone Trailer",
       "production": "Echtra Films",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2022",
       "id": "902960775",
@@ -600,16 +674,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "teaser",
       "title": "Final Cut Teaser",
       "production": "WBA",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2025",
       "id": "1173388014",
@@ -621,16 +697,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "teaser",
       "title": "Ricard Tour",
       "production": "WBA",
       "director": "",
-      "format": null,
       "role": "",
       "year": "2025",
       "id": "1173316428",
@@ -642,16 +720,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "live",
       "title": "PSG Football",
       "production": "",
       "director": "",
-      "format": null,
       "role": "Synth Operator",
       "year": "2016-2022",
       "id": "",
@@ -663,16 +743,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": true
+      "noClick": true,
+      "format": null
     },
     {
       "cat": "live",
       "title": "PSG Handball",
       "production": "",
       "director": "",
-      "format": null,
       "role": "Director",
       "year": "2018-2022",
       "id": "",
@@ -684,16 +766,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": true
+      "noClick": true,
+      "format": null
     },
     {
       "cat": "live",
       "title": "Municipales France Info",
       "production": "",
       "director": "",
-      "format": null,
       "role": "Shoot Effect + Operator",
       "year": "2020-2026",
       "id": "",
@@ -705,16 +789,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": true
+      "noClick": true,
+      "format": null
     },
     {
       "cat": "live",
       "title": "Présidentielles France 2",
       "production": "",
       "director": "",
-      "format": null,
       "role": "Shoot Effect + Operator",
       "year": "2022-2027",
       "id": "",
@@ -726,16 +812,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": true
+      "noClick": true,
+      "format": null
     },
     {
       "cat": "live",
       "title": "CEV Eurovolley 2019",
       "production": "",
       "director": "",
-      "format": null,
       "role": "Director",
       "year": "2019",
       "id": "1212339231",
@@ -747,16 +835,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     },
     {
       "cat": "live",
       "title": "Volleyball World Cup",
       "production": "",
       "director": "",
-      "format": null,
       "role": "Director",
       "year": "2018",
       "id": "",
@@ -768,16 +858,18 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": true
+      "noClick": true,
+      "format": null
     },
     {
       "cat": "live",
       "title": "OL TV",
       "production": "",
       "director": "",
-      "format": null,
       "role": "LSM Operator",
       "year": "2021-2022",
       "id": "1212032849",
@@ -789,9 +881,12 @@
       "awards": [],
       "description": "",
       "featured": false,
+      "featuredOrder": null,
+      "featuredThumb": "",
       "externalLink": "",
       "slug": "",
-      "noClick": false
+      "noClick": false,
+      "format": null
     }
   ]
 }
