@@ -59,7 +59,9 @@ export const ui = {
     'nav.menuAria': 'Menu',
 
     // Hero (Accueil)
-    'hero.tagline': 'Freelance video editor based in Paris & Angers - film, documentary, commercial, corporate, live and event editing.',
+    // Accroche sur deux lignes (retour à la ligne voulu par la monteuse).
+    'hero.tagline': 'Freelance video editor based in Paris & Angers',
+    'hero.taglineMore': 'Film, documentary, commercial, corporate, live and event editing.',
     'hero.ctaPortfolio': 'View portfolio',
     'hero.ctaAbout': 'About',
     'hero.showreelLabel': 'Showreel',
@@ -226,7 +228,8 @@ export const ui = {
     'nav.menuAria': 'Menu',
 
     // Hero (Accueil)
-    'hero.tagline': 'Monteuse vidéo freelance à Paris & Angers - montage film, documentaire, publicité, corporate, live et événementiel.',
+    'hero.tagline': 'Monteuse vidéo freelance à Paris & Angers',
+    'hero.taglineMore': 'Montage film, documentaire, publicité, corporate, live et événementiel.',
     'hero.ctaPortfolio': 'Voir le portfolio',
     'hero.ctaAbout': 'À propos',
     'hero.showreelLabel': 'Showreel',

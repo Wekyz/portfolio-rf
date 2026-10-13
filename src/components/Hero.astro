@@ -77,7 +77,7 @@ const embedSrc = `https://player.vimeo.com/video/${SHOWREEL.id}?h=${SHOWREEL.has
     {/* H1 de l'accueil : la tagline porte déjà les mots-clés utiles
          (monteuse vidéo, Paris, Angers, types de montage), là où le logo ne
          répétait que le nom de domaine. */}
-    <h1 class="hero-tagline">{t('hero.tagline')}</h1>
+    <h1 class="hero-tagline">{t('hero.tagline')}<br />{t('hero.taglineMore')}</h1>
     <div class="hero-cta">
       <a href={`${base}/portfolio`} class="hero-cta-btn hero-cta-primary">
         {t('hero.ctaPortfolio')}
