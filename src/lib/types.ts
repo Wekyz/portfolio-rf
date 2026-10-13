@@ -52,6 +52,11 @@ export interface Project {
   awards?: string[];
   /** Mis en avant sur la page d'accueil. */
   featured?: boolean;
+  /**
+   * Miniature propre à la sélection de l'accueil, même syntaxe que `thumb`.
+   * Pour une image que le cadre 16/10 de l'accueil recadrerait mal.
+   */
+  featuredThumb?: string;
   /** Force le segment d'URL de la page projet (défaut : dérivé du titre). */
   slug?: string;
   /** Occupe les 12 colonnes de la grille. */

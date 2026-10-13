@@ -1,13 +1,12 @@
 /**
  * Tests des métadonnées de page projet (src/lib/project-page.js).
  *
- * `formatDuration` et `buildBreadcrumb` produisent du contenu visible et des
- * données structurées lues par Google : une régression y est silencieuse.
+ * `buildBreadcrumb` produit du contenu visible et des données structurées
+ * lues par Google : une régression y est silencieuse.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatDuration,
   buildBreadcrumb,
   embedUrl,
   relatedProjects,
@@ -17,27 +16,6 @@ import { catGender } from '../src/i18n/strings.js';
 import { PERSON_ID } from '../src/lib/schema-ids.js';
 import { projectRoutes } from '../src/lib/slug.js';
 import videos from '../src/data/videos.json' with { type: 'json' };
-
-test('formatDuration rend le format des lecteurs vidéo', () => {
-  assert.equal(formatDuration('PT1M23S'), '1:23');
-  assert.equal(formatDuration('PT45S'), '0:45');
-  assert.equal(formatDuration('PT1H2M5S'), '1:02:05');
-  assert.equal(formatDuration('PT2H'), '2:00:00');
-});
-
-test('formatDuration complète à deux chiffres sous une unité supérieure', () => {
-  // « 1:5 » se lirait comme 1 min 5, d'où le zéro.
-  assert.equal(formatDuration('PT1M5S'), '1:05');
-  assert.equal(formatDuration('PT1H5M'), '1:05:00');
-});
-
-test('formatDuration refuse une entrée absente, vide ou malformée', () => {
-  assert.equal(formatDuration(null), null);
-  assert.equal(formatDuration(undefined), null);
-  assert.equal(formatDuration('PT0S'), null);
-  assert.equal(formatDuration('1m23s'), null);
-  assert.equal(formatDuration('P1DT2H'), null);
-});
 
 test('le fil d’Ariane a trois maillons, le dernier sans URL', () => {
   const b = buildBreadcrumb({ title: 'Hanro' }, 'en');

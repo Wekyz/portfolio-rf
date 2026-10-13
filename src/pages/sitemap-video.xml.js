@@ -15,7 +15,7 @@ import { SITE } from '../lib/schema-ids.js';
 import { projectRoutes } from '../lib/slug.js';
 import { buildProjectMeta, embedUrl } from '../lib/project-page.js';
 import { localImages } from '../lib/images.js';
-import { getUploadDate, getDurationSeconds } from '../lib/thumb.js';
+import { getUploadDate } from '../lib/thumb.js';
 const LANGS = /** @type {const} */ (['en', 'fr']);
 
 /**
@@ -39,7 +39,6 @@ export function GET() {
     LANGS.map((lang) => {
       const meta = buildProjectMeta(project, slug, lang, { local: localImages });
       const loc = `${SITE}${lang === 'fr' ? '/fr' : ''}${meta.path}`;
-      const seconds = getDurationSeconds(project);
       const published = getUploadDate(project);
 
       // thumbnail_loc, title, description et player_loc sont exigés par Google ;
@@ -53,8 +52,7 @@ export function GET() {
       <video:title>${xml(project.title)}</video:title>
       <video:description>${xml(meta.description)}</video:description>
       <video:player_loc allow_embed="yes">${xml(embedUrl(project))}</video:player_loc>${
-        seconds ? `\n      <video:duration>${seconds}</video:duration>` : ''
-      }${published ? `\n      <video:publication_date>${xml(published)}</video:publication_date>` : ''}
+        published ? `\n      <video:publication_date>${xml(published)}</video:publication_date>` : ''}
       <video:family_friendly>yes</video:family_friendly>
       <video:live>no</video:live>
     </video:video>

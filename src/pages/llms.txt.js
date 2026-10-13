@@ -85,7 +85,7 @@ ${byCategory}
 - [Portfolio](${SITE}/portfolio) - all projects, filterable by category. French: ${SITE}/fr/portfolio
 - [About](${SITE}/about) - biography, software, productions, brands, awards. French: ${SITE}/fr/about
 - [Contact](${SITE}/contact) - contact form, working area, languages. French: ${SITE}/fr/contact
-- Project pages: ${SITE}/portfolio/<slug> - one per video, with player, credits, year, duration and awards where applicable.
+- Project pages: ${SITE}/portfolio/<slug> - one per video, with player, credits, year and awards where applicable.
 - [Legal notice](${SITE}/legal) - [Privacy policy](${SITE}/privacy)
 
 English is the default language at the root; French lives under /fr with the
@@ -101,7 +101,7 @@ in the HTML, and is also published in the legal notice.
 ## Notes for automated agents
 
 - Everything is static HTML rendered at build time. Project titles, credits,
-  years and durations are readable without executing JavaScript.
+  years and awards are readable without executing JavaScript.
 - Video players are Vimeo embeds (player.vimeo.com). Thumbnails come from the
   Vimeo CDN (i.vimeocdn.com); a few projects override them with self-hosted
   WebP files under /live/.
