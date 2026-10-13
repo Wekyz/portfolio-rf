@@ -677,12 +677,13 @@ nav.nav-flush { border-bottom-color: transparent; }
   transition: opacity var(--t-fast) ease;
 }
 .featured-grid a:hover img { opacity: .82; }
+/* Titre et informations centrés sous la vignette (demande de la monteuse). */
 .featured-name {
-  display: block; margin-top: 14px;
+  display: block; margin-top: 14px; text-align: center;
   font-family: var(--font-hennessy); font-size: 18px;
 }
 .featured-meta {
-  display: block; margin-top: 4px;
+  display: block; margin-top: 4px; text-align: center;
   font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-mid);
 }
 
