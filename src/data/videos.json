@@ -235,7 +235,7 @@
       "portrait": false,
       "awards": [],
       "description": "",
-      "featured": true,
+      "featured": false,
       "externalLink": "",
       "slug": "",
       "noClick": false
