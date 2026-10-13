@@ -26,7 +26,6 @@ import { localImages } from '../lib/images.js';
 import Thumb from './Thumb.astro';
 import { buildSlugMap } from '../lib/slug.js';
 import { getProjects } from '../lib/projects.js';
-import { creditLine } from '../lib/credits.js';
 import { selectFeatured } from '../lib/featured.js';
 
 interface Props {
@@ -78,8 +77,11 @@ const featured = selectFeatured(projects, (p) => slugMap.has(p), LIMIT);
                 />
               )}
               <span class="featured-name">{p.title}</span>
+              {/* Catégorie plutôt que production ou réalisation, à la
+                   demande de la monteuse : sur l'accueil, on situe le type de
+                   travail d'un coup d'œil. Les crédits restent dans la grille. */}
               <span class="featured-meta">
-                {[creditLine(p, lang), p.year].filter(Boolean).join(' · ')}
+                {[t(`cat.${p.cat}`), p.year].filter(Boolean).join(' · ')}
               </span>
             </a>
           </li>

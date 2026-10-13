@@ -16,7 +16,7 @@
     "uploadDate": "2023-10-11T11:18:28Z"
   },
   "877098126": {
-    "thumbBase": "https://i.vimeocdn.com/video/1742470942-c1ec8f012c40e1ae6356f1d8518dffea8376601b1a7b2a27c511cf4046fc4244-d",
+    "thumbBase": "https://i.vimeocdn.com/video/2211566333-b30238b639444fb98a9982f08c1347758d0e56888523601feb2e8714c4e82afd-d",
     "uploadDate": "2023-10-23T08:24:38Z"
   },
   "902943514": {
@@ -122,5 +122,9 @@
   "1235075117": {
     "thumbBase": "https://i.vimeocdn.com/video/2211231293-412be17c52c4a6e16ec842a9e665acdbba48c193f57e2bb5cd78392b741f4cef-d",
     "uploadDate": "2026-10-12T10:26:27Z"
+  },
+  "1235343657": {
+    "thumbBase": "https://i.vimeocdn.com/video/2211566762-35e47da498da5b3c651c92b720b003391cba8f95b16ba9981692e77f5d890f17-d",
+    "uploadDate": "2026-10-13T05:25:38Z"
   }
 }
