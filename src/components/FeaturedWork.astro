@@ -49,7 +49,11 @@ const featured = projects.filter((p) => p.featured && (slugMap.has(p) || p.exter
 
     <ul class="featured-grid">
       {featured.map((p, i) => {
-        const { src, srcset, avifSrcset } = resolveThumb(p, { local: localImages });
+        // `featuredThumb` remplace la miniature ici seulement : le cadre 16/10
+        // de la sélection coupait le triptyque du long métrage, montré en
+        // entier dans la grille du portfolio.
+        const thumbSource = p.featuredThumb ? { ...p, thumb: p.featuredThumb } : p;
+        const { src, srcset, avifSrcset } = resolveThumb(thumbSource, { local: localImages });
         const slug = slugMap.get(p);
         const link = slug
           ? { href: `${langBase}/portfolio/${slug}` }

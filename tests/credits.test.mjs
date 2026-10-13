@@ -32,11 +32,10 @@ test('les deux-points suivent la typographie de chaque langue', () => {
   assert.equal(creditLine(p, 'en'), 'Production: WBA');
 });
 
-test('le format est rendu dans la langue de la page, avec repli', () => {
-  const p = { cat: 'doc', title: 'T', format: { fr: '5 épisodes de 14 min', en: '5 episodes of 14 min' } };
-  assert.equal(creditLine(p, 'fr'), '5 épisodes de 14 min');
-  assert.equal(creditLine(p, 'en'), '5 episodes of 14 min');
-  assert.equal(creditLine({ cat: 'doc', title: 'T', format: { fr: '30 min' } }, 'en'), '30 min');
+test('le format, une durée, n’est plus affiché', () => {
+  const p = { cat: 'doc', title: 'T', director: 'X', format: { fr: '5 épisodes de 14 min', en: '5 episodes of 14 min' } };
+  assert.equal(creditLine(p, 'fr'), 'Réalisation : X');
+  assert.deepEqual(creditParts(p, 'en').map(({ key }) => key), ['director']);
 });
 
 test('le rôle se lit seul, sans libellé', () => {

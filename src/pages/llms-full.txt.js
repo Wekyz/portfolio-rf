@@ -12,8 +12,6 @@ import { SITE } from '../lib/schema-ids.js';
 import { SOFTWARE, PRODUCTIONS, BRANDS, PRACTICAL } from '../data/profile.js';
 import { ui } from '../i18n/strings.js';
 import { LEGAL } from '../data/legal.js';
-import { getDuration } from '../lib/thumb.js';
-import { formatDuration } from '../lib/project-page.js';
 import { creditParts } from '../lib/credits.js';
 
 /** La bio contient du balisage (<em>) : inutile hors HTML. */
@@ -26,12 +24,10 @@ export function GET() {
 
   const projectLines = projects.map((p) => {
     const slug = bySlug.get(p);
-    const duree = formatDuration(getDuration(p));
     const facts = [
       ...creditParts(p, 'en').map(({ key, value }) => `${key}: ${value}`),
       p.year && `year: ${p.year}`,
       `category: ${p.cat}`,
-      duree && `duration: ${duree}`,
       p.awards?.length && `awards: ${p.awards.join('; ')}`,
       slug && `page: ${SITE}/portfolio/${slug}`,
     ].filter(Boolean);

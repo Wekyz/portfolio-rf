@@ -13,7 +13,7 @@
  * (31 iframes clippés à 0x0) ne pouvait pas faire - Search Console
  * n'indexait effectivement aucune des 31 vidéos.
  */
-import { resolveThumb, getUploadDate, getDuration } from './thumb.js';
+import { resolveThumb, getUploadDate } from './thumb.js';
 import { useTranslations, catGender } from '../i18n/strings.js';
 import { SITE, personRef, pageIds } from './schema-ids.js';
 import { lastModified } from './page-dates.js';
@@ -43,24 +43,6 @@ function absThumb(p, local) {
  */
 export function embedUrl(p) {
   return `https://player.vimeo.com/video/${p.id}?${p.hash ? `h=${p.hash}&` : ''}dnt=1`;
-}
-
-/**
- * Durée ISO 8601 -> forme affichable ("PT1M23S" -> "1:23").
- *
- * Le format à deux-points est celui de tous les lecteurs vidéo et ne demande
- * aucune traduction, contrairement à un « 1 min 23 s » qu'il faudrait décliner
- * par langue. Les minutes et secondes sont complétées à deux chiffres dès
- * qu'une unité supérieure existe, sinon « 1:5 » se lirait comme 1 min 5.
- */
-export function formatDuration(iso) {
-  if (!iso) return null;
-  const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
-  if (!m) return null;
-  const [h, min, s] = [m[1], m[2], m[3]].map((v) => Number(v || 0));
-  if (!h && !min && !s) return null;
-  const pad = (n) => String(n).padStart(2, '0');
-  return h ? `${h}:${pad(min)}:${pad(s)}` : `${min}:${pad(s)}`;
 }
 
 /**
@@ -124,7 +106,8 @@ export function buildProjectMeta(project, slug, lang, { local = {} } = {}) {
     // repli sur le 1er janvier de `year` en UTC complet si indisponible.
     uploadDate:
       getUploadDate(p) ?? (/^\d{4}$/.test(p.year || '') ? `${p.year}-01-01T00:00:00Z` : undefined),
-    duration: getDuration(p) ?? undefined,
+    // Pas de `duration` : retirée partout à la demande de la monteuse
+    // (octobre 2026). Facultative pour Google.
     embedUrl: embedUrl(p),
     url: canonical,
     inLanguage: lang,

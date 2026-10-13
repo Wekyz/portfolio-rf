@@ -12,17 +12,13 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveThumb, getUploadDate, getDuration } from '../src/lib/thumb.js';
+import { resolveThumb, getUploadDate } from '../src/lib/thumb.js';
 
 const VIMEO = {
   902943514: {
     thumbBase: 'https://i.vimeocdn.com/video/1782788203-abc',
     uploadDate: '2024-01-15T07:50:19Z',
-    durationSeconds: 83,
   },
-  111: { thumbBase: 'https://i.vimeocdn.com/video/111-x', uploadDate: null, durationSeconds: 3725 },
-  222: { thumbBase: 'https://i.vimeocdn.com/video/222-x', uploadDate: null, durationSeconds: 0 },
-  333: { thumbBase: 'https://i.vimeocdn.com/video/333-x', uploadDate: null, durationSeconds: 45 },
 };
 
 // Reproduit les deux cas réels : une image déclinée en 4 largeurs, et une
@@ -143,16 +139,4 @@ test('getUploadDate rend la date connue, null sinon', () => {
   assert.equal(getUploadDate({ id: '902943514' }, VIMEO), '2024-01-15T07:50:19Z');
   assert.equal(getUploadDate({ id: '999' }, VIMEO), null);
   assert.equal(getUploadDate({ title: 'sans id' }, VIMEO), null);
-});
-
-test('getDuration formate en ISO 8601', () => {
-  assert.equal(getDuration({ id: '902943514' }, VIMEO), 'PT1M23S'); // 83 s
-  assert.equal(getDuration({ id: '111' }, VIMEO), 'PT1H2M5S'); // 3725 s
-  assert.equal(getDuration({ id: '333' }, VIMEO), 'PT45S');
-});
-
-test('getDuration refuse une durée absente ou nulle', () => {
-  assert.equal(getDuration({ id: '222' }, VIMEO), null); // 0 s
-  assert.equal(getDuration({ id: '999' }, VIMEO), null); // inconnu
-  assert.equal(getDuration({ title: 'sans id' }, VIMEO), null);
 });
