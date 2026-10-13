@@ -63,9 +63,6 @@ export const ui = {
     'hero.ctaPortfolio': 'View portfolio',
     'hero.ctaAbout': 'About',
     'hero.showreelLabel': 'Showreel',
-    // Commandes du showreel. Le libellé du bouton dit l'action à venir, pas
-    // l'état courant : c'est ce qu'attend un lecteur d'écran sur une commande
-    // de lecture (voir aussi about.brandsPause/Play, même convention).
     'featured.title': 'Selected work',
     'featured.all': 'See all projects',
 

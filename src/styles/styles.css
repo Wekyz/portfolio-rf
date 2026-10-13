@@ -251,9 +251,19 @@ nav.nav-flush { border-bottom-color: transparent; }
 /* Même marge latérale que le reste du site (nav, #work, #about, #contact,
    footer) : le showreel ne doit pas être la seule chose au bord à bord. */
 .hero { padding: 0 56px; }
+/* Largeur bornée par la hauteur de l'écran : sur un portable courant
+   (1536×864, 1366×768), la vidéo pleine largeur repoussait la phrase
+   d'accroche et les boutons sous le bas de l'écran. 300 px = la nav, la
+   phrase sur deux lignes, les boutons et leurs marges. Le plancher de 60 %
+   évite un showreel minuscule sur un écran très bas (mobile à
+   l'horizontale). Sur un écran assez haut, rien ne change : 100 %.
+   Ratio 1920×802 : celui de la vidéo chez Vimeo. Le 803 d'avant laissait
+   le cadre plus haut que l'image d'un pixel environ, d'où un filet noir. */
 .showreel {
-  position: relative; width: 100%; overflow: hidden;
-  aspect-ratio: 1920 / 803; background: var(--white);
+  position: relative; overflow: hidden; margin-inline: auto;
+  width: clamp(60%, calc((100vh - 300px) * 1920 / 802), 100%);
+  width: clamp(60%, calc((100svh - 300px) * 1920 / 802), 100%);
+  aspect-ratio: 1920 / 802; background: var(--white);
 }
 /* "Contain" reconstruit nous-mêmes : on veut la vidéo entière, jamais
    recadrée, quelle que soit la forme de l'écran - avec des bandes (blanches,
@@ -262,13 +272,18 @@ nav.nav-flush { border-bottom-color: transparent; }
    sur un conteneur plus étroit que la vidéo (mobile), la hauteur calculée
    est plus petite que celle du conteneur -> bandes en haut/bas, vidéo
    entière visible. Sur un conteneur au même ratio (desktop), ça retombe
-   exactement sur 100%/100%, sans bande ni distorsion. */
+   exactement sur 100%/100%, sans bande ni distorsion.
+   `scale(1.006)` : Vimeo envoie selon la taille de l'écran des versions
+   aux ratios légèrement différents (960×402, 1366×570, 1920×802) et
+   comble l'écart avec du noir, jusqu'à 2 px de chaque côté sur un grand
+   écran. Le lecteur déborde donc de 0,3 % par bord, rogné par le
+   `overflow: hidden` du cadre : invisible à l'œil, et plus de filet. */
 .showreel-frame {
   position: absolute; top: 50%; left: 50%;
   width: 100%; height: auto; max-height: 100%;
-  aspect-ratio: 1920 / 803;
+  aspect-ratio: 1920 / 802;
   border: 0;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.006);
   /* Invisible tant que la lecture n'a pas commencé : le lecteur Vimeo
      affiche un cadre noir pendant son démarrage, l'image d'ouverture reste
      donc visible dessous jusqu'à la première image de la vidéo. */
@@ -281,8 +296,10 @@ nav.nav-flush { border-bottom-color: transparent; }
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
 
+/* Marges ramenées de 56 à 40 px (ici et sous la phrase) : autant de
+   hauteur rendue au showreel sur un écran bas, voir .showreel. */
 .hero-content {
-  max-width: 900px; margin: 56px auto 72px; text-align: center;
+  max-width: 900px; margin: 40px auto 72px; text-align: center;
 }
 .hero-tagline {
   font-family: var(--font-hennessy);
@@ -295,7 +312,7 @@ nav.nav-flush { border-bottom-color: transparent; }
      élément LCP) s'affichait plus petit que le texte courant (15 px). */
   font-size: clamp(16px, 1.3vw, 19px); text-wrap: balance;
   font-weight: 400; line-height: 1.4; letter-spacing: -.01em;
-  color: var(--gray-dark); margin-bottom: 56px;
+  color: var(--gray-dark); margin-bottom: 40px;
 }
 .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 .hero-cta-btn {
