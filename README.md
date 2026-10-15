@@ -276,9 +276,10 @@ ou d'une passation.
 
 | Service | Rôle | Compte | Offre / quota |
 |---|---|---|---|
-| Vercel | Hébergement, fonctions `api/`, Web Analytics, Speed Insights, deploy hook | à compléter | à compléter |
+| Infomaniak | Hébergement depuis le 15 octobre 2026 : site Node.js (`server/index.mjs`) sur le serveur cloud managé, envoi par `.github/workflows/deploy.yml` | à compléter | Serveur cloud managé, échéance 9 octobre 2027 |
+| Vercel | Ancien hébergement, suspendu le 15 octobre 2026 (quota CPU de l'offre gratuite dépassé) | à compléter | Hobby |
 | GitHub | Dépôt `Wekyz/portfolio-rf`, CI, Dependabot, commits du CMS | Wekyz (admin), RFoare (écriture) | à compléter |
-| Namecheap | Domaine `roxane-foare.com` et DNS | à compléter | à compléter |
+| Namecheap | Domaine `roxane-foare.com` et DNS, **enregistré jusqu'au 13 mars 2027**. Transfert vers **Gandi** prévu avant cette date, en reprenant tous les enregistrements DNS (A/AAAA vers Infomaniak, MX, SPF, DKIM Resend) | à compléter | à compléter |
 | Vimeo | Vidéos (privées, limitées au domaine), lecteur, vignettes, oEmbed au build | à compléter | à compléter |
 | Resend | Envoi des messages du formulaire (DKIM sur `send.`) | à compléter | à compléter |
 | Upstash Redis | Limitation de débit, compteurs, jetons à usage unique, messages en échec | à compléter | Gratuit (limite de commandes) |
