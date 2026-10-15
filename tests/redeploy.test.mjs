@@ -9,7 +9,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/redeploy.js';
+import handler, { buildRequest, DEPLOY_WORKFLOW } from '../api/redeploy.js';
 
 const SECRET = 'phrase-secrete-de-test-assez-longue-32+';
 const HOOK = 'https://api.vercel.com/v1/integrations/deploy/test';
@@ -112,4 +112,13 @@ test('une phrase secrète de moins de 32 caractères laisse l’administration f
   const { res, calls } = await run(post(court), { secret: court });
   assert.equal(res.statusCode, 503);
   assert.equal(calls.length, 0);
+});
+
+test('avec GITHUB_DEPLOY_TOKEN : lance le workflow Infomaniak plutôt que le hook Vercel', () => {
+  const r = buildRequest({ GITHUB_DEPLOY_TOKEN: 'ghp_x', DEPLOY_HOOK_URL: HOOK });
+  assert.equal(r.url, DEPLOY_WORKFLOW);
+  assert.equal(r.init.headers.Authorization, 'Bearer ghp_x');
+  assert.deepEqual(JSON.parse(r.init.body), { ref: 'main' });
+  assert.equal(buildRequest({ DEPLOY_HOOK_URL: HOOK }).url, HOOK);
+  assert.equal(buildRequest({}), null);
 });

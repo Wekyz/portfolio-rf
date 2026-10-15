@@ -1,0 +1,88 @@
+name: Mise en ligne Infomaniak
+
+# Build du site et envoi sur le serveur cloud Infomaniak (site Node.js, voir
+# server/index.mjs). Remplace le build Vercel depuis octobre 2026.
+#
+# Déclenché par chaque push sur main, donc aussi par chaque publication du
+# CMS, et à la main depuis l'onglet Actions (ou par le bouton de
+# /admin/redeploy.html, via l'API GitHub).
+#
+# Secrets du dépôt (Settings > Secrets and variables > Actions) :
+#   INFOMANIAK_SSH_HOST  hôte SSH du serveur
+#   INFOMANIAK_SSH_USER  utilisateur SSH
+#   INFOMANIAK_SSH_KEY   clé privée dont la clé publique est autorisée sur le serveur
+#   INFOMANIAK_SSH_PATH  dossier d'exécution du site Node.js (celui du Manager)
+#
+# Le fichier .env du serveur (RESEND_API_KEY, etc.) n'est jamais touché.
+# Les dépendances de production sont installées ici et envoyées avec le
+# reste : la commande de build du Manager peut rester vide.
+#
+# Un envoi qui ne change que dist/ (cas de toutes les publications du CMS) est
+# en ligne immédiatement. Un changement de server/ ou de api/ demande un
+# redémarrage du site depuis le Manager.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Deux publications rapprochées du CMS : la seconde attend la première au lieu
+# de l'interrompre au milieu d'un envoi.
+concurrency:
+  group: deploy-infomaniak
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build et envoi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # prebuild récupère les miniatures Vimeo (scripts/fetch-thumbs.mjs).
+      - name: Build
+        run: npm run build
+
+      # Un test cassé n'envoie rien : la version en ligne reste la précédente.
+      - name: Tests
+        run: npm test
+
+      - name: Assemble release
+        run: |
+          mkdir -p release/src
+          cp -r dist api server vercel.json package.json package-lock.json release/
+          cp -r src/lib release/src/
+          cd release && npm ci --omit=dev --ignore-scripts
+
+      - name: Upload
+        env:
+          SSH_HOST: ${{ secrets.INFOMANIAK_SSH_HOST }}
+          SSH_USER: ${{ secrets.INFOMANIAK_SSH_USER }}
+          SSH_KEY: ${{ secrets.INFOMANIAK_SSH_KEY }}
+          SSH_PATH: ${{ secrets.INFOMANIAK_SSH_PATH }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -az --delete --delay-updates \
+            --exclude '.env' --exclude 'logs/' --exclude 'tmp/' \
+            -e "ssh -i ~/.ssh/id_deploy" \
+            release/ "$SSH_USER@$SSH_HOST:${SSH_PATH%/}/"
+
+      - name: Check
+        run: node scripts/check-deployment.mjs https://roxane-foare.com
+        continue-on-error: true
