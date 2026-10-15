@@ -54,10 +54,11 @@ const ratelimit = createLimiter('contact-form', 5, '10 m');
  *
  * Le domaine du site, et les adresses du déploiement en cours (previews de
  * PR), que Vercel expose dans VERCEL_URL et VERCEL_BRANCH_URL. En dehors de
- * la production, localhost aussi (`vercel dev`). Une requête SANS Origin
- * (script serveur, outil en ligne de commande) n'est pas concernée : ce
- * contrôle vise les formulaires tiers dans un navigateur, le reste est
- * l'affaire du jeton, du délai et du captcha.
+ * la production, localhost aussi (`vercel dev`). Sur Infomaniak, c'est
+ * NODE_ENV=production, posé par server/index.mjs, qui marque la production.
+ * Une requête SANS Origin (script serveur, outil en ligne de commande) n'est
+ * pas concernée : ce contrôle vise les formulaires tiers dans un navigateur,
+ * le reste est l'affaire du jeton, du délai et du captcha.
  */
 export function allowedOrigin(origin, env = process.env) {
   if (!origin) return true;
@@ -67,7 +68,8 @@ export function allowedOrigin(origin, env = process.env) {
     if (host) allowed.add(`https://${host}`);
   }
   if (allowed.has(origin)) return true;
-  return env.VERCEL_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin);
+  const production = env.VERCEL_ENV === 'production' || env.NODE_ENV === 'production';
+  return !production && /^http:\/\/localhost(:\d+)?$/.test(origin);
 }
 
 export default async function handler(req, res) {

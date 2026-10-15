@@ -27,8 +27,12 @@
  *                              page de redéploiement. 32 caractères minimum,
  *                              aléatoires (ex. `openssl rand -base64 32`) :
  *                              plus courte, l'administration reste fermée.
- *   DEPLOY_HOOK_URL           URL du Deploy Hook (Project Settings → Git →
- *                              Deploy Hooks, créer un hook sur la branche main)
+ *   GITHUB_DEPLOY_TOKEN       hébergement Infomaniak : jeton GitHub à grain
+ *                              fin, limité au dépôt, permission « Actions :
+ *                              lecture et écriture ». Lance le workflow
+ *                              .github/workflows/deploy.yml.
+ *   DEPLOY_HOOK_URL           ancien hébergement Vercel : URL du Deploy Hook,
+ *                              utilisée seulement sans GITHUB_DEPLOY_TOKEN.
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir api/contact.js) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
  */
@@ -67,13 +71,13 @@ export default async function handler(req, res) {
     }
   }
 
-  const hookUrl = process.env.DEPLOY_HOOK_URL;
-  if (!hookUrl) {
-    return res.status(500).json({ error: 'Redéploiement non configuré (DEPLOY_HOOK_URL manquante).' });
+  const request = buildRequest(process.env);
+  if (!request) {
+    return res.status(500).json({ error: 'Redéploiement non configuré (GITHUB_DEPLOY_TOKEN manquant).' });
   }
 
   try {
-    const r = await fetch(hookUrl, { method: 'POST' });
+    const r = await fetch(request.url, request.init);
     if (!r.ok) {
       return res.status(502).json({ error: 'Déclenchement du build impossible.' });
     }
@@ -81,4 +85,32 @@ export default async function handler(req, res) {
   } catch {
     return res.status(502).json({ error: 'Déclenchement du build impossible.' });
   }
+}
+
+/** Workflow de mise en ligne sur Infomaniak, lancé par l'API GitHub. */
+export const DEPLOY_WORKFLOW =
+  'https://api.github.com/repos/Wekyz/portfolio-rf/actions/workflows/deploy.yml/dispatches';
+
+/**
+ * Appel qui relance le build : le workflow GitHub si le jeton est là, sinon
+ * le Deploy Hook de Vercel. `null` si aucun des deux n'est configuré.
+ */
+export function buildRequest(env) {
+  if (env.GITHUB_DEPLOY_TOKEN) {
+    return {
+      url: DEPLOY_WORKFLOW,
+      init: {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${env.GITHUB_DEPLOY_TOKEN}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'roxane-foare.com',
+        },
+        body: JSON.stringify({ ref: 'main' }),
+      },
+    };
+  }
+  if (env.DEPLOY_HOOK_URL) return { url: env.DEPLOY_HOOK_URL, init: { method: 'POST' } };
+  return null;
 }

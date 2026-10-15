@@ -315,6 +315,7 @@ test('origines autorisées : le site, le déploiement en cours, localhost hors p
   assert.ok(allowedOrigin(undefined, env), 'sans en-tête Origin : pas concerné');
   assert.ok(!allowedOrigin('https://autre-projet.vercel.app', env));
   assert.ok(!allowedOrigin('http://localhost:3000', { VERCEL_ENV: 'production' }));
+  assert.ok(!allowedOrigin('http://localhost:3000', { NODE_ENV: 'production' }), 'serveur Infomaniak');
   assert.ok(!allowedOrigin('https://roxane-foare.com.example', env));
 });
 

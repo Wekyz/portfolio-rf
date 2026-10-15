@@ -48,6 +48,7 @@ export default [
     // (voir la constante TURNSTILE) : il tourne bien sous Node au build.
     files: [
       'api/**/*.js',
+      'server/**/*.mjs',
       'scripts/**/*.mjs',
       'tests/**/*.mjs',
       'eslint.config.js',

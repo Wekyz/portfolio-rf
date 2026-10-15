@@ -18,7 +18,8 @@
 import { appendFile } from 'node:fs/promises';
 
 const base = (process.argv[2] || '').replace(/\/$/, '');
-if (!/^https:\/\//.test(base)) {
+// http://localhost : le serveur Infomaniak (server/index.mjs) lancé en local.
+if (!/^(https:\/\/|http:\/\/localhost[:/])/.test(base + '/')) {
   console.error('Usage : node scripts/check-deployment.mjs https://<deploiement>');
   process.exit(2);
 }
