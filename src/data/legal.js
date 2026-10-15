@@ -35,11 +35,14 @@ export const LEGAL = {
   /** Numéro SIRET à 14 chiffres. */
   siret: '889 530 739 00024',
 
-  /** Hébergeur - adresse relevée dans la politique de confidentialité de Vercel. */
+  /**
+   * Hébergeur depuis octobre 2026 (serveur cloud à Plan-les-Ouates, Suisse).
+   * Avant : Vercel Inc., aux États-Unis.
+   */
   host: {
-    name: 'Vercel Inc.',
-    address: '440 N Barranca Avenue #4133, Covina, CA 91723, United States',
-    url: 'https://vercel.com',
+    name: 'Infomaniak Network SA',
+    address: 'Rue Eugène-Marziano 25, 1227 Les Acacias (GE), Suisse',
+    url: 'https://www.infomaniak.com',
   },
 
   /**

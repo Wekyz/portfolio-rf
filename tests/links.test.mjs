@@ -57,8 +57,6 @@ test('chaque lien interne du site mène à une page ou un fichier existant', { s
       // Internes seulement : chemin absolu du site, ou adresse complète du domaine.
       const url = raw.replace(/^https:\/\/roxane-foare\.com/, '');
       if (!url.startsWith('/') || url.startsWith('//')) continue;
-      // Scripts injectés par Vercel au déploiement (Web Analytics, Speed Insights).
-      if (url.startsWith('/_vercel/')) continue;
       const path = url.split(/[?#]/)[0] || '/';
       vus++;
       if (!exists(path)) casses.add(`${relative(DIST, file)} -> ${path}`);

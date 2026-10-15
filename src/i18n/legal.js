@@ -115,7 +115,7 @@ export const legalPages = {
           title: 'Cookies',
           paragraphs: [
             "Ce site ne dépose lui-même aucun cookie et n'utilise aucun traceur publicitaire. Le seul cookie possible vient du lecteur vidéo (voir ci-dessous) et il est strictement nécessaire : aucune bannière de consentement n'est donc requise.",
-            "La mesure d'audience repose sur Vercel Web Analytics, et la mesure de la vitesse d'affichage des pages sur Vercel Speed Insights. Les deux fonctionnent sans cookie et sans identifiant persistant. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
+            "Le site ne mesure pas son audience. Les polices de caractères sont hébergées sur le site lui-même : aucune requête n'est adressée à un service tiers de polices, et votre adresse IP n'est donc transmise à personne de ce fait.",
           ],
         },
         {
@@ -145,9 +145,9 @@ export const legalPages = {
         {
           title: 'Destinataires',
           paragraphs: [
-            "Vos messages sont acheminés par Resend, prestataire d'envoi de courriels, puis reçus dans la boîte de l'éditrice. Le site est hébergé par Vercel. Ces prestataires agissent en qualité de sous-traitants et n'utilisent pas vos données à d'autres fins.",
+            "Vos messages sont acheminés par Resend, prestataire d'envoi de courriels, puis reçus dans la boîte de l'éditrice. Le site est hébergé par Infomaniak, en Suisse. Ces prestataires agissent en qualité de sous-traitants et n'utilisent pas vos données à d'autres fins.",
             "Un mécanisme de limitation de débit peut traiter temporairement votre adresse IP dans le seul but de prévenir les envois automatisés abusifs. Elle n'est ni conservée durablement, ni utilisée à d'autres fins.",
-            "Ces prestataires étant établis aux États-Unis, un transfert de données hors de l'Union européenne peut avoir lieu, encadré par les clauses contractuelles types de la Commission européenne.",
+            "Resend étant établi aux États-Unis, un transfert de données hors de l'Union européenne peut avoir lieu, encadré par les clauses contractuelles types de la Commission européenne. Infomaniak est établi en Suisse, pays dont la Commission européenne reconnaît le niveau de protection comme adéquat.",
           ],
         },
         {
@@ -206,7 +206,7 @@ export const legalPages = {
           title: 'Cookies',
           paragraphs: [
             'This site sets no cookies of its own and uses no advertising trackers. The only possible cookie comes from the video player (see below) and is strictly necessary, so no consent banner is required.',
-            'Audience measurement relies on Vercel Web Analytics, and page speed measurement on Vercel Speed Insights. Both work without cookies and without persistent identifiers. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
+            'The site does not measure its audience. Fonts are hosted on the site itself: no request is made to a third-party font service, so your IP address is not shared with anyone on that account.',
           ],
         },
         {
@@ -236,9 +236,9 @@ export const legalPages = {
         {
           title: 'Recipients',
           paragraphs: [
-            'Your messages are delivered by Resend, an email delivery provider, and received in the publisher’s mailbox. The site is hosted by Vercel. These providers act as processors and do not use your data for any other purpose.',
+            'Your messages are delivered by Resend, an email delivery provider, and received in the publisher’s mailbox. The site is hosted by Infomaniak, in Switzerland. These providers act as processors and do not use your data for any other purpose.',
             'A rate-limiting mechanism may temporarily process your IP address for the sole purpose of preventing automated abuse. It is neither stored long term nor used for any other purpose.',
-            'As these providers are established in the United States, data may be transferred outside the European Union, governed by the European Commission’s standard contractual clauses.',
+            'As Resend is established in the United States, data may be transferred outside the European Union, governed by the European Commission’s standard contractual clauses. Infomaniak is established in Switzerland, whose level of data protection the European Commission recognises as adequate.',
           ],
         },
         {

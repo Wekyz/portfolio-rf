@@ -31,6 +31,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, normalize, extname, sep, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { brotliCompressSync, gzipSync, constants as zlib } from 'node:zlib';
+import { SITE } from '../src/lib/schema-ids.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -237,6 +238,14 @@ async function handle(req, res) {
     pathname = decodeURIComponent(url.pathname);
   } catch {
     res.writeHead(400);
+    return res.end();
+  }
+
+  // www.roxane-foare.com -> roxane-foare.com : le certificat couvre les deux
+  // noms, mais une seule adresse doit servir le site (balises canoniques,
+  // sitemaps et JSON-LD utilisent toutes SITE).
+  if (/^www\./i.test(req.headers.host || '')) {
+    res.writeHead(308, { Location: SITE + req.url });
     return res.end();
   }
 
