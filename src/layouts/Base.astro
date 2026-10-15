@@ -320,15 +320,9 @@ ldBlocks.forEach((block) => Astro.csp?.insertScriptHash(sha256(block)));
     />
   )}
 
-  {/* Vercel Web Analytics (servi en same-origin par Vercel : /_vercel/insights) */}
-  <script defer is:inline src="/_vercel/insights/script.js"></script>
-  {/* Vercel Speed Insights : Core Web Vitals mesurés chez les vrais
-       visiteurs. PageSpeed Insights n'a pas de données terrain (CrUX) pour un
-       site de ce trafic, toutes les mesures étaient donc faites en
-       laboratoire. Même origine, même absence de cookie que Web Analytics.
-       À activer dans le tableau de bord Vercel (onglet Speed Insights) : tant
-       que ce n'est pas fait, le script répond 404 et ne fait rien. */}
-  <script defer is:inline src="/_vercel/speed-insights/script.js"></script>
+  {/* Plus de mesure d'audience depuis le passage chez Infomaniak (octobre
+       2026) : les scripts Vercel Web Analytics et Speed Insights n'étaient
+       servis que par Vercel et répondaient 404 sur chaque page. */}
 
   {/* JSON-LD structured data (contenu + hash CSP calculés ci-dessus) */}
   {ldBlocks.map((block) => (
