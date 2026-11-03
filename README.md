@@ -14,7 +14,7 @@ reçoivent une prop `lang` et utilisent `useTranslations(lang)`.
 vidéo** (`/portfolio/[slug]`), générée au build depuis `videos.json` - soit 68
 pages au total. Le build utilise
 `build.format: 'directory'` (`astro.config.mjs`) : chaque page devient un
-dossier avec son `index.html`, que Vercel sert nativement. **Une nouvelle page
+dossier avec son `index.html`, que `server/index.mjs` sert tel quel. **Une nouvelle page
 n'a donc aucune règle de routage à déclarer.** `"trailingSlash": false` dans
 `vercel.json` renvoie un 308 de `/portfolio/` vers `/portfolio`, pour qu'une
 seule forme d'URL réponde.
@@ -38,7 +38,8 @@ La grille de `/portfolio` reste inchangée : la vignette est un `<a>` vers la
 page projet, dont `app.js` intercepte le clic simple pour ouvrir la lightbox
 comme avant. Ctrl+clic, clic milieu et robots suivent le lien.
 
-Application **Astro** (build statique), déployée sur Vercel.
+Application **Astro** (build statique), servie par un petit serveur Node
+(`server/index.mjs`) sur le serveur cloud Infomaniak.
 
 ## Développement
 
@@ -54,10 +55,12 @@ npm run build    # génère dist/
 npm run preview  # sert dist/ sur http://localhost:4321
 ```
 
-> Le formulaire de contact et le lien email passent par des **fonctions
-> serverless Vercel** (`api/contact.js` -> Resend, `api/email.js`). Ils ne
-> fonctionnent donc pas en local pur (`npm run dev`) - utiliser `vercel dev` pour
-> les tester. Tout le reste (grille, filtres, lightbox Vimeo, responsive) marche.
+> Le formulaire de contact et le lien email passent par les **fonctions de
+> `api/`** (`api/contact.js` vers Resend, `api/email.js`), que `npm run dev` ne
+> sert pas. Pour les tester en local : `npm run build && npm start`, puis
+> http://localhost:3000, avec un fichier `.env` à la racine (mêmes variables
+> que sur le serveur). Tout le reste (grille, filtres, lightbox Vimeo,
+> responsive) marche avec `npm run dev`.
 
 ```bash
 npm test         # tests unitaires (node:test) : slugs, grille, miniatures,
@@ -102,10 +105,11 @@ npm run test:e2e # parcours réels (Playwright) sur le build servi par preview
 │  ├─ data/profile.js          # IMDb, logiciels, productions, marques (À propos + llms-full.txt)
 │  └─ data/vimeo-thumbs.json   # cache des URL de base Vimeo CDN (généré par fetch-thumbs.mjs)
 ├─ public/                     # admin/ (CMS + redeploy.html), polices, favicons, icônes, og-image (EN) et og-image-fr, showreel/ (image d'ouverture, générée)
-├─ api/                        # fonctions serverless Vercel (contact -> Resend, email, redeploy)
+├─ api/                        # fonctions du serveur (contact vers Resend, email, redeploy, status)
+├─ server/index.mjs            # serveur de production : dist/, en-têtes, redirections, api/
 ├─ tests/                      # tests fumée (node:test)
 ├─ scripts/fetch-thumbs.mjs    # résolution des miniatures Vimeo au build
-├─ vercel.json                 # headers / CSP / cache (déploiement Vercel)
+├─ vercel.json                 # en-têtes / CSP / cache / redirections, lus par server/index.mjs
 └─ astro.config.mjs
 ```
 
@@ -142,14 +146,15 @@ Le contenu rédactionnel est dans `src/i18n/legal.js`, séparé de `strings.js`.
 
 ### Cache
 
-`vercel.json` ne peut pas porter de commentaires (le schéma Vercel refuse toute
-clé hors `source`/`headers`/`has`/`missing`), d'où cette note. Trois politiques :
+`vercel.json` garde son nom et son format d'origine : `server/index.mjs` le lit
+au démarrage, et il ne peut pas porter de commentaires, d'où cette note.
+Trois politiques :
 
 | Ressource | Politique | Pourquoi |
 |---|---|---|
 | `/_astro/`, `*.woff2` | `immutable`, 1 an | Nom porteur d'une empreinte de contenu : un changement produit un nouveau nom. |
 | `/showreel/`, favicons, icônes, `og-image.jpg`, `og-image-fr.jpg` | 7 jours + 30 jours de `stale-while-revalidate` | Noms **sans** empreinte : un fichier remplacé doit pouvoir se propager. |
-| HTML | `max-age=0, must-revalidate` (défaut Vercel) | Le contenu change à chaque publication CMS. L'edge Vercel le met **déjà** en cache de lui-même (`X-Vercel-Cache: HIT`), il n'y a donc rien à ajouter côté CDN. |
+| HTML | `max-age=0, must-revalidate` (défaut de `server/index.mjs`) | Le contenu change à chaque publication CMS. Le navigateur revalide à chaque visite et reçoit un 304 si rien n'a bougé (ETag). |
 
 Les vignettes posées à la main et les logos ne sont plus dans `public/` : ils
 passent par astro:assets (`src/assets/`, voir `src/lib/images.js`) et sortent
@@ -157,10 +162,21 @@ sous `/_astro/`, avec empreinte et cache d'un an, en WebP et en AVIF.
 
 ## Déploiement
 
-**Vercel** est connecté au dépôt Git : **un push sur `main` déclenche le build et
-le déploiement** (Root Directory = racine du dépôt, framework Astro,
-`npm run build`, sortie `dist/`). Les headers/CSP/cache sont définis dans
-[`vercel.json`](vercel.json) et les fonctions serverless dans [`api/`](api/).
+**Un push sur `main` met le site en ligne** : `.github/workflows/deploy.yml`
+construit le site sur GitHub (`npm ci`, `npm run build`, `npm test`), puis
+l'envoie par rsync sur le serveur cloud Infomaniak. Le Manager y fait tourner
+`node server/index.mjs` (site Node.js, port 3000), qui sert `dist/`, applique
+les en-têtes et redirections de [`vercel.json`](vercel.json) et exécute les
+fonctions de [`api/`](api/). Un envoi qui ne change que `dist/` (toutes les
+publications du CMS) est en ligne aussitôt ; un changement de `server/` ou de
+`api/` demande un redémarrage du site dans le Manager.
+
+Après chaque envoi, le même workflow contrôle le site en ligne : en-têtes,
+redirections, fonctions (`scripts/check-deployment.mjs`, lançable à la main
+sur n'importe quelle URL, y compris `http://localhost:3000`) et Lighthouse CI
+sur trois pages (`lighthouserc.cjs`, rapports en artefact du run). Ces deux
+étapes ne retirent rien en cas d'échec : le run passe en orange.
+
 La CI (`.github/workflows/ci.yml`) tourne sur chaque push/PR vers `main` :
 lint, types, build, validation HTML (`npm run validate:html`), tests unitaires
 (dont liens internes et JSON-LD sur `dist/`), parcours Playwright et axe sur
@@ -168,34 +184,36 @@ Chromium, audit npm bloquant pour les dépendances de production. Chaque lundi
 s'y ajoutent Safari iOS (WebKit) et les liens externes (lychee, non bloquant).
 Actions épinglées par SHA.
 
-Chaque déploiement Vercel (preview ou production) est contrôlé par
-`.github/workflows/deployment.yml` : en-têtes, redirections, fonctions
-(`scripts/check-deployment.mjs`, lançable à la main sur n'importe quelle URL)
-et Lighthouse CI sur trois pages (`lighthouserc.cjs`). Si la protection des
-previews est active, ajouter le secret de dépôt
-`VERCEL_AUTOMATION_BYPASS_SECRET`.
-
-Variables d'environnement à définir sur Vercel : `RESEND_API_KEY`,
-`CONTACT_EMAIL`, `RESEND_FROM`, `SITE_DOMAIN`, `DEPLOY_HOOK_URL`,
+Variables d'environnement, dans le fichier `.env` à la racine du site sur le
+serveur (le Manager n'a pas de réglage pour ça ; le déploiement ne touche
+jamais ce fichier, `chmod 600`) : `RESEND_API_KEY`, `CONTACT_EMAIL`,
+`RESEND_FROM`, `SITE_DOMAIN`, `GITHUB_DEPLOY_TOKEN`,
 **`REDEPLOY_TOKEN`** (32 caractères minimum, sinon l'administration reste
 fermée ; 5 essais ratés par heure et par IP). Rate limiting du formulaire et du bouton de
-redéploiement (optionnel) : `UPSTASH_REDIS_REST_URL` /
-`UPSTASH_REDIS_REST_TOKEN` (intégration Vercel Marketplace Upstash).
+redéploiement (optionnel, hors service depuis octobre 2026) :
+`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`.
 Signature du jeton anti-bot du formulaire (recommandé) : `FORM_SECRET` - à
 défaut, la clé se dérive de `RESEND_API_KEY`, de toute façon nécessaire pour
 que le formulaire fonctionne (voir `api/_lib/form-token.js`).
 Alerte immédiate quand un envoi échoue (optionnel) : `ALERT_WEBHOOK_URL`, une
 adresse ntfy.sh (ex. `https://ntfy.sh/un-sujet-difficile-a-deviner`, puis
 s'abonner à ce sujet dans l'application ntfy), ou un webhook Discord ou Slack
-(voir `sendAlert` dans `api/_lib/observe.js`).
+(voir `sendAlert` dans `api/_lib/observe.js`). Une copie du `.env` est à garder
+dans un gestionnaire de mots de passe : c'est la seule pièce du site qui
+n'existe pas dans le dépôt.
 
-**Version de Node.** `engines.node` (`package.json`) fait autorité : la
-documentation Vercel précise qu'il **prime sur le réglage Node.js du projet**.
-Le runtime des fonctions serverless est donc épinglé depuis le dépôt, et non
-depuis le tableau de bord. `.nvmrc` porte la même valeur pour le poste de
-développement et la CI ; `tests/routes.test.mjs` vérifie qu'elles ne divergent
-pas. Ne pas déclarer de bloc `functions.runtime` dans `vercel.json` : ce champ
-attend un nom de paquet de runtime personnalisé, pas une version de Node.
+Secrets du dépôt utilisés par l'envoi (*Settings > Secrets and variables >
+Actions*) : `INFOMANIAK_SSH_HOST`, `INFOMANIAK_SSH_USER`,
+`INFOMANIAK_SSH_PASSWORD`, `INFOMANIAK_SSH_PATH` (voir l'en-tête de
+`deploy.yml`).
+
+**Version de Node.** Celle qui tourne en production se choisit dans le
+Manager Infomaniak (site, *Gérer les paramètres avancés*, onglet *Node.js*) :
+Node 24, dont Infomaniak applique lui-même les correctifs, pris en compte au
+redémarrage du site. `engines.node` (`package.json`) et `.nvmrc` portent la
+même majeure pour le poste de développement, le build et la CI ;
+`tests/routes.test.mjs` vérifie qu'elles ne divergent pas. Une montée de
+majeure se fait dans le Manager et dans le dépôt en même temps.
 
 > **`REDEPLOY_TOKEN` est obligatoire pour que le bouton de redéploiement
 > fonctionne.** Sans elle, `/api/redeploy` refuse tout (503) : l'endpoint
@@ -212,9 +230,8 @@ Trois couches, de la plus discrète à la plus visible :
 1. **Honeypot** + **jeton horodaté signé** côté serveur (`api/_lib/form-token.js`).
 2. **Limitation de débit** Upstash, 5 envois / 10 min par IP. Optionnelle : sans
    `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`, elle est désactivée et
-   la fonction l'écrit dans ses journaux (Vercel → Logs) - rien ne le disait
-   auparavant. **Vérifier que ces deux variables existent bien sur
-   l'environnement Production.**
+   la fonction l'écrit dans ses journaux (console « Exécution » du site dans
+   le Manager) - rien ne le disait auparavant.
 3. **Cloudflare Turnstile**, *désactivé par défaut*. S'active en définissant
    `PUBLIC_TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` : le widget, le domaine
    dans la CSP et le paragraphe de confidentialité apparaissent alors seuls.
@@ -238,7 +255,7 @@ sur ce préfixe suffit à les ranger.
 ### Mise à jour du CMS (Sveltia)
 
 Sveltia est chargé depuis unpkg à une version épinglée, avec une empreinte SRI.
-Dependabot ne voyant pas une balise `<script>`, le paquet est **aussi déclaré
+Renovate ne voyant pas une balise `<script>`, le paquet est **aussi déclaré
 en `devDependency`** à la version réellement chargée : il est donc surveillé
 comme n'importe quelle dépendance.
 
@@ -248,7 +265,7 @@ empreinte, recalculée depuis le paquet npm (vérifié identique octet pour octe
 au fichier servi par unpkg), ainsi que la CSP de `/admin/` dans `vercel.json`,
 qui n'autorise que le dossier de cette version. La montée reste donc un geste
 conscient, à faire avec le CMS testé : Sveltia est exclu de la fusion
-automatique des PR Dependabot.
+automatique des PR Renovate.
 
 Une montée touche trois endroits : `package.json` (`npm install -D
 @sveltia/cms@x.y.z`), la balise et son `integrity` dans
@@ -257,16 +274,19 @@ Une montée touche trois endroits : `package.json` (`npm install -D
 
 ### Mises à jour des dépendances
 
-Dependabot ouvre ses PR le lundi. Les outils de build et de test (mineures et
-correctifs, hors Astro et Sveltia) sont fusionnés automatiquement quand la CI
-est verte (`.github/workflows/dependabot.yml`). Le reste se relit : dépendances
-de production, actions GitHub (une PR groupée), Astro, Sveltia, versions
-majeures. Prévoir un passage mensuel d'une demi-heure.
+Renovate ouvre ses PR le lundi matin (`.github/renovate.json5`), et tient un
+ticket « Dependency Dashboard » qui liste tout ce qui est en attente. Les
+outils de build et de test (mineures et correctifs, hors Astro et Sveltia) sont
+fusionnés par Renovate lui-même quand la CI est verte. Le reste se relit :
+dépendances de production, actions GitHub (une PR groupée), Astro, Sveltia,
+versions majeures. Une version publiée depuis moins de trois jours n'est pas
+proposée ; une faille connue ouvre une PR sans attendre le lundi. Prévoir un
+passage mensuel d'une demi-heure.
 
 Calendrier : Node 24 entre en maintenance fin octobre 2026 et reste supporté
 jusqu'en avril 2028, passage à Node 26 courant 2027. TypeScript 7 reste
 bloqué tant que `@astrojs/check` ne le prend pas en charge (voir
-`.github/dependabot.yml`).
+`.github/renovate.json5`).
 
 ## Services tiers
 
@@ -277,8 +297,8 @@ ou d'une passation.
 | Service | Rôle | Compte | Offre / quota |
 |---|---|---|---|
 | Infomaniak | Hébergement depuis le 15 octobre 2026 : site Node.js (`server/index.mjs`) sur le serveur cloud managé, envoi par `.github/workflows/deploy.yml` | à compléter | Serveur cloud managé, échéance 9 octobre 2027 |
-| Vercel | Ancien hébergement, suspendu le 15 octobre 2026 (quota CPU de l'offre gratuite dépassé) | à compléter | Hobby |
-| GitHub | Dépôt `Wekyz/portfolio-rf`, CI, Dependabot, commits du CMS | Wekyz (admin), RFoare (écriture) | à compléter |
+| Vercel | Ancien hébergement, suspendu le 15 octobre 2026 (quota CPU de l'offre gratuite dépassé). Plus rien n'en dépend | à compléter | Hobby |
+| GitHub | Dépôt `Wekyz/portfolio-rf`, CI, mise en ligne, Renovate, commits du CMS | Wekyz (admin), RFoare (écriture) | à compléter |
 | Namecheap | Domaine `roxane-foare.com` et DNS, **enregistré jusqu'au 13 mars 2027**. Transfert vers **Gandi** prévu avant cette date, en reprenant tous les enregistrements DNS (A/AAAA vers Infomaniak, MX, SPF, DKIM Resend) | à compléter | à compléter |
 | Vimeo | Vidéos (privées, limitées au domaine), lecteur, vignettes, oEmbed au build | à compléter | à compléter |
 | Resend | Envoi des messages du formulaire (DKIM sur `send.`) | à compléter | à compléter |
@@ -301,7 +321,7 @@ Pour une nouvelle vidéo, il suffit de l'**ID Vimeo** (+ hash si privée) : la
 image à produire.
 
 Tout enregistrement dans le CMS crée un commit GitHub, ce qui déclenche
-automatiquement un nouveau build Vercel (donc une résolution fraîche des
+automatiquement une nouvelle mise en ligne (donc une résolution fraîche des
 miniatures Vimeo) - **aucune action supplémentaire à faire** dans ce cas.
 
 ### Sélections privées
@@ -321,15 +341,15 @@ choisie sur une vidéo existante) sans toucher au CMS, aucun commit n'est créé
 donc aucun build ne se relance tout seul - le site reste sur l'ancienne
 miniature tant qu'un nouveau build n'a pas lieu. Page dédiée pour forcer un
 redéploiement dans ce cas : **`/admin/redeploy.html`** (lien "Retour au CMS"
-pour y revenir). Fonctionne via un [Vercel Deploy
-Hook](https://vercel.com/docs/deployments/deploy-hooks) : *Project Settings →
-Git → Deploy Hooks*, créer un hook sur la branche `main`, coller son URL dans
-la variable d'environnement `DEPLOY_HOOK_URL` (voir `api/redeploy.js`).
+pour y revenir). Le bouton lance le workflow `deploy.yml` par l'API GitHub :
+il faut dans le `.env` du serveur un `GITHUB_DEPLOY_TOKEN`, jeton GitHub à
+grain fin limité au dépôt avec la permission *Actions : lecture et écriture*
+(voir `api/redeploy.js`).
 
 La page demande une **phrase secrète** (`REDEPLOY_TOKEN`), retenue le temps de
 l'onglet. Sans elle, l'endpoint était public : un simple `curl -X POST`
 suffisait à relancer un build de production, brûler des minutes de build,
-purger le cache edge et déclencher une cascade d'appels à l'API Vimeo. La page
+et déclencher une cascade d'appels à l'API Vimeo. La page
 est publique et contient l'appel en clair, le secret ne peut donc pas y être
 écrit - il est saisi, jamais livré.
 
@@ -354,8 +374,8 @@ est publique et contient l'appel en clair, le secret ne peut donc pas y être
   fichier correspondant n'affiche pas d'image plutôt qu'une image cassée.
 - Régénérer manuellement : `npm run thumbs`.
 - `sharp` est en **`devDependencies`** : il ne sert qu'à ce script, au build.
-  Les fonctions serverless de `api/` n'en font aucun usage. Vercel installe les
-  devDependencies au moment du build, la génération des variantes fonctionne
+  Les fonctions de `api/` n'en font aucun usage. Le build de `deploy.yml`
+  installe les devDependencies, la génération des variantes fonctionne
   donc normalement. (À noter : Astro le déclare aussi en `optionalDependencies`
   pour son service d'images, donc il reste présent dans l'arbre installé même
   sans notre déclaration - celle-ci sert surtout à dire d'où vient le besoin.)
@@ -365,6 +385,6 @@ est publique et contient l'appel en clair, le secret ne peut donc pas y être
 Les vidéos privées de Roxane sont restreintes au domaine `roxane-foare.com`.
 Vimeo ne livre leur miniature que si la requête provient de ce domaine : le
 script envoie donc un en-tête `Referer` correspondant. Si le domaine change,
-définir la variable d'environnement **`SITE_DOMAIN`** (sur Vercel : *Settings →
-Environment Variables*), ex. `SITE_DOMAIN=https://roxane-foare.com`.
+définir la variable d'environnement **`SITE_DOMAIN`** à l'étape *Build* de
+`deploy.yml`, ex. `SITE_DOMAIN=https://roxane-foare.com`.
 Aucun token Vimeo n'est nécessaire.

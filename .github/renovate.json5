@@ -1,0 +1,94 @@
+// Mises à jour des dépendances par Renovate, qui remplace Dependabot depuis
+// novembre 2026. Les règles reprennent celles de l'ancien
+// .github/dependabot.yml, avec la fusion automatique que faisait
+// .github/workflows/dependabot.yml, désormais assurée par Renovate lui-même.
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: ['config:recommended'],
+
+  timezone: 'Europe/Paris',
+  // Une fournée par semaine, comme Dependabot, plutôt qu'une PR à chaque
+  // publication sur npm.
+  schedule: ['before 9am on monday'],
+  labels: ['dependencies'],
+  prConcurrentLimit: 5,
+
+  // Une version publiée depuis moins de trois jours n'est pas proposée :
+  // les paquets compromis sont en général retirés de npm dans ce délai.
+  minimumReleaseAge: '3 days',
+
+  // Failles connues (base OSV) : PR ouverte tout de suite, hors calendrier.
+  // Les alertes Dependabot du dépôt sont désactivées, Renovate ne peut pas
+  // s'appuyer sur elles.
+  osvVulnerabilityAlerts: true,
+  vulnerabilityAlerts: {
+    schedule: ['at any time'],
+    minimumReleaseAge: null,
+  },
+
+  // Renovate fusionne lui-même, une fois la CI verte sur le dernier commit.
+  // La fusion automatique de GitHub exigerait une protection de `main` avec
+  // contrôles obligatoires, qui bloquerait aussi les enregistrements du CMS :
+  // Sveltia commite directement sur `main` au nom de la monteuse.
+  platformAutomerge: false,
+
+  packageRules: [
+    {
+      // Outils de build et de test, mineures et correctifs : une PR,
+      // fusionnée sans relecture si la CI passe.
+      matchDepTypes: ['devDependencies'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'outils de développement',
+      automerge: true,
+    },
+    {
+      // Astro : le site entier en dépend, une mineure peut changer la sortie.
+      // PR à part, relue à la main.
+      matchPackageNames: ['astro', '@astrojs/**'],
+      groupName: 'astro',
+      automerge: false,
+    },
+    {
+      // Sveltia CMS : sa balise script, son empreinte SRI et la CSP de
+      // /admin/ sont à mettre à jour à la main. tests/cms-version.test.mjs
+      // fait échouer la CI tant que ce n'est pas fait.
+      matchPackageNames: ['@sveltia/cms'],
+      groupName: null,
+      automerge: false,
+      prBodyNotes: [
+        'À faire dans cette PR : version et empreinte SRI dans `public/admin/index.html`, CSP de `/admin/` dans `vercel.json`. Puis tester l\'interface admin.',
+      ],
+    },
+    {
+      // Dépendances exécutées en production (fonctions de api/ : Upstash) :
+      // regroupées, mais relues à la main.
+      matchDepTypes: ['dependencies'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'dépendances de production',
+    },
+    {
+      // Actions GitHub, épinglées par SHA : Renovate remplace le SHA et le
+      // commentaire de version ensemble. Une seule PR pour toutes, relue à
+      // la main : une action s'exécute avec les droits du workflow.
+      matchManagers: ['github-actions'],
+      groupName: 'actions GitHub',
+      automerge: false,
+    },
+    {
+      // TypeScript 7 casse `astro check` : son compilateur natif n'expose pas
+      // encore l'API programmatique dont dépend le vérificateur d'Astro, qui
+      // refuse de démarrer au-delà de la 6.x (vérifié le 2026-08-06). À
+      // rouvrir quand Astro l'annoncera :
+      // https://github.com/withastro/roadmap/discussions/1321
+      matchPackageNames: ['typescript'],
+      allowedVersions: '<7.0.0',
+    },
+    {
+      // Node : la version majeure suit celle choisie dans le Manager
+      // Infomaniak (.nvmrc, engines). Une majeure se change là-bas d'abord.
+      matchDepNames: ['node'],
+      matchUpdateTypes: ['major'],
+      enabled: false,
+    },
+  ],
+}

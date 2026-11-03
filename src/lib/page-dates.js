@@ -9,8 +9,8 @@
  *
  * - Fiches projet : date tenue par scripts/fetch-thumbs.mjs dans
  *   content-dates.json, qui ne bouge que si la fiche change.
- * - Pages fixes : leur contenu vit dans les sources, et un build Vercel n'a pas
- *   d'historique git fiable (clone partiel). La date est donc écrite ici, à la
+ * - Pages fixes : leur contenu vit dans les sources, et le build de mise en ligne
+ *   n'a pas d'historique git fiable (clone partiel). La date est donc écrite ici, à la
  *   main.
  * - Accueil et Portfolio affichent des projets : elles prennent la plus récente
  *   des deux dates, la leur ou celle du dernier projet modifié.

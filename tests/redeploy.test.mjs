@@ -1,6 +1,6 @@
 /**
- * Tests de /api/redeploy - déclenchement manuel d'un build via Vercel Deploy
- * Hook (bouton /admin/redeploy.html).
+ * Tests de /api/redeploy - déclenchement manuel du workflow de mise en ligne
+ * (bouton /admin/redeploy.html).
  *
  * L'endpoint était public et non authentifié : n'importe qui pouvait relancer
  * un build de production. Les cas d'authentification ci-dessous verrouillent
@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import handler, { buildRequest, DEPLOY_WORKFLOW } from '../api/redeploy.js';
 
 const SECRET = 'phrase-secrete-de-test-assez-longue-32+';
-const HOOK = 'https://api.vercel.com/v1/integrations/deploy/test';
+const GH_TOKEN = 'github_pat_test';
 
 function mockRes() {
   return {
@@ -36,21 +36,21 @@ const post = (token = SECRET) => ({
 });
 
 /** Exécute le handler avec un environnement et un fetch maîtrisés. */
-async function run(req, { secret = SECRET, hook = HOOK, fetchImpl } = {}) {
+async function run(req, { secret = SECRET, token = GH_TOKEN, fetchImpl } = {}) {
   const res = mockRes();
   const originalFetch = global.fetch;
   const calls = [];
   if (secret) process.env.REDEPLOY_TOKEN = secret;
   else delete process.env.REDEPLOY_TOKEN;
-  if (hook) process.env.DEPLOY_HOOK_URL = hook;
-  else delete process.env.DEPLOY_HOOK_URL;
+  if (token) process.env.GITHUB_DEPLOY_TOKEN = token;
+  else delete process.env.GITHUB_DEPLOY_TOKEN;
   global.fetch = fetchImpl || (async (url, init) => { calls.push({ url, method: init?.method }); return { ok: true }; });
   try {
     await handler(req, res);
   } finally {
     global.fetch = originalFetch;
     delete process.env.REDEPLOY_TOKEN;
-    delete process.env.DEPLOY_HOOK_URL;
+    delete process.env.GITHUB_DEPLOY_TOKEN;
   }
   return { res, calls };
 }
@@ -84,17 +84,17 @@ test('REDEPLOY_TOKEN non configuré : fermé par défaut, aucun appel', async ()
   assert.equal(calls.length, 0);
 });
 
-test('DEPLOY_HOOK_URL non configurée : répond 500', async () => {
-  const { res } = await run(post(), { hook: null });
+test('GITHUB_DEPLOY_TOKEN non configuré : répond 500', async () => {
+  const { res } = await run(post(), { token: null });
   assert.equal(res.statusCode, 500);
 });
 
-test('deploy hook répond en erreur : répond 502', async () => {
+test('l’API GitHub répond en erreur : répond 502', async () => {
   const { res } = await run(post(), { fetchImpl: async () => ({ ok: false, status: 500 }) });
   assert.equal(res.statusCode, 502);
 });
 
-test('deploy hook injoignable : répond 502', async () => {
+test('l’API GitHub injoignable : répond 502', async () => {
   const { res } = await run(post(), { fetchImpl: async () => { throw new Error('réseau'); } });
   assert.equal(res.statusCode, 502);
 });
@@ -103,7 +103,7 @@ test('phrase secrète valide : déclenche le build et répond 200', async () => 
   const { res, calls } = await run(post());
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.ok, true);
-  assert.deepEqual(calls, [{ url: HOOK, method: 'POST' }]);
+  assert.deepEqual(calls, [{ url: DEPLOY_WORKFLOW, method: 'POST' }]);
 });
 
 test('une phrase secrète de moins de 32 caractères laisse l’administration fermée', async () => {
@@ -114,11 +114,11 @@ test('une phrase secrète de moins de 32 caractères laisse l’administration f
   assert.equal(calls.length, 0);
 });
 
-test('avec GITHUB_DEPLOY_TOKEN : lance le workflow Infomaniak plutôt que le hook Vercel', () => {
-  const r = buildRequest({ GITHUB_DEPLOY_TOKEN: 'ghp_x', DEPLOY_HOOK_URL: HOOK });
+test('lance le workflow de mise en ligne sur main, avec le jeton', () => {
+  const r = buildRequest({ GITHUB_DEPLOY_TOKEN: 'ghp_x' });
   assert.equal(r.url, DEPLOY_WORKFLOW);
   assert.equal(r.init.headers.Authorization, 'Bearer ghp_x');
   assert.deepEqual(JSON.parse(r.init.body), { ref: 'main' });
-  assert.equal(buildRequest({ DEPLOY_HOOK_URL: HOOK }).url, HOOK);
-  assert.equal(buildRequest({}), null);
+  // L'ancien Deploy Hook de Vercel n'est plus suivi.
+  assert.equal(buildRequest({ DEPLOY_HOOK_URL: 'https://api.vercel.com/x' }), null);
 });

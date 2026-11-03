@@ -21,6 +21,7 @@
  */
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
+/** @public Lu par tests/turnstile.test.mjs, via un import dynamique que knip ne suit pas. */
 export const turnstileEnabled = Boolean(process.env.TURNSTILE_SECRET_KEY);
 
 /**

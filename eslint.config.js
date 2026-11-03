@@ -42,7 +42,7 @@ export default [
     languageOptions: { globals: { ...globals.node, ...globals.serviceworker } },
   },
 
-  // Code serveur / build : fonctions Vercel, scripts de build, tests, config.
+  // Code serveur / build : serveur, fonctions api/, scripts de build, tests, config.
   {
     // `astro.config.mjs` lit process.env pour conditionner le captcha
     // (voir la constante TURNSTILE) : il tourne bien sous Node au build.

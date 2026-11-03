@@ -1,12 +1,12 @@
 ---
 /**
- * Page 404 - remplace la page générique de Vercel.
+ * Page 404 du site.
  *
  * Astro la sort en `404.html` à la racine même sous `build.format: 'directory'`
- * (vérifié : elle échappe à la règle du dossier + index.html), et Vercel la
- * reconnaît nativement. Aucune règle à déclarer dans vercel.json.
+ * (vérifié : elle échappe à la règle du dossier + index.html), et
+ * server/index.mjs la sert pour toute adresse inconnue.
  *
- * Une seule page pour tout le site : Vercel sert le même fichier quelle que
+ * Une seule page pour tout le site : le serveur sert le même fichier quelle que
  * soit l'URL manquante, y compris sous /fr. Elle est rendue en anglais, la
  * langue par défaut (x-default), et contient aussi la version française,
  * cachée. Le script en bas de page bascule sur celle-ci quand l'adresse
@@ -33,7 +33,10 @@ const tf = useTranslations('fr');
 const chrome = Object.keys(ui.en)
   .filter((key) => key.startsWith('nav.') || key.startsWith('footer.'))
   .map((key) => [ui.en[key as keyof typeof ui.en], ui.fr[key as keyof typeof ui.fr]])
-  .filter(([en, fr]) => en && fr && en !== fr);
+  .filter(([en, fr]) => en && fr && en !== fr)
+  // Les plus longues d'abord : « FR » est aussi le début du nom accessible
+  // du sélecteur de langue, et swap() s'arrête à la première paire trouvée.
+  .sort((a, b) => b[0].length - a[0].length);
 const i18n = JSON.stringify({ title: tf('notfound.title'), chrome });
 
 const SWITCH_SCRIPT = `(function () {

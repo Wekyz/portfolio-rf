@@ -1,7 +1,7 @@
 /**
- * Fonction serverless Vercel - déclenche un redéploiement manuel du site via
- * un Vercel Deploy Hook (bouton sur /admin/redeploy.html), sans passer par
- * un commit Git.
+ * Déclenche une mise en ligne manuelle du site (bouton sur
+ * /admin/redeploy.html), sans passer par un commit Git : lance le workflow
+ * .github/workflows/deploy.yml par l'API GitHub.
  *
  * Utile quand un contenu change en dehors du dépôt (ex. miniature changée
  * directement sur Vimeo, hors CMS) : le build ne se relance pas tout seul
@@ -11,7 +11,7 @@
  * ── Authentification ─────────────────────────────────────────────────────
  * Cet endpoint était public : n'importe qui pouvait relancer un build de
  * production avec un simple curl, brûler les minutes de build, purger le
- * cache edge en boucle et déclencher une cascade d'appels à l'API Vimeo. La
+ * cache en boucle et déclencher une cascade d'appels à l'API Vimeo. La
  * page qui le documente répond 200 et contient l'appel en clair.
  *
  * Il exige désormais un secret partagé. Ce secret n'est PAS écrit dans la
@@ -22,17 +22,14 @@
  * REDEPLOY_TOKEN configuré, l'endpoint refuse tout. Une porte sans serrure
  * vaut moins qu'une porte condamnée.
  *
- * Variables d'environnement (Vercel → Settings → Environment Variables) :
+ * Variables d'environnement (fichier .env du serveur, voir server/index.mjs) :
  *   REDEPLOY_TOKEN            OBLIGATOIRE - phrase secrète, à saisir sur la
  *                              page de redéploiement. 32 caractères minimum,
  *                              aléatoires (ex. `openssl rand -base64 32`) :
  *                              plus courte, l'administration reste fermée.
- *   GITHUB_DEPLOY_TOKEN       hébergement Infomaniak : jeton GitHub à grain
- *                              fin, limité au dépôt, permission « Actions :
- *                              lecture et écriture ». Lance le workflow
- *                              .github/workflows/deploy.yml.
- *   DEPLOY_HOOK_URL           ancien hébergement Vercel : URL du Deploy Hook,
- *                              utilisée seulement sans GITHUB_DEPLOY_TOKEN.
+ *   GITHUB_DEPLOY_TOKEN       OBLIGATOIRE - jeton GitHub à grain fin, limité
+ *                              au dépôt, permission « Actions : lecture et
+ *                              écriture ».
  *   UPSTASH_REDIS_REST_URL    rate-limiting (voir api/contact.js) - optionnel
  *   UPSTASH_REDIS_REST_TOKEN  idem
  */
@@ -91,10 +88,7 @@ export default async function handler(req, res) {
 export const DEPLOY_WORKFLOW =
   'https://api.github.com/repos/Wekyz/portfolio-rf/actions/workflows/deploy.yml/dispatches';
 
-/**
- * Appel qui relance le build : le workflow GitHub si le jeton est là, sinon
- * le Deploy Hook de Vercel. `null` si aucun des deux n'est configuré.
- */
+/** Appel qui relance le workflow de mise en ligne, `null` sans jeton. */
 export function buildRequest(env) {
   if (env.GITHUB_DEPLOY_TOKEN) {
     return {
@@ -111,6 +105,5 @@ export function buildRequest(env) {
       },
     };
   }
-  if (env.DEPLOY_HOOK_URL) return { url: env.DEPLOY_HOOK_URL, init: { method: 'POST' } };
   return null;
 }

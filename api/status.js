@@ -1,5 +1,5 @@
 /**
- * Fonction serverless Vercel - état du dispositif antispam et des incidents.
+ * État du dispositif antispam et des incidents.
  *
  * Les compteurs d'abus (`abuse:AAAA-MM:*`) tournaient dans Upstash depuis un
  * mois sans qu'aucun endroit ne permette de les consulter : ils avaient été

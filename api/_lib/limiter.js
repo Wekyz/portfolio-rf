@@ -7,7 +7,7 @@
  * disait si la protection était réellement en place en production. Le repli
  * reste volontaire - mieux vaut un formulaire qui fonctionne sans limiteur
  * qu'un formulaire cassé - mais il est désormais annoncé dans les journaux de
- * la fonction (Vercel → Logs).
+ * la fonction (console « Exécution » du site dans le Manager Infomaniak).
  */
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
@@ -50,7 +50,12 @@ export function createLimiter(prefix, max, window) {
   });
 }
 
-/** Adresse IP du client, telle que Vercel la transmet. */
+/**
+ * Adresse IP du client, premier élément de X-Forwarded-For posé par le
+ * frontal Infomaniak. Si ce frontal ajoute l'adresse à un en-tête déjà
+ * fourni au lieu de le remplacer, ce premier élément peut être forgé : à
+ * vérifier avant de rebrancher Upstash.
+ */
 export function clientIp(req) {
   return (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 }
@@ -74,7 +79,7 @@ export function countRejection(reason) {
  * à celui de l'année précédente. Ils n'en avaient aucune et s'accumulaient
  * sans fin sur le quota gratuit d'Upstash (ANT-05).
  */
-export const COUNTER_TTL = 400 * 24 * 3600;
+const COUNTER_TTL = 400 * 24 * 3600;
 
 /** INCR puis EXPIRE, silencieux en cas d'échec (voir countRejection). */
 export function incrWithTtl(key) {

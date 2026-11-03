@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Portfolio Roxane Foare - site Astro bilingue EN/FR, en production sur Vercel.",
+  "description": "Portfolio Roxane Foare - site Astro bilingue EN/FR, servi par un serveur Node sur Infomaniak.",
   "engines": {
     "node": "24.x"
   },
