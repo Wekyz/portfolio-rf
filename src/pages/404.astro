@@ -33,7 +33,10 @@ const tf = useTranslations('fr');
 const chrome = Object.keys(ui.en)
   .filter((key) => key.startsWith('nav.') || key.startsWith('footer.'))
   .map((key) => [ui.en[key as keyof typeof ui.en], ui.fr[key as keyof typeof ui.fr]])
-  .filter(([en, fr]) => en && fr && en !== fr);
+  .filter(([en, fr]) => en && fr && en !== fr)
+  // Les plus longues d'abord : « FR » est aussi le début du nom accessible
+  // du sélecteur de langue, et swap() s'arrête à la première paire trouvée.
+  .sort((a, b) => b[0].length - a[0].length);
 const i18n = JSON.stringify({ title: tf('notfound.title'), chrome });
 
 const SWITCH_SCRIPT = `(function () {

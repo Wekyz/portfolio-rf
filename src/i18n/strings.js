@@ -55,7 +55,7 @@ export const ui = {
     'nav.about': 'About',
     'nav.contact': 'Contact',
     'nav.langLabel': 'FR',
-    'nav.langAria': 'Voir le site en français',
+    'nav.langAria': 'FR, voir le site en français',
     'nav.menuAria': 'Menu',
 
     // Hero (Accueil)
@@ -221,7 +221,7 @@ export const ui = {
     'nav.about': 'À propos',
     'nav.contact': 'Contact',
     'nav.langLabel': 'EN',
-    'nav.langAria': 'View the site in English',
+    'nav.langAria': 'EN, view the site in English',
     'nav.menuAria': 'Menu',
 
     // Hero (Accueil)
