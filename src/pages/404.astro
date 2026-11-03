@@ -1,12 +1,12 @@
 ---
 /**
- * Page 404 - remplace la page générique de Vercel.
+ * Page 404 du site.
  *
  * Astro la sort en `404.html` à la racine même sous `build.format: 'directory'`
- * (vérifié : elle échappe à la règle du dossier + index.html), et Vercel la
- * reconnaît nativement. Aucune règle à déclarer dans vercel.json.
+ * (vérifié : elle échappe à la règle du dossier + index.html), et
+ * server/index.mjs la sert pour toute adresse inconnue.
  *
- * Une seule page pour tout le site : Vercel sert le même fichier quelle que
+ * Une seule page pour tout le site : le serveur sert le même fichier quelle que
  * soit l'URL manquante, y compris sous /fr. Elle est rendue en anglais, la
  * langue par défaut (x-default), et contient aussi la version française,
  * cachée. Le script en bas de page bascule sur celle-ci quand l'adresse

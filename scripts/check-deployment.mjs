@@ -1,16 +1,14 @@
 /**
- * Contrôle d'un déploiement Vercel réel (CI-05).
+ * Contrôle du site en ligne (CI-05), lancé après chaque mise en ligne par
+ * .github/workflows/deploy.yml.
  *
  * Les en-têtes de vercel.json, ses redirections et les fonctions de api/ ne
- * tournent qu'une fois déployés : `astro preview` ne les connaît pas, la CI
- * ne pouvait donc rien en dire. Ce script interroge l'URL d'un déploiement
- * (preview de PR ou production) et vérifie ce qui ne se voit qu'en ligne.
+ * tournent qu'une fois servis par server/index.mjs : `astro preview` ne les
+ * connaît pas, la CI ne pouvait donc rien en dire. Ce script interroge une
+ * URL et vérifie ce qui ne se voit qu'en ligne.
  *
- *   node scripts/check-deployment.mjs https://<deploiement>.vercel.app
- *
- * Si la protection des previews Vercel est active, définir
- * VERCEL_AUTOMATION_BYPASS_SECRET (Project Settings > Deployment Protection >
- * Protection Bypass for Automation) : le script l'envoie dans l'en-tête prévu.
+ *   node scripts/check-deployment.mjs https://roxane-foare.com
+ *   node scripts/check-deployment.mjs http://localhost:3000   (npm start)
  *
  * Sortie : une ligne par contrôle, résumé dans GITHUB_STEP_SUMMARY si présent,
  * code 1 au premier échec constaté (tous les contrôles tournent quand même).
@@ -24,14 +22,9 @@ if (!/^(https:\/\/|http:\/\/localhost[:/])/.test(base + '/')) {
   process.exit(2);
 }
 
-const headers = {};
-if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
-  headers['x-vercel-protection-bypass'] = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-}
-
 /** Requête sans suivre les redirections : c'est leur code qu'on vérifie. */
 const get = (path) =>
-  fetch(`${base}${path}`, { headers, redirect: 'manual', signal: AbortSignal.timeout(15_000) });
+  fetch(`${base}${path}`, { redirect: 'manual', signal: AbortSignal.timeout(15_000) });
 
 const results = [];
 async function check(name, fn) {

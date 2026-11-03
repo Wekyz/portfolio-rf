@@ -31,7 +31,7 @@ export default defineConfig({
   output: 'static',
   build: {
     // Une page = un dossier avec son index.html (`/portfolio` ->
-    // `dist/portfolio/index.html`). Vercel sert nativement l'index d'un
+    // `dist/portfolio/index.html`). server/index.mjs sert l'index d'un
     // dossier : aucune règle de routage à écrire, alors que l'ancien
     // `format: 'file'` imposait un rewrite explicite dans vercel.json par
     // route non racine - une page ajoutée sans son rewrite renvoyait une 404

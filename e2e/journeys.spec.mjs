@@ -275,7 +275,7 @@ test('une page projet mène au portfolio par son fil d’Ariane', async ({ page 
 
 test('une URL inexistante affiche la page 404 du site', async ({ page }) => {
   // `astro preview` ne sert pas 404.html automatiquement : on la vise
-  // directement, l'objet du test étant son contenu, pas le routage de Vercel.
+  // directement, l'objet du test étant son contenu, pas le routage du serveur.
   await page.goto('/404.html');
   await expect(page.locator('h1:visible')).toHaveCount(1);
   await expect(page.locator('.notfound:visible .notfound-links a')).toHaveCount(3);
@@ -462,7 +462,7 @@ test('l’adresse e-mail est écrite à côté du lien, avec un bouton pour la c
 
 test('une adresse française inexistante affiche la 404 en français', async ({ page }) => {
   // Même limite que plus haut : `astro preview` ne sert pas 404.html. On
-  // le sert à la place d'une adresse /fr inexistante, comme le fait Vercel.
+  // le sert à la place d'une adresse /fr inexistante, comme le fait server/index.mjs.
   const html = await (await page.request.get('/404.html')).text();
   await page.route('**/fr/page-inexistante', (route) =>
     route.fulfill({ status: 404, contentType: 'text/html; charset=utf-8', body: html })

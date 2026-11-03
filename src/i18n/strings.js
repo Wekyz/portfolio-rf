@@ -6,7 +6,7 @@
    Les noms propres (marques, productions, outils) ne sont jamais traduits.
    ============================================================ */
 
-export const defaultLang = 'en';
+const defaultLang = 'en';
 
 /**
  * Genre grammatical du libellé de catégorie EN FRANÇAIS, pour accorder ce qui

@@ -11,7 +11,7 @@
  * Trois niveaux, sans dépendance nouvelle :
  *
  *  1. `console.error` préfixé `[rf-error]`, donc filtrable dans les journaux
- *     Vercel et accrochable à une alerte de Log Drain.
+ *     du site (console « Exécution » du Manager Infomaniak).
  *  2. Compteurs et derniers incidents dans Upstash, déjà en place pour la
  *     limitation de débit, et lisibles depuis /api/status.
  *  3. Une alerte immédiate si ALERT_WEBHOOK_URL est définie (voir
@@ -54,9 +54,9 @@ export function reportError(kind, detail = '') {
     );
   }
   // Promesse renvoyée pour que l'appelant puisse l'attendre avant de
-  // répondre : une fonction Vercel peut être gelée dès la réponse envoyée,
-  // et l'alerte partirait alors... à la prochaine invocation. Elle ne rejette
-  // jamais.
+  // répondre : sur une plateforme serverless, la fonction peut être gelée
+  // dès la réponse envoyée, et l'alerte partirait alors... à la prochaine
+  // invocation. Elle ne rejette jamais.
   return Promise.all(tasks).then(
     () => undefined,
     () => undefined

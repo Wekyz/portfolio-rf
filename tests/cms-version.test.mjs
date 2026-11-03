@@ -3,12 +3,12 @@
  * CDN et celle suivie par npm.
  *
  * Le CMS est chargé par une balise <script> vers unpkg, avec une empreinte
- * SRI. L'épinglage protège d'une compromission du paquet, mais Dependabot ne
+ * SRI. L'épinglage protège d'une compromission du paquet, mais Renovate ne
  * voit pas une balise HTML : aucune mise à jour de sécurité ne remontait, sur
  * un paquet en version 0.x qui évolue vite.
  *
  * `@sveltia/cms` est donc déclaré en devDependency à la version réellement
- * chargée. Dependabot la surveille désormais, et ces tests font échouer la CI
+ * chargée. Renovate la surveille désormais, et ces tests font échouer la CI
  * tant que `public/admin/index.html` n'a pas suivi - version ET empreinte.
  * La montée de version reste ainsi un geste conscient, avec le CMS testé.
  *

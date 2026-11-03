@@ -3,7 +3,7 @@
  *
  * L'audit demandait un test garantissant que chaque page a bien sa règle de
  * réécriture dans vercel.json. Ce besoin a disparu avec le passage à
- * `build.format: 'directory'` : Vercel sert nativement l'index d'un dossier,
+ * `build.format: 'directory'` : le serveur sert l'index d'un dossier,
  * il n'y a plus une seule réécriture à maintenir. Le risque, lui, s'est
  * déplacé : une page peut désormais être ajoutée sans entrer dans le sitemap,
  * et rien ne le signalerait.
@@ -72,8 +72,8 @@ test('aucune règle de réécriture ne réapparaît dans vercel.json', { skip },
 });
 
 test('la page 404 sort bien à la racine du build', { skip }, () => {
-  // Astro la traite à part malgré `format: 'directory'`, et Vercel la
-  // reconnaît sous ce nom précis. Un changement silencieux ferait retomber
+  // Astro la traite à part malgré `format: 'directory'`, et
+  // server/index.mjs la cherche sous ce nom précis. Un changement silencieux ferait retomber
   // les liens morts sur la page générique de la plateforme.
   assert.ok(existsSync(join(DIST, '404.html')));
 });
@@ -127,12 +127,12 @@ test('aucun fichier du build ne dépasse un poids déraisonnable', { skip }, () 
 // ── Version de Node : une seule source, trois consommateurs ─────────────────
 
 test('engines.node, .nvmrc et la CI déclarent la même version majeure', () => {
-  // Contrairement à ce que supposait l'audit, `engines.node` ne se contente
-  // pas de cadrer le build : la documentation Vercel indique qu'il PRIME sur
-  // le réglage Node.js du projet. Le runtime des fonctions serverless est donc
-  // bien épinglé depuis le dépôt. Reste à empêcher les trois déclarations de
-  // diverger - un .nvmrc oublié lors d'une montée ferait tourner la CI sur une
-  // version différente de la production, sans que rien ne le signale.
+  // Sur Infomaniak, la version qui tourne en production est celle choisie
+  // dans le Manager (Node.js 24) : le dépôt ne peut que la refléter. Reste à
+  // empêcher les trois déclarations de diverger - un .nvmrc oublié lors d'une
+  // montée ferait tourner la CI et le build sur une version différente de
+  // la production, sans que rien ne le signale. Une montée de majeure se
+  // fait donc dans le Manager ET ici, dans le même temps.
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   const nvmrc = readFileSync(new URL('../.nvmrc', import.meta.url), 'utf8').trim();
   const ci = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');

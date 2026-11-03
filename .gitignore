@@ -19,7 +19,7 @@ test-results/
 #
 #  3. `content-dates.json` n'a de sens QUE versionné : il retient la date à
 #     laquelle le contenu de chaque projet a changé. Régénéré à chaque build,
-#     mais un build Vercel ne peut rien réécrire dans le dépôt - c'est le
+#     mais le build de mise en ligne ne réécrit rien dans le dépôt - c'est le
 #     fichier commité qui fait foi en production.
 #
 # Contrepartie assumée : une rotation d'URL côté CDN Vimeo produira un diff.
@@ -49,9 +49,6 @@ yarn-error.log
 .env.*
 env.local
 *.local
-
-# Vercel
-.vercel/
 
 # Logs
 *.log

@@ -36,7 +36,7 @@ function pages() {
 /** Une adresse interne existe-t-elle dans le build (ou en fonction serverless) ? */
 function exists(path) {
   if (path.startsWith('/api/')) return existsSync(join(ROOT, 'api', `${path.slice(5)}.js`));
-  // Vercel sert /x depuis x/index.html (format 'directory'), ou x tel quel.
+  // server/index.mjs sert /x depuis x/index.html (format 'directory'), ou x tel quel.
   const target = join(DIST, decodeURIComponent(path));
   if (existsSync(target) && statSync(target).isFile()) return true;
   return existsSync(join(target, 'index.html'));

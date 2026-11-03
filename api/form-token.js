@@ -1,5 +1,5 @@
 /**
- * Fonction serverless Vercel - délivre un jeton horodaté et signé au
+ * Délivre un jeton horodaté et signé au
  * formulaire de contact (voir api/_lib/form-token.js).
  *
  * Appelée par app.js à la première interaction avec le formulaire, pas au

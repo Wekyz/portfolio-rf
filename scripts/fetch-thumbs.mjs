@@ -62,7 +62,8 @@ const WIDTH_SUFFIX_RE = /_\d+(\?.*)?$/;
 
 // Appels oEmbed. Ils partaient un par un et sans délai d'expiration : une
 // réponse de Vimeo qui n'arrivait jamais figeait le build jusqu'à la limite de
-// Vercel (45 minutes). Chaque appel est désormais abandonné au bout de 8 s -
+// la plateforme (45 minutes chez Vercel, 6 h sur GitHub Actions). Chaque
+// appel est désormais abandonné au bout de 8 s -
 // le repli sur le cache versionné prend alors le relais pour cette vidéo - et
 // six partent en même temps, assez pour diviser la durée sans ressembler à un
 // balayage aux yeux de Vimeo.
@@ -330,7 +331,7 @@ async function ensureShowreelPoster() {
  * laquelle cette empreinte est apparue. Tant que le contenu ne bouge pas, la
  * date ne bouge pas, quel que soit le nombre de builds.
  *
- * Pas de `git log` : Vercel clone sans garantie sur la profondeur de
+ * Pas de `git log` : la CI clone sans garantie sur la profondeur de
  * l'historique, un build ne peut donc pas s'y fier. Le registre est versionné
  * comme les autres caches de src/data (voir .gitignore).
  *
@@ -339,7 +340,7 @@ async function ensureShowreelPoster() {
  * trompe dans le sens prudent - mieux vaut sous-estimer la fraîcheur que
  * déclarer 62 pages modifiées aujourd'hui.
  *
- * LIMITE CONNUE : un build Vercel ne peut rien réécrire dans le dépôt. Après
+ * LIMITE CONNUE : le build de mise en ligne ne réécrit rien dans le dépôt. Après
  * une modification via le CMS, le projet touché portera la date du jour à
  * chaque build tant que ce fichier n'aura pas été régénéré et commité depuis
  * un poste. Les autres projets, eux, gardent leur date exacte - c'est
@@ -497,7 +498,7 @@ async function main() {
 // écrire. Le script sortait pourtant en succès dans tous les cas : le build
 // partait sans variantes ni dimensions, et seule une ligne perdue dans les
 // journaux le disait. Désormais il ne laisse passer que le réseau ; le reste
-// arrête le build, et Vercel garde en ligne le dernier déploiement réussi.
+// arrête le build, et le site en ligne reste celui du dernier envoi réussi.
 main().catch(async (err) => {
   if (isNetworkError(err)) {
     console.warn(`[thumbs] erreur réseau, build poursuivi avec les caches versionnés : ${err.message}`);

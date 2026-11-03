@@ -307,14 +307,14 @@ test('un formulaire hébergé sur un autre site est refusé en 403', async () =>
   assert.equal(res.body.code, 'bad-origin');
 });
 
-test('origines autorisées : le site, le déploiement en cours, localhost hors production', () => {
-  const env = { VERCEL_URL: 'portfolio-rf-abc123.vercel.app', VERCEL_ENV: 'preview' };
+test('origines autorisées : le site, SITE_DOMAIN, localhost hors production', () => {
+  const env = { NODE_ENV: 'development' };
   assert.ok(allowedOrigin('https://roxane-foare.com', env));
-  assert.ok(allowedOrigin('https://portfolio-rf-abc123.vercel.app', env));
+  assert.ok(allowedOrigin('https://www.roxane-foare.com', env));
+  assert.ok(allowedOrigin('https://essai.example', { SITE_DOMAIN: 'https://essai.example/' }));
   assert.ok(allowedOrigin('http://localhost:3000', env));
   assert.ok(allowedOrigin(undefined, env), 'sans en-tête Origin : pas concerné');
-  assert.ok(!allowedOrigin('https://autre-projet.vercel.app', env));
-  assert.ok(!allowedOrigin('http://localhost:3000', { VERCEL_ENV: 'production' }));
+  assert.ok(!allowedOrigin('https://portfolio-rf-abc123.vercel.app', env));
   assert.ok(!allowedOrigin('http://localhost:3000', { NODE_ENV: 'production' }), 'serveur Infomaniak');
   assert.ok(!allowedOrigin('https://roxane-foare.com.example', env));
 });

@@ -1,8 +1,8 @@
 /**
- * Fonction serverless Vercel - réception du formulaire de contact + envoi via
- * Resend (remplace Netlify Forms).
+ * Réception du formulaire de contact et envoi via Resend (remplace Netlify
+ * Forms). Exécutée par server/index.mjs.
  *
- * Variables d'environnement (Vercel → Settings → Environment Variables) :
+ * Variables d'environnement (fichier .env du serveur) :
  *   RESEND_API_KEY            clé API Resend
  *   CONTACT_EMAIL             adresse de destination (boîte de Roxane)
  *   RESEND_FROM               expéditeur vérifié, ex. "Portfolio <noreply@roxane-foare.com>"
@@ -20,12 +20,9 @@
  * causes distinctes, dont « votre adresse e-mail est invalide ».
  *
  * Rate limiting (anti-spam) : 5 envois / 10 min par IP, via Upstash Redis
- * (@upstash/ratelimit). Nécessite une base Redis Upstash :
- *   - soit via l'intégration Vercel Marketplace "Upstash" (Storage → Browse
- *     Marketplace → Upstash) qui injecte automatiquement les 2 variables
- *     ci-dessus sur le projet ;
- *   - soit un compte upstash.com (offre gratuite) + copier les 2 valeurs
- *     "REST URL" / "REST TOKEN" de la base dans les env vars Vercel.
+ * (@upstash/ratelimit). Nécessite une base Redis Upstash : compte
+ * upstash.com (offre gratuite), puis copier les 2 valeurs "REST URL" et
+ * "REST TOKEN" de la base dans le .env du serveur.
  * Tant que ces variables ne sont pas définies, le rate limiting est
  * simplement désactivé (le formulaire continue de fonctionner normalement,
  * protégé par le honeypot + délai anti-bot déjà en place côté client).
@@ -52,10 +49,9 @@ const ratelimit = createLimiter('contact-form', 5, '10 m');
  * jusqu'ici héberger un formulaire qui poste ici : le navigateur envoie
  * l'en-tête Origin avec chaque POST, il suffit de le lire.
  *
- * Le domaine du site, et les adresses du déploiement en cours (previews de
- * PR), que Vercel expose dans VERCEL_URL et VERCEL_BRANCH_URL. En dehors de
- * la production, localhost aussi (`vercel dev`). Sur Infomaniak, c'est
- * NODE_ENV=production, posé par server/index.mjs, qui marque la production.
+ * Le domaine du site, SITE_DOMAIN s'il est défini, et localhost en dehors
+ * de la production. NODE_ENV=production, posé par server/index.mjs, marque
+ * la production.
  * Une requête SANS Origin (script serveur, outil en ligne de commande) n'est
  * pas concernée : ce contrôle vise les formulaires tiers dans un navigateur,
  * le reste est l'affaire du jeton, du délai et du captcha.
@@ -64,12 +60,8 @@ export function allowedOrigin(origin, env = process.env) {
   if (!origin) return true;
   const allowed = new Set(['https://roxane-foare.com', 'https://www.roxane-foare.com']);
   if (env.SITE_DOMAIN) allowed.add(env.SITE_DOMAIN.replace(/\/$/, ''));
-  for (const host of [env.VERCEL_URL, env.VERCEL_BRANCH_URL]) {
-    if (host) allowed.add(`https://${host}`);
-  }
   if (allowed.has(origin)) return true;
-  const production = env.VERCEL_ENV === 'production' || env.NODE_ENV === 'production';
-  return !production && /^http:\/\/localhost(:\d+)?$/.test(origin);
+  return env.NODE_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin);
 }
 
 export default async function handler(req, res) {
